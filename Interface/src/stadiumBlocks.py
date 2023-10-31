@@ -1,3 +1,7 @@
+from pygbx import Gbx, GbxType
+import math
+BLOCK_SIZE_XZ = 32
+BLOCK_SIZE_Y = 8
 STADIUM_BLOCKS_DICT = {
     'StadiumRoadMain': 1,
     'StadiumRoadMainGTCurve2': 2,
@@ -8,21 +12,148 @@ STADIUM_BLOCKS_DICT = {
     'StadiumRoadMainGTCurve3' : 7,
     'StadiumRoadMainGTCurve4' : 8,
     'StadiumRoadMainGTDiag2x2' : 9,
-    'StadiumRoadMainCheckpoint' : 10
+    'StadiumRoadMainCheckpoint' : 10,
+    'StadiumGrassClip': 11,
+    'Nothing' : 12
 }
+# Dictionary telling in which directions x, y the block is expanding 
+# ROTATIONS_TYPES
+# 0 - Normal, take just offsets
+# 1 - Transponse matrix once
+# 2 - Transponse second time
+# 3 - Transponse thrid time
 
 STADIUM_BLOCK_OFFSETS = {
-    'StadiumRoadMain': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumRoadMainGTCurve2': {'positions' : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]], 'ends' : ([-1, 0, 0], [1,0,2])},
-    'StadiumRoadMainStartLine': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumRoadMainFinishLine': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumRoadMainTurbo': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumHolePillar': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumRoadMainGTCurve3' : {'positions' : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1], [1, 0, 2], [2, 0, 0], [2, 0, 1], [2, 0, 2]], 'ends' : ([-1, 0, 0], [2,0,3])},
+    'StadiumRoadMain': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainGTCurve2': {'positions' : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([-1, 0, 0], [1,0,2])},
+    'StadiumRoadMainStartLine': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainFinishLine': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainTurbo': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumHolePillar': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainGTCurve3' : {'positions' : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1], [1, 0, 2], [2, 0, 0], [2, 0, 1], [2, 0, 2]], 'rotationCenter': [[1, 0, 1]], 'ends' : ([-1, 0, 0], [2,0,3])},
     'StadiumRoadMainGTCurve4': {'positions' : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1], [2, 0, 0], [2, 0, 1], [2, 0, 2], [2, 0, 3], [3, 0, 1], [3, 0, 2], [3, 0, 3]], 'ends' : ([-1, 0, 0], [3,0,4])},
     'StadiumRoadMainGTDiag2x2': {'positions' : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1]], 'ends' : ([0, 0, -1], [1,0,2])},
-    'StadiumRoadMainCheckpoint': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainCheckpoint': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumGrassClip': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
 }
+
+positionsDict = {}
+
+# Simple Hash function
+# Creates a bitstring from all three
+# And then convert it back to number
+def hashPosition(x, y, z):
+    # [2:] to trim 0b from the string
+    bitStringX = bin(x)[2:]
+    bitStringY = bin(y)[2:]
+    bitStringZ = bin(z)[2:]
+    return int(bitStringX+bitStringY+bitStringZ, 2)
+
+def rotateMatrix(mat):
+
+    # Number of rows
+    N = len(mat)
+
+    # Number of columns
+    M = len(mat[0])
+
+    newN = M
+    newM = N
+
+    result = []
+
+
+
+    for _ in range(newN):
+        row = [0]*newM
+        result.append(row)
+
+    return result 
+   
+
+    
+
+def createPositionDictionary(blocks):
+    for block in blocks:
+        rotation = block.rotation
+        posX = block.position.x
+        posY = block.position.y
+        posZ = block.position.z
+        print("BLOCK POSITION: ", block.name, posX, posY, posZ)
+        print("BLOCK ROTATION: ", rotation)
+        match rotation:
+            case 0:
+                for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                    print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
+                    hashValue = hashPosition(posX+x,posY+y,posZ+z)
+                    positionsDict[hashValue] = (block.name, block.rotation)
+            case 1:
+                if len(STADIUM_BLOCK_OFFSETS[block.name]['positions']) == 1:
+                     positions = STADIUM_BLOCK_OFFSETS[block.name]['positions']
+                     hashValue = hashPosition(positions[0], positions[1], positions[2])
+                     positionsDict[hashValue] = (block.name, block.rotation)
+                else:
+                    maxX = 0
+                    maxZ = 0
+                    for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                        if x > maxX:
+                            maxX = x
+                        if z > maxZ:
+                            maxZ = z
+
+                    blockMatrix = []
+
+                    for _ in range(maxZ):
+                        blockMatrixRow = [0] * maxX
+                        blockMatrix.append(blockMatrixRow)
+                    
+
+
+                    
+                    
+
+                    blockMatrix = [blockMatrixRow]
+
+                    for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                        blockMatrix[x][z] = 1
+                    
+
+            case 2:
+                for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                    print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
+                    hashValue = hashPosition(posX+x,posY+y,posZ+z)
+                    positionsDict[hashValue] = (block.name, block.rotation)
+                # for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                #     print("SUBBLOCK POSITION: ", posX-x, posY-y, posZ-z)
+                #     hashValue = hashPosition(posX+x,posY+y,posZ+z)
+                #     positionsDict[hashValue] = (block.name, block.rotation)
+            case 3:
+                for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                    print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
+                    hashValue = hashPosition(posX+x,posY+y,posZ+z)
+                    positionsDict[hashValue] = (block.name, block.rotation)
+                # for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                #     print("SUBBLOCK POSITION: ", posX+z, posY-y, posZ-x)
+                #     hashValue = hashPosition(posX+z,posY-y,posZ+x)
+                #     positionsDict[hashValue] = (block.name, block.rotation)
+    print(positionsDict)
+
+
+
+def checkPosition(position):
+    print("RAW POSITION: ",position)
+    # posX = round(int(position[0]) / BLOCK_SIZE_XZ)
+    # posY = round(int(position[1]) / BLOCK_SIZE_Y)
+    # posZ = round(int(position[2]) / BLOCK_SIZE_XZ)
+    posX = math.floor(int(position[0]) / BLOCK_SIZE_XZ)
+    posY = math.floor(int(position[1]) / BLOCK_SIZE_Y)
+    posZ = math.floor(int(position[2]) / BLOCK_SIZE_XZ)
+    print("CAR POSITION: ", posX, posY, posZ)
+    hashValue = hashPosition(posX,posY,posZ)
+    if hashValue in positionsDict:
+        return positionsDict[hashValue]
+    else:
+        return 'Nothing'
 
 # STADIUM_BLOCKS_DICT = {
 #     'StadiumGrassClip': 1,
