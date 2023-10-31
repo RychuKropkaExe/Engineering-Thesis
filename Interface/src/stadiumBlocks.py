@@ -24,17 +24,17 @@ STADIUM_BLOCKS_DICT = {
 # 3 - Transponse thrid time
 
 STADIUM_BLOCK_OFFSETS = {
-    'StadiumRoadMain': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumRoadMainGTCurve2': {'positions' : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([-1, 0, 0], [1,0,2])},
-    'StadiumRoadMainStartLine': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumRoadMainFinishLine': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumRoadMainTurbo': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumHolePillar': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumRoadMainGTCurve3' : {'positions' : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1], [1, 0, 2], [2, 0, 0], [2, 0, 1], [2, 0, 2]], 'rotationCenter': [[1, 0, 1]], 'ends' : ([-1, 0, 0], [2,0,3])},
+    'StadiumRoadMain': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainGTCurve2': {'positions' : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]], 'ends' : ([-1, 0, 0], [1,0,2])},
+    'StadiumRoadMainStartLine': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainFinishLine': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainTurbo': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumHolePillar': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainGTCurve3' : {'positions' : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1], [1, 0, 2], [2, 0, 0], [2, 0, 1], [2, 0, 2]], 'ends' : ([-1, 0, 0], [2,0,3])},
     'StadiumRoadMainGTCurve4': {'positions' : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1], [2, 0, 0], [2, 0, 1], [2, 0, 2], [2, 0, 3], [3, 0, 1], [3, 0, 2], [3, 0, 3]], 'ends' : ([-1, 0, 0], [3,0,4])},
     'StadiumRoadMainGTDiag2x2': {'positions' : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1]], 'ends' : ([0, 0, -1], [1,0,2])},
-    'StadiumRoadMainCheckpoint': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
-    'StadiumGrassClip': {'positions' : [[0, 0, 0]], 'rotationCenter': [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumRoadMainCheckpoint': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
+    'StadiumGrassClip': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
 }
 
 positionsDict = {}
@@ -125,6 +125,7 @@ def createPositionDictionary(blocks):
             for _ in range(maxZ):
                 blockMatrixRow = [0] * maxX
                 blockMatrix.append(blockMatrixRow)
+            # No idea how it works
             for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
                 blockMatrix[z][x] = 1
             print(blockMatrix)
@@ -133,7 +134,8 @@ def createPositionDictionary(blocks):
                 print(blockMatrix)
 
             newBlocksPositions = []
-
+            
+            # Try to remember why it works like that challenge(impossible)
             for x in range(len(blockMatrix)):
                 for z in range(len(blockMatrix[0])):
                     if blockMatrix[x][z] == 1:
