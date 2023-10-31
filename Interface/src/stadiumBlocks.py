@@ -49,6 +49,29 @@ def hashPosition(x, y, z):
     bitStringZ = bin(z)[2:]
     return int(bitStringX+bitStringY+bitStringZ, 2)
 
+# Next block of 2d block can be either in x axis
+# or z axis, this array describes the cycle
+ROTATION_CYCLE = [[-1, 0, 0], [0, 0, -1], [1, 0, 0], [0, 0, 1]]
+
+def findRotatedEndings(endsPosition, rotation):
+    end1 = endsPosition[0]
+    end1CycleIndex = 0
+
+    end2 = endsPosition[1]
+    end2CycleIndex = 0
+
+    counter = 0
+    for x, _, z in ROTATION_CYCLE:
+        if x == end1[0] and z == end1[2]:
+            end1CycleIndex = counter
+        if x == end2[0] and z == end2[2]:
+            end2CycleIndex = counter
+        counter += 1
+    
+    return (ROTATION_CYCLE[(end1CycleIndex + rotation) % 4], ROTATION_CYCLE[(end2CycleIndex + rotation) % 4])
+
+
+
 def rotateMatrix(mat):
 
     # Number of rows
@@ -70,14 +93,7 @@ def rotateMatrix(mat):
         for j in range(M):
             result[j][newM-(i+1)] = mat[i][j]
     
-    return result
-        
-
-
     return result 
-   
-
-    
 
 def createPositionDictionary(blocks):
     for block in blocks:
@@ -87,62 +103,47 @@ def createPositionDictionary(blocks):
         posZ = block.position.z
         print("BLOCK POSITION: ", block.name, posX, posY, posZ)
         print("BLOCK ROTATION: ", rotation)
-        match rotation:
-            case 0:
-                for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                    print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
-                    hashValue = hashPosition(posX+x,posY+y,posZ+z)
-                    positionsDict[hashValue] = (block.name, block.rotation)
-            case 1:
-                if len(STADIUM_BLOCK_OFFSETS[block.name]['positions']) == 1:
-                     positions = STADIUM_BLOCK_OFFSETS[block.name]['positions']
-                     hashValue = hashPosition(positions[0], positions[1], positions[2])
-                     positionsDict[hashValue] = (block.name, block.rotation)
-                else:
-                    maxX = 0
-                    maxZ = 0
-                    for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                        if x > maxX:
-                            maxX = x
-                        if z > maxZ:
-                            maxZ = z
+        if rotation == 0 or len(STADIUM_BLOCK_OFFSETS[block.name]['positions']) == 1:  
+            for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
+                hashValue = hashPosition(posX+x,posY+y,posZ+z)
+                positionsDict[hashValue] = (block.name, block.rotation, STADIUM_BLOCK_OFFSETS[block.name]['ends'])
+        else:
+            maxX = 0
+            maxZ = 0
+            for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                if x > maxX:
+                    maxX = x
+                if z > maxZ:
+                    maxZ = z
+            # To compensate for not inclusive python 
+            maxX += 1
+            maxZ += 1
 
-                    blockMatrix = []
+            blockMatrix = []
 
-                    for _ in range(maxZ):
-                        blockMatrixRow = [0] * maxX
-                        blockMatrix.append(blockMatrixRow)
-                    
+            for _ in range(maxZ):
+                blockMatrixRow = [0] * maxX
+                blockMatrix.append(blockMatrixRow)
+            for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
+                blockMatrix[z][x] = 1
+            print(blockMatrix)
+            for _ in range(rotation):
+                blockMatrix = rotateMatrix(blockMatrix)
+                print(blockMatrix)
 
+            newBlocksPositions = []
 
-                    
-                    
-
-                    blockMatrix = [blockMatrixRow]
-
-                    for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                        blockMatrix[x][z] = 1
-                    
-
-            case 2:
-                for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                    print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
-                    hashValue = hashPosition(posX+x,posY+y,posZ+z)
-                    positionsDict[hashValue] = (block.name, block.rotation)
-                # for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                #     print("SUBBLOCK POSITION: ", posX-x, posY-y, posZ-z)
-                #     hashValue = hashPosition(posX+x,posY+y,posZ+z)
-                #     positionsDict[hashValue] = (block.name, block.rotation)
-            case 3:
-                for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                    print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
-                    hashValue = hashPosition(posX+x,posY+y,posZ+z)
-                    positionsDict[hashValue] = (block.name, block.rotation)
-                # for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                #     print("SUBBLOCK POSITION: ", posX+z, posY-y, posZ-x)
-                #     hashValue = hashPosition(posX+z,posY-y,posZ+x)
-                #     positionsDict[hashValue] = (block.name, block.rotation)
-    print(positionsDict)
+            for x in range(len(blockMatrix)):
+                for z in range(len(blockMatrix[0])):
+                    if blockMatrix[x][z] == 1:
+                        newBlocksPositions.append([z, 0, x])
+            #print("FOR BLOCK:", block.name, "ROTATED POSITIONS ARE: ", newBlocksPositions)
+            for x, y, z in newBlocksPositions:
+                print("NEW BLOCK POSITION: ", block.name, posX + x, posY + y, posZ + z)
+                hashValue = hashPosition(posX + x, posY + y,posZ + z)
+                positionsDict[hashValue] = (block.name, block.rotation, STADIUM_BLOCK_OFFSETS[block.name]['ends'])
+    #print(positionsDict)
 
 
 
