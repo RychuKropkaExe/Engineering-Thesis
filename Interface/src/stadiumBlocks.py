@@ -62,11 +62,17 @@ def rotateMatrix(mat):
 
     result = []
 
-
-
     for _ in range(newN):
         row = [0]*newM
         result.append(row)
+
+    for i in range(N):
+        for j in range(M):
+            result[j][newM-(i+1)] = mat[i][j]
+    
+    return result
+        
+
 
     return result 
    
