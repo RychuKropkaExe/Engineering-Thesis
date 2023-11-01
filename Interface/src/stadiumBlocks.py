@@ -1,5 +1,4 @@
 from pygbx import Gbx, GbxType
-import math
 BLOCK_SIZE_XZ = 32
 BLOCK_SIZE_Y = 8
 STADIUM_BLOCKS_DICT = {
@@ -16,12 +15,6 @@ STADIUM_BLOCKS_DICT = {
     'StadiumGrassClip': 11,
     'Nothing' : 12
 }
-# Dictionary telling in which directions x, y the block is expanding 
-# ROTATIONS_TYPES
-# 0 - Normal, take just offsets
-# 1 - Transponse matrix once
-# 2 - Transponse second time
-# 3 - Transponse thrid time
 
 STADIUM_BLOCK_OFFSETS = {
     'StadiumRoadMain': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
@@ -36,133 +29,6 @@ STADIUM_BLOCK_OFFSETS = {
     'StadiumRoadMainCheckpoint': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
     'StadiumGrassClip': {'positions' : [[0, 0, 0]], 'ends' : ([0, 1, 1],[0, 1, -1])},
 }
-
-positionsDict = {}
-
-# Simple Hash function
-# Creates a bitstring from all three
-# And then convert it back to number
-def hashPosition(x, y, z):
-    # [2:] to trim 0b from the string
-    bitStringX = bin(x)[2:]
-    bitStringY = bin(y)[2:]
-    bitStringZ = bin(z)[2:]
-    return int(bitStringX+bitStringY+bitStringZ, 2)
-
-# Next block of 2d block can be either in x axis
-# or z axis, this array describes the cycle
-ROTATION_CYCLE = [[-1, 0, 0], [0, 0, -1], [1, 0, 0], [0, 0, 1]]
-
-def findRotatedEndings(endsPosition, rotation):
-    end1 = endsPosition[0]
-    end1CycleIndex = 0
-
-    end2 = endsPosition[1]
-    end2CycleIndex = 0
-
-    counter = 0
-    for x, _, z in ROTATION_CYCLE:
-        if x == end1[0] and z == end1[2]:
-            end1CycleIndex = counter
-        if x == end2[0] and z == end2[2]:
-            end2CycleIndex = counter
-        counter += 1
-    
-    return (ROTATION_CYCLE[(end1CycleIndex + rotation) % 4], ROTATION_CYCLE[(end2CycleIndex + rotation) % 4])
-
-
-
-def rotateMatrix(mat):
-
-    # Number of rows
-    N = len(mat)
-
-    # Number of columns
-    M = len(mat[0])
-
-    newN = M
-    newM = N
-
-    result = []
-
-    for _ in range(newN):
-        row = [0]*newM
-        result.append(row)
-
-    for i in range(N):
-        for j in range(M):
-            result[j][newM-(i+1)] = mat[i][j]
-    
-    return result 
-
-def createPositionDictionary(blocks):
-    for block in blocks:
-        rotation = block.rotation
-        posX = block.position.x
-        posY = block.position.y
-        posZ = block.position.z
-        print("BLOCK POSITION: ", block.name, posX, posY, posZ)
-        print("BLOCK ROTATION: ", rotation)
-        if rotation == 0 or len(STADIUM_BLOCK_OFFSETS[block.name]['positions']) == 1:  
-            for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
-                hashValue = hashPosition(posX+x,posY+y,posZ+z)
-                positionsDict[hashValue] = (block.name, block.rotation, STADIUM_BLOCK_OFFSETS[block.name]['ends'])
-        else:
-            maxX = 0
-            maxZ = 0
-            for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                if x > maxX:
-                    maxX = x
-                if z > maxZ:
-                    maxZ = z
-            # To compensate for not inclusive python 
-            maxX += 1
-            maxZ += 1
-
-            blockMatrix = []
-
-            for _ in range(maxZ):
-                blockMatrixRow = [0] * maxX
-                blockMatrix.append(blockMatrixRow)
-            # No idea how it works
-            for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                blockMatrix[z][x] = 1
-            print(blockMatrix)
-            for _ in range(rotation):
-                blockMatrix = rotateMatrix(blockMatrix)
-                print(blockMatrix)
-
-            newBlocksPositions = []
-            
-            # Try to remember why it works like that challenge(impossible)
-            for x in range(len(blockMatrix)):
-                for z in range(len(blockMatrix[0])):
-                    if blockMatrix[x][z] == 1:
-                        newBlocksPositions.append([z, 0, x])
-            #print("FOR BLOCK:", block.name, "ROTATED POSITIONS ARE: ", newBlocksPositions)
-            for x, y, z in newBlocksPositions:
-                print("NEW BLOCK POSITION: ", block.name, posX + x, posY + y, posZ + z)
-                hashValue = hashPosition(posX + x, posY + y,posZ + z)
-                positionsDict[hashValue] = (block.name, block.rotation, STADIUM_BLOCK_OFFSETS[block.name]['ends'])
-    #print(positionsDict)
-
-
-
-def checkPosition(position):
-    print("RAW POSITION: ",position)
-    # posX = round(int(position[0]) / BLOCK_SIZE_XZ)
-    # posY = round(int(position[1]) / BLOCK_SIZE_Y)
-    # posZ = round(int(position[2]) / BLOCK_SIZE_XZ)
-    posX = math.floor(int(position[0]) / BLOCK_SIZE_XZ)
-    posY = math.floor(int(position[1]) / BLOCK_SIZE_Y)
-    posZ = math.floor(int(position[2]) / BLOCK_SIZE_XZ)
-    print("CAR POSITION: ", posX, posY, posZ)
-    hashValue = hashPosition(posX,posY,posZ)
-    if hashValue in positionsDict:
-        return positionsDict[hashValue]
-    else:
-        return 'Nothing'
 
 # STADIUM_BLOCKS_DICT = {
 #     'StadiumGrassClip': 1,

@@ -36,7 +36,7 @@ class MainClient(Client):
 
 
 def start():
-    g = Gbx('C:\\Users\Admin\Documents\\TrackMania\\Tracks\\Challenges\\My Challenges\\Test9.Challenge.Gbx')
+    g = Gbx('C:\\Users\Admin\Documents\\TrackMania\\Tracks\\Challenges\\My Challenges\\Test11.Challenge.Gbx')
     challenges = g.get_classes_by_ids([GbxType.CHALLENGE, GbxType.CHALLENGE_OLD])
     challenge = challenges[0]
     for block in challenge.blocks:
