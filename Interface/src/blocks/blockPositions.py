@@ -1,5 +1,6 @@
-from stadiumBlocks import *
-from blockRotation import getRotatedPositions
+from src.blocks.stadiumBlocks import *
+from src.blocks.blockRotation import getRotatedPositions
+from src.logger.log import log
 import math
 positionsDict = {}
 
@@ -24,41 +25,42 @@ def createPositionDictionary(blocks):
         posX = block.position.x
         posY = block.position.y
         posZ = block.position.z
-        print("BLOCK POSITION: ", block.name, posX, posY, posZ)
-        print("BLOCK ROTATION: ", rotation)
+        log("BLOCK POSITION: ", str(block.name), str(posX), str(posY), str(posZ))
+        log("BLOCK ROTATION: ", rotation)
         if rotation == 0:  
             for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
+                log("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
                 hashValue = hashPosition(posX+x,posY+y,posZ+z)
                 positionsDict[hashValue] = (block.name, block.rotation, STADIUM_BLOCK_OFFSETS[block.name]['ends'])
         elif len(STADIUM_BLOCK_OFFSETS[block.name]['positions']) == 1:
             ends = STADIUM_BLOCK_OFFSETS[block.name]['ends']
 
             for x, y, z in STADIUM_BLOCK_OFFSETS[block.name]['positions']:
-                print("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
+                log("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
                 hashValue = hashPosition(posX+x,posY+y,posZ+z)
-                positionsDict[hashValue] = (block.name, block.rotation, STADIUM_BLOCK_OFFSETS[block.name]['ends'])
+                positionsDict[hashValue] = (block.name, block.rotation, ends)
         else:
-            newBlocksPositions = getRotatedPositions(STADIUM_BLOCK_OFFSETS[block.name]['positions'], rotation) 
+            ends = STADIUM_BLOCK_OFFSETS[block.name]['ends']
+            newBlocksPositions, newEnds = getRotatedPositions(STADIUM_BLOCK_OFFSETS[block.name]['positions'], ends, rotation)
 
-            #print("FOR BLOCK:", block.name, "ROTATED POSITIONS ARE: ", newBlocksPositions)
+            #log("FOR BLOCK:", block.name, "ROTATED POSITIONS ARE: ", newBlocksPositions)
             for x, y, z in newBlocksPositions:
-                print("NEW BLOCK POSITION: ", block.name, posX + x, posY + y, posZ + z)
+                log("NEW BLOCK POSITION: ", block.name, posX + x, posY + y, posZ + z)
                 hashValue = hashPosition(posX + x, posY + y,posZ + z)
-                positionsDict[hashValue] = (block.name, block.rotation, STADIUM_BLOCK_OFFSETS[block.name]['ends'])
-    #print(positionsDict)
+                positionsDict[hashValue] = (block.name, block.rotation, newEnds)
+    #log(positionsDict)
 
 
 
 def checkPosition(position):
-    print("RAW POSITION: ",position)
+    log("RAW POSITION: ",position)
     # posX = round(int(position[0]) / BLOCK_SIZE_XZ)
     # posY = round(int(position[1]) / BLOCK_SIZE_Y)
     # posZ = round(int(position[2]) / BLOCK_SIZE_XZ)
     posX = math.floor(int(position[0]) / BLOCK_SIZE_XZ)
     posY = math.floor(int(position[1]) / BLOCK_SIZE_Y)
     posZ = math.floor(int(position[2]) / BLOCK_SIZE_XZ)
-    print("CAR POSITION: ", posX, posY, posZ)
+    log("CAR POSITION: ", posX, posY, posZ)
     hashValue = hashPosition(posX,posY,posZ)
     if hashValue in positionsDict:
         return positionsDict[hashValue]

@@ -3,14 +3,15 @@ from tminterface.commandlist import InputCommand, InputType
 from tminterface.client import Client, run_client
 from pygbx import Gbx, GbxType
 import sys
-from src.stadiumBlocks import STADIUM_BLOCKS_DICT, createPositionDictionary, checkPosition
+from src.logger.log import log
+from src.blocks.blockPositions import STADIUM_BLOCKS_DICT, createPositionDictionary, checkPosition
 class MainClient(Client):
     logFile = open("logFile.txt", "w")
     x = 1000
     def __init__(self) -> None:
-        print("SIEMA ENIU")
+        log("SIEMA ENIU")
         super(MainClient, self).__init__()
-        print("PODAJ TLENU")
+        log("PODAJ TLENU")
 
     def on_registered(self, iface: TMInterface) -> None:
         print(f'Registered to {iface.server_name}')
@@ -39,10 +40,10 @@ def start():
     g = Gbx('C:\\Users\Admin\Documents\\TrackMania\\Tracks\\Challenges\\My Challenges\\Test11.Challenge.Gbx')
     challenges = g.get_classes_by_ids([GbxType.CHALLENGE, GbxType.CHALLENGE_OLD])
     challenge = challenges[0]
+    log("MAP BLOCKS:")
     for block in challenge.blocks:
-        print(block.name)
+        log("-",block.name)
     createPositionDictionary(challenge.blocks)
-    print()
     server_name = f'TMInterface{sys.argv[1]}' if len(sys.argv) > 2 else 'TMInterface0'
     print(f'Connecting to {server_name}...')
     run_client(MainClient(), server_name)

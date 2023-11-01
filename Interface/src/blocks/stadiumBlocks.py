@@ -1,4 +1,5 @@
 from pygbx import Gbx, GbxType
+from src.logger.log import log
 BLOCK_SIZE_XZ = 32
 BLOCK_SIZE_Y = 8
 STADIUM_BLOCKS_DICT = {

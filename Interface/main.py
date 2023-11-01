@@ -1,9 +1,10 @@
-from src.stadiumBlocks import rotateMatrix
 from test.testRotateMatrix import runMatrixTest
-from src.trackmaniaConnector import start
+from src.connector.trackmaniaConnector import start
 import sys
+from src.logger.log import log, initializeLog
 
 def main():
+    initializeLog()
     if len(sys.argv) < 2:
         print("No mode provided")
     if "-t" in sys.argv:
