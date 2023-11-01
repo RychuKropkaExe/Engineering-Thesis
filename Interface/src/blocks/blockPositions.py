@@ -21,6 +21,7 @@ def hashPosition(x, y, z):
 # so that we can predict which block is next on track.
 def createPositionDictionary(blocks):
     for block in blocks:
+        log("BLOCK OFFSET: ", STADIUM_BLOCK_OFFSETS[block.name]['positions'])
         rotation = block.rotation
         posX = block.position.x
         posY = block.position.y

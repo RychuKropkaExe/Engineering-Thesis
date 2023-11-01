@@ -42,11 +42,11 @@ def findRotatedEndings(endsPosition, rotation, maxX, maxZ):
     
     if end2[0] < 0:
         end2CycleIndex = 0
-    elif end2[0] >= maxX:
+    elif end2[0] > maxX:
         end2CycleIndex = 2
     elif end2[2] < 0:
         end2CycleIndex = 1
-    elif end2[0] >= maxZ:
+    elif end2[2] > maxZ:
         end2CycleIndex = 3
 
 
@@ -98,14 +98,11 @@ def getRotatedPositions(currentPositions, endingPoints, rotation):
         if z > maxZ:
             maxZ = z
     # To compensate for not inclusive python
-    endingPointsRotatedPosition = findRotatedEndings(endingPoints, maxX, maxZ, rotation)
+    endingPointsRotatedPosition = findRotatedEndings(endingPoints, rotation, maxX, maxZ)
 
     endingPointsDifference = endingPointsRotatedPosition[0]
     end1PDF = endingPointsDifference[0]
     end2PDF = endingPointsDifference[1]
-
-    log("END1PDF: ", end1PDF)
-    log("END2PDF: ", end2PDF)
 
     rotatedEndingPointsDifference = endingPointsRotatedPosition[1]
     end1RPDF = rotatedEndingPointsDifference[0]
@@ -120,23 +117,28 @@ def getRotatedPositions(currentPositions, endingPoints, rotation):
         blockMatrixRow = [0] * maxX
         blockMatrix.append(blockMatrixRow)
     # No idea how it works
+    log("END1 PDF: ", end1PDF)
+    log("END2 PDF: ", end2PDF)
+    log("END1 RPDF: ", end1RPDF)
+    log("END2 RPDF: ", end2RPDF)
     for x, y, z in currentPositions:
         # 0 -> fake block
         # 1 -> normal block
         # 2 -> end1 congruent block
         # 3 -> end2 congruent block
+        log("CURRENT X:",x,"Z:", z, "end2: X:", end2[0], "Z:",end2)
         if x + end1PDF[0] == end1[0] and z + end1PDF[2] == end1[2]:
-            log("ENDING BLOCK POSITION IN IF: X:",x + end1PDF[0], "Y:", z + end1PDF[2])
+            log("ENDING BLOCK POSITION 1: X:",x + end1PDF[0], "Y:", z + end1PDF[2])
             blockMatrix[z][x] = 2
         elif x + end2PDF[0] == end2[0] and z + end2PDF[2] == end2[2]:
-            log("ENDING BLOCK POSITION IN IF 2: X:",x + end2PDF[0], "Y:", z + end2PDF[2])
+            log("ENDING BLOCK POSITION 2: X:",x + end2PDF[0], "Y:", z + end2PDF[2])
             blockMatrix[z][x] = 3
         else:
             blockMatrix[z][x] = 1
-    log(blockMatrix)
-    for _ in range(rotation):
+    log("MATRIX BEFORE ROTATION:", blockMatrix)
+    for i in range(rotation):
         blockMatrix = rotateMatrix(blockMatrix)
-        log(blockMatrix)
+        log("MATRIX AFTER", i, "ROTATION:",blockMatrix)
 
     newBlocksPositions = []
     newEnd1 = [0, 0, 0]

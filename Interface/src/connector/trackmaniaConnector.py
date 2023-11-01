@@ -1,7 +1,7 @@
-from tminterface.interface import TMInterface
 from tminterface.commandlist import InputCommand, InputType
-from tminterface.client import Client, run_client
 from pygbx import Gbx, GbxType
+from tminterface.interface import TMInterface
+from tminterface.client import Client, run_client
 import sys
 from src.logger.log import log
 from src.blocks.blockPositions import STADIUM_BLOCKS_DICT, createPositionDictionary, checkPosition
@@ -9,9 +9,7 @@ class MainClient(Client):
     logFile = open("logFile.txt", "w")
     x = 1000
     def __init__(self) -> None:
-        log("SIEMA ENIU")
         super(MainClient, self).__init__()
-        log("PODAJ TLENU")
 
     def on_registered(self, iface: TMInterface) -> None:
         print(f'Registered to {iface.server_name}')
