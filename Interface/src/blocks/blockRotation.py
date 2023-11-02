@@ -37,7 +37,7 @@ def findRotatedEndings(endsPosition, rotation, maxX, maxZ):
         end1CycleIndex = 2
     elif end1[2] < 0:
         end1CycleIndex = 1
-    elif end1[0] > maxZ:
+    elif end1[2] > maxZ:
         end1CycleIndex = 3
     
     if end2[0] < 0:
@@ -126,7 +126,7 @@ def getRotatedPositions(currentPositions, endingPoints, rotation):
         # 1 -> normal block
         # 2 -> end1 congruent block
         # 3 -> end2 congruent block
-        log("CURRENT X:",x,"Z:", z, "end2: X:", end2[0], "Z:",end2)
+        #log("CURRENT X:",x,"Z:", z, "end2: X:", end2[0], "Z:",end2)
         if x + end1PDF[0] == end1[0] and z + end1PDF[2] == end1[2]:
             log("ENDING BLOCK POSITION 1: X:",x + end1PDF[0], "Y:", z + end1PDF[2])
             blockMatrix[z][x] = 2
@@ -149,11 +149,15 @@ def getRotatedPositions(currentPositions, endingPoints, rotation):
             if blockMatrix[x][z] == 1:
                 newBlocksPositions.append([z, 0, x])
             elif blockMatrix[x][z] == 2:
+                log("ROTATED END CONGRUENT POSITION: ", [z, 0, x])
                 newBlocksPositions.append([z, 0, x])
-                newEnd1 = [z+end1RPDF[2], 0, x+end1RPDF[0]]
+                newEnd1 = [z+end1RPDF[0], 0, x+end1RPDF[2]]
+                log("newEnd1 POSITION: ", newEnd1)
             elif blockMatrix[x][z] == 3:
+                log("ROTATED END CONGRUENT POSITION 2: ", [z, 0, x])
                 newBlocksPositions.append([z, 0, x])
-                newEnd2 = [z+end2RPDF[2], 0, x+end2RPDF[0]]
+                newEnd2 = [z+end2RPDF[0], 0, x+end2RPDF[2]]
+                log("newEnd2 POSITION: ", newEnd2)
 
 
     return (newBlocksPositions, [newEnd1, newEnd2])
