@@ -4,16 +4,16 @@ from src.logger.log import log
 import math
 
 # Wrapper for elements of position dictionary
-class PositionDictEntery():
+class PositionDictEntry():
 
     blockName: str
     rotation: int
     blockEndingPoints: tuple
-    visited: int
+    visited: bool
     blockStartingPosition: tuple
     elementsDictKey: int
 
-    def __init__(self, blockName: str, rotation: int, blockEndingPoints: tuple, visited: int, blockStartingPosition: tuple, elementsDictKey: int):
+    def __init__(self, blockName: str, rotation: int, blockEndingPoints: tuple, visited: bool, blockStartingPosition: tuple, elementsDictKey: int):
         self.blockName = blockName
         self.rotation = rotation
         self.blockEndingPoints = blockEndingPoints
@@ -77,7 +77,7 @@ def createPositionDictionary(blocks):
                 log("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
                 hashValue = hashPosition(posX+x,posY+y,posZ+z)
                 elementsBlocksList.append(hashValue)
-                positionsDict[hashValue] = PositionDictEntery(block.name, block.rotation, STADIUM_BLOCK_OFFSETS[block.name]['ends'], 0, [posX, posY, posZ], elementsDictKey)
+                positionsDict[hashValue] = PositionDictEntry(block.name, block.rotation, STADIUM_BLOCK_OFFSETS[block.name]['ends'], False, [posX, posY, posZ], elementsDictKey)
             
             elementsDict[elementsDictKey] = elementsBlocksList
 
@@ -99,7 +99,7 @@ def createPositionDictionary(blocks):
                 log("SUBBLOCK POSITION: ", posX+x, posY+y, posZ+z)
                 hashValue = hashPosition(posX+x,posY+y,posZ+z)
                 elementsBlocksList.append(hashValue)
-                positionsDict[hashValue] = PositionDictEntery(block.name, block.rotation, newEnds, 0, [posX, posY, posZ], elementsDictKey)
+                positionsDict[hashValue] = PositionDictEntry(block.name, block.rotation, newEnds, False, [posX, posY, posZ], elementsDictKey)
             elementsDict[elementsDictKey] = elementsBlocksList
         else:
             ends = STADIUM_BLOCK_OFFSETS[block.name]['ends']
@@ -110,7 +110,7 @@ def createPositionDictionary(blocks):
                 log("NEW BLOCK POSITION: ", block.name, posX + x, posY + y, posZ + z)
                 hashValue = hashPosition(posX + x, posY + y,posZ + z)
                 elementsBlocksList.append(hashValue)
-                positionsDict[hashValue] = PositionDictEntery(block.name, block.rotation, newEnds, 0, [posX, posY, posZ], elementsDictKey)
+                positionsDict[hashValue] = PositionDictEntry(block.name, block.rotation, newEnds, False, [posX, posY, posZ], elementsDictKey)
             elementsDict[elementsDictKey] = elementsBlocksList
     #log(positionsDict)
 
@@ -137,11 +137,12 @@ def checkNextBlock(position, excludedElementHash):
                 return (positionsDict[end2HashValue], endingPosition)
         else:
             print("SECOND NOTHING")
-            return 'Nothing'
+            return (PositionDictEntry('Nothing', 0, ([], []), 0, ([], []), 0), [0, 0, 0])
         print("THIRD NOTHING")
+        return (PositionDictEntry('Nothing', 0, ([], []), 0, ([], []), 0), [0, 0, 0])
     else:
         print("FIRST NOTHING")
-        return 'Nothing'
+        return (PositionDictEntry('Nothing', 0, ([], []), 0, ([], []), 0), [0, 0, 0])
 
 def checkPosition(position):
     #print("RAW POSITION: ",position)
@@ -154,7 +155,7 @@ def checkPosition(position):
         positionsDict[hashValue].visited = True
         return positionsDict[hashValue]
     else:
-        return 'Nothing'
+        return PositionDictEntry('Nothing', 0, ([], []), 0, ([], []), 0)
 
 def checkNextElements(position):
     currPosition = checkPosition(position)
