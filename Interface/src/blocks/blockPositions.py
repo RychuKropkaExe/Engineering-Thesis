@@ -3,17 +3,37 @@ from src.blocks.blockRotation import getRotatedPositions
 from src.logger.log import log
 import math
 
+# Wrapper for elements of position dictionary
+class PositionDictEntery():
+
+    blockName: str
+    rotation: int
+    blockEndingPoints: tuple
+    visited: bool
+    blockStartingPosition: tuple
+    fullElementDictKey: int
+
+    def __init__(self, blockName: str, rotation: int, blockEndingPoints: tuple, visited: bool, blockStartingPosition: tuple, fullElementDictKey: int):
+        self.blockName = blockName
+        self.rotation = rotation
+        self.blockEndingPoints = blockEndingPoints
+        self.visited = visited
+        self.blockStartingPosition = blockStartingPosition
+        self.fullElementDictKey = fullElementDictKey
 # Dictionary containing info about given position
 # e.g what block is that
 # Strutcutre:
 # {Int(hash)} => (String(block name), Int(block rotation), Tuple{Array, Array}(Block ending points), Bool(if block was visited), Tuple{Int,Int,Int}(block starting position))
-BLOCK_NAME_KEY = 0
-BLOCK_ROTATION_KEY = 1
-BLOCK_ENDINGS_KEY = 2
-BLOCK_VISITED_FLAG_KEY = 3
-BLOCK_STARTING_POSITION_KEY = 4
-
+# BLOCK_NAME_KEY = 0
+# BLOCK_ROTATION_KEY = 1
+# BLOCK_ENDINGS_KEY = 2
+# BLOCK_VISITED_FLAG_KEY = 3
+# BLOCK_STARTING_POSITION_KEY = 4
 positionsDict = {}
+
+# Dictionary containing all blocks of an element
+# Used to determinate more than one next block
+fullElementDict = {}
 
 # Simple Hash function
 # Creates a bitstring from all three
