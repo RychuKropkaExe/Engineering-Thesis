@@ -24,6 +24,7 @@ class FastMatrix{
 
         void randomize(float low, float high);
         void randomize();
+        void set(float val);
 };
 
 void printFastMatrix(FastMatrix &mat);

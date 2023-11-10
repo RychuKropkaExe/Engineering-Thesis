@@ -43,6 +43,14 @@ void FastMatrix::randomize(float low, float high){
     }
 }
 
+void FastMatrix::set(float val){
+    for(size_t i = 0; i < rows; ++i){
+        for(size_t j = 0; j < cols; ++j){
+            MAT_ACCESS((*this), i, j) = val;
+        }
+    }
+}
+
 FastMatrix FastMatrix::operator+ (FastMatrix const& obj){
     assert(rows == obj.rows);
     assert(cols == obj.cols);
@@ -60,9 +68,8 @@ FastMatrix FastMatrix::operator+ (FastMatrix const& obj){
 }
 
 FastMatrix FastMatrix::operator* (FastMatrix const& obj){
-    assert(rows == obj.rows);
-    assert(cols == obj.cols);
-    FastMatrix result(rows,cols, 0.0f);
+    assert(cols == obj.rows);
+    FastMatrix result(rows,obj.cols, 0.0f);
     for(size_t i = 0; i < rows; ++i){
         for(size_t j = 0; j < obj.cols; ++j){
             for(size_t k = 0; k < obj.rows; ++k){
