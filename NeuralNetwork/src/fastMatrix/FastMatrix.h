@@ -15,6 +15,7 @@ class FastMatrix{
         size_t rows;
         size_t cols;
 
+        FastMatrix();
         FastMatrix(size_t rows, size_t cols);
         FastMatrix(size_t rows, size_t cols, float val);
         FastMatrix(size_t rows, size_t cols, vector<vector<float>>& arr);

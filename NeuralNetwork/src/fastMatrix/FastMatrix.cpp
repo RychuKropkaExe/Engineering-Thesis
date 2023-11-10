@@ -7,6 +7,11 @@ using std::vector;
 
 //======================= CONSTRUCTORS ==========================================
 
+FastMatrix::FastMatrix(){
+    this->rows = 0;
+    this->cols = 0;
+}
+
 FastMatrix::FastMatrix(size_t rows, size_t cols){
     this->rows = rows;
     this->cols = cols;
