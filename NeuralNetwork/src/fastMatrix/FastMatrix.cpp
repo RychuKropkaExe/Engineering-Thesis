@@ -5,6 +5,8 @@ using std::vector;
 #include <cassert>
 #include <cstdlib>
 
+//======================= CONSTRUCTORS ==========================================
+
 FastMatrix::FastMatrix(size_t rows, size_t cols){
     this->rows = rows;
     this->cols = cols;
@@ -33,34 +35,7 @@ FastMatrix::FastMatrix(size_t rows, size_t cols, vector<vector<float>>& arr){
     }
 }
 
-float randomFloat()
-{
-    return (float)(rand()) / (float)(RAND_MAX);
-}
-
-void FastMatrix::randomize(){
-    for(size_t i = 0; i < rows; ++i){
-        for(size_t j = 0; j < cols; ++j){
-            MAT_ACCESS((*this), i, j) = randomFloat();
-        }
-    }
-}
-
-void FastMatrix::randomize(float low, float high){
-    for(size_t i = 0; i < rows; ++i){
-        for(size_t j = 0; j < cols; ++j){
-            MAT_ACCESS((*this), i, j) = low + randomFloat()*(high-low);
-        }
-    }
-}
-
-void FastMatrix::set(float val){
-    for(size_t i = 0; i < rows; ++i){
-        for(size_t j = 0; j < cols; ++j){
-            MAT_ACCESS((*this), i, j) = val;
-        }
-    }
-}
+//======================= OPERATORS OVERLOAD ==========================================
 
 FastMatrix FastMatrix::operator+ (FastMatrix const& obj){
     assert(rows == obj.rows);
@@ -110,9 +85,38 @@ bool FastMatrix::operator== (FastMatrix const& obj){
 
 }
 
-// void randomizeFastMatrix(FastMatrix &mat){
+//======================= MATRIX VALUE FUNCTIONS ==========================================
 
-// }
+float randomFloat()
+{
+    return (float)(rand()) / (float)(RAND_MAX);
+}
+
+void FastMatrix::randomize(){
+    for(size_t i = 0; i < rows; ++i){
+        for(size_t j = 0; j < cols; ++j){
+            MAT_ACCESS((*this), i, j) = randomFloat();
+        }
+    }
+}
+
+void FastMatrix::randomize(float low, float high){
+    for(size_t i = 0; i < rows; ++i){
+        for(size_t j = 0; j < cols; ++j){
+            MAT_ACCESS((*this), i, j) = low + randomFloat()*(high-low);
+        }
+    }
+}
+
+void FastMatrix::set(float val){
+    for(size_t i = 0; i < rows; ++i){
+        for(size_t j = 0; j < cols; ++j){
+            MAT_ACCESS((*this), i, j) = val;
+        }
+    }
+}
+
+//======================= UTILITIES ==========================================
 
 void printFastMatrix(FastMatrix &mat){
 
