@@ -22,6 +22,17 @@ FastMatrix::FastMatrix(size_t rows, size_t cols, float val){
     }
 }
 
+FastMatrix::FastMatrix(size_t rows, size_t cols, vector<vector<float>>& arr){
+    this->rows = rows;
+    this->cols = cols;
+    this->mat.reserve(rows*cols);
+    for(size_t i = 0; i < rows; ++i){
+        for(size_t j = 0; j < cols; ++j){
+            MAT_ACCESS((*this), i, j) = arr[i][j];
+        }
+    }
+}
+
 float randomFloat()
 {
     return (float)(rand()) / (float)(RAND_MAX);
