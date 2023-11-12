@@ -29,6 +29,15 @@ FastMatrix::FastMatrix(size_t rows, size_t cols, float val){
     }
 }
 
+FastMatrix::FastMatrix(vector<float> vec, size_t vectorSize){
+    this->rows = vectorSize;
+    this->cols = 1;
+    this->mat.reserve(rows*cols);
+    for(size_t i = 0; i < vectorSize; ++i){
+        MAT_ACCESS((*this), i, 1) = vec[i];
+    }
+}
+
 FastMatrix::FastMatrix(size_t rows, size_t cols, vector<vector<float>>& arr){
     this->rows = rows;
     this->cols = cols;

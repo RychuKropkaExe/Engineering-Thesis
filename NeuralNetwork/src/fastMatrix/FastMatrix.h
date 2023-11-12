@@ -1,6 +1,7 @@
 #ifndef FAST_MATRIX_H
 #define FAST_MATRIX_H
 
+#define NDEBUG
 #include <memory>
 #include <vector>
 using std::vector;
@@ -11,7 +12,6 @@ class FastMatrix{
 
     public:
         vector<float> mat;
-        //[ 1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 ]
         size_t rows;
         size_t cols;
 
@@ -19,6 +19,7 @@ class FastMatrix{
         FastMatrix(size_t rows, size_t cols);
         FastMatrix(size_t rows, size_t cols, float val);
         FastMatrix(size_t rows, size_t cols, vector<vector<float>>& arr);
+        FastMatrix(vector<float> vec, size_t vectorSize);
 
         FastMatrix operator+ (FastMatrix const& obj);
         FastMatrix operator* (FastMatrix const& obj);
