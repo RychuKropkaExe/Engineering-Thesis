@@ -7,12 +7,13 @@ using std::vector;
 
 class TrainingData{
 
-    vector<FastMatrix> inputs;
-    vector<FastMatrix> outputs;
-
     public:
+        vector<FastMatrix> inputs;
+        vector<FastMatrix> outputs;
+        size_t numOfSamples;
         TrainingData(vector<vector<float>> trainingInputs, size_t inputSize, size_t inputCount,
                      vector<vector<float>> trainingOutputs, size_t outputSize, size_t outputCount);
+        TrainingData();
 
 };
 

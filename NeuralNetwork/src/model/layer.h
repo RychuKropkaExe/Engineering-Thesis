@@ -23,11 +23,14 @@ class Layer{
     ActivationFunctionE functionType;
 
     public:
-        Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weightsDimensions, pair<size_t, size_t> biasesDimensions);
-        void forward(FastMatrix input);
+
+        Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weightsDimensions,
+              pair<size_t, size_t> biasesDimensions, ActivationFunctionE f);
+        Layer();
+
+        FastMatrix forward(FastMatrix input);
+        void activate();
 
 };
-
-void activate(FastMatrix& mat, ActivationFunctionE functionTypeE);
 
 #endif
