@@ -30,12 +30,14 @@ FastMatrix::FastMatrix(size_t rows, size_t cols, float val){
 }
 
 FastMatrix::FastMatrix(vector<float> vec, size_t vectorSize){
+    std::cout << "ELO4" << "\n";
     this->rows = vectorSize;
     this->cols = 1;
     this->mat.reserve(rows*cols);
     for(size_t i = 0; i < vectorSize; ++i){
         MAT_ACCESS((*this), i, 1) = vec[i];
     }
+    std::cout << "ELO5" << "\n";
 }
 
 FastMatrix::FastMatrix(size_t rows, size_t cols, vector<vector<float>>& arr){

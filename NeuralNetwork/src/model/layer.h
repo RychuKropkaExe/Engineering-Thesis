@@ -17,15 +17,16 @@ enum ActivationFunctionE{
 };
 
 class Layer{
-    FastMatrix weights;
-    FastMatrix biases;
-    FastMatrix output;
-    ActivationFunctionE functionType;
 
     public:
 
+        FastMatrix weights;
+        FastMatrix biases;
+        FastMatrix output;
+        ActivationFunctionE functionType;
+
         Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weightsDimensions,
-              pair<size_t, size_t> biasesDimensions, ActivationFunctionE f);
+              pair<size_t, size_t> biasesDimensions, ActivationFunctionE f, bool randomize);
         Layer();
 
         FastMatrix forward(FastMatrix input);

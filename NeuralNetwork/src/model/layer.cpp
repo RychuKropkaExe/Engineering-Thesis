@@ -4,11 +4,15 @@
 //======================= CONSTRUCTORS ==========================================
 
 Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weightsDimensions,
-             pair<size_t, size_t> biasesDimensions, ActivationFunctionE f)
+             pair<size_t, size_t> biasesDimensions, ActivationFunctionE f, bool randomize)
 {
     this->output = FastMatrix(GET_ROWS_FROM_PAIR(outputDimensions), GET_COLS_FROM_PAIR(outputDimensions));
     this->weights = FastMatrix(GET_ROWS_FROM_PAIR(weightsDimensions), GET_COLS_FROM_PAIR(weightsDimensions));
     this->biases = FastMatrix(GET_ROWS_FROM_PAIR(biasesDimensions), GET_COLS_FROM_PAIR(biasesDimensions));
+    if(randomize){
+        this->weights.randomize();
+    }
+    this->biases.randomize();
     this->functionType = f;
 }
 
