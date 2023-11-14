@@ -81,7 +81,7 @@ FastMatrix Model::run(FastMatrix input){
 
     FastMatrix result = input;
 
-    for(size_t i = 0; i < this->numberOfLayers; i++){
+    for(size_t i = 0; i < this->numberOfLayers-1; i++){
 
         result = this->layers[i].forward(result);
 
@@ -98,7 +98,7 @@ void Model::finiteDifference(){
     float saved;
     float curCost = cost();
 
-    for(size_t i = 0; i < numberOfLayers; ++i){
+    for(size_t i = 0; i < numberOfLayers-1; ++i){
 
         for(size_t j = 0; j < layers[i].weights.rows; ++j){
             for(size_t k = 0; k < this->layers[i].weights.cols; k++){

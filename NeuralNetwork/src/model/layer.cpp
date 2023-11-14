@@ -10,8 +10,8 @@ Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weights
     this->weights = FastMatrix(GET_ROWS_FROM_PAIR(weightsDimensions), GET_COLS_FROM_PAIR(weightsDimensions));
     this->biases = FastMatrix(GET_ROWS_FROM_PAIR(biasesDimensions), GET_COLS_FROM_PAIR(biasesDimensions));
     if(randomize){
-        this->weights.randomize();
-        this->biases.randomize();
+        this->weights.randomize(0.f, 1.f);
+        this->biases.randomize(0.f, 1.f);
 
     }
     this->functionType = f;
@@ -41,7 +41,12 @@ void Layer::activate(){
             } 
         case RELU:
             {
-                return;
+                for(size_t i = 0; i < output.rows; ++i){
+                   for(size_t j = 0; j < output.cols; ++j){
+                        MAT_ACCESS(output, i, j) = std::max(0.f, MAT_ACCESS(output, i, j));
+                    } 
+                }
+                break;
             }
     }
 }
