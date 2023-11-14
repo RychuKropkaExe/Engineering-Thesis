@@ -92,8 +92,8 @@ FastMatrix Model::run(FastMatrix input){
 }
 
 void Model::finiteDifference(){
-    vector<ActivationFunctionE> cp = this->activationFunctions;
-    Model fakeGradient(this->arch, this->archSize, {SIGMOID, SIGMOID}, this->archSize, false);
+
+    Model fakeGradient(arch, archSize, activationFunctions, archSize, false);
 
     float saved;
     float curCost = cost();
@@ -101,8 +101,8 @@ void Model::finiteDifference(){
     for(size_t i = 0; i < numberOfLayers-1; ++i){
 
         for(size_t j = 0; j < layers[i].weights.rows; ++j){
-            for(size_t k = 0; k < this->layers[i].weights.cols; k++){
-                saved = MAT_ACCESS(this->layers[i].weights, j, k);
+            for(size_t k = 0; k < layers[i].weights.cols; k++){
+                saved = MAT_ACCESS(layers[i].weights, j, k);
                 MAT_ACCESS(layers[i].weights, j, k) += this->eps;
                 float newCost = cost();
                 MAT_ACCESS(fakeGradient.layers[i].weights, j, k) = (newCost - curCost) / this->eps;

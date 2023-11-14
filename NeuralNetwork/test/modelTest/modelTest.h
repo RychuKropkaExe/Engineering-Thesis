@@ -6,6 +6,7 @@
 using std::vector;
 
 void xorModelTest(){
+
     vector<vector<float>> trainingInputs {
         {0.f,0.f},
         {0.f,1.f},
@@ -27,7 +28,7 @@ void xorModelTest(){
 
     Model model(arch, archSize, actFunc, archSize, true);
 
-    model.printModel();
+    // model.printModel();
 
     float eps = 1e-1;
     float learningRate = 1.f;
@@ -35,12 +36,13 @@ void xorModelTest(){
     model.setEps(eps);
     model.setLearningRate(learningRate);
 
-    model.learn(td, 10000);
+    model.learn(td, 1000);
 
     assert(model.cost() < 0.05f);
 }
 
 void parityModelTest(){
+
     vector<vector<float>> trainingInputs {
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -881,9 +883,9 @@ void hammingLengthTest(){
 }
 
 void modelTests(){
-    //xorModelTest();
+    xorModelTest();
     //parityModelTest();
-    hammingLengthTest();
+    //hammingLengthTest();
 }
 
 #endif

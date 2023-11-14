@@ -16,9 +16,9 @@ class Model{
     vector<size_t> arch;
     size_t archSize;
 
-    TrainingData trainingData;
-    float learningRate;
-    float eps;
+    TrainingData trainingData {};
+    float learningRate = 1.f;
+    float eps = 1e-1;
 
     public:
         Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> actFunctions, size_t actFunctionsSize, bool randomize);
