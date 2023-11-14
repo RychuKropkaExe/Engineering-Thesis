@@ -1,12 +1,16 @@
 #ifndef FAST_MATRIX_H
 #define FAST_MATRIX_H
 
-#define NDEBUG
 #include <memory>
 #include <vector>
 using std::vector;
 
 #define MAT_ACCESS(FAST_MATRIX, I, J) (FAST_MATRIX).mat[(I)*(FAST_MATRIX).cols + (J)] 
+
+enum Vector_Type{
+    ROW_VECTOR,
+    COLUMN_VECTOR
+};
 
 class FastMatrix{
 
@@ -19,7 +23,7 @@ class FastMatrix{
         FastMatrix(size_t rows, size_t cols);
         FastMatrix(size_t rows, size_t cols, float val);
         FastMatrix(size_t rows, size_t cols, vector<vector<float>>& arr);
-        FastMatrix(vector<float> vec, size_t vectorSize);
+        FastMatrix(vector<float>& vec, size_t vectorSize, Vector_Type vtype);
 
         FastMatrix operator+ (FastMatrix const& obj);
         FastMatrix operator* (FastMatrix const& obj);

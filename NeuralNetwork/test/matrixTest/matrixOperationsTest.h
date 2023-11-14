@@ -85,7 +85,12 @@ void mulTest4(){
         {3, 7, 11, 15},
         {4, 8, 12, 16}
     };
-    vector<float> m2Mat = {17, 18, 19, 20};
+    vector<vector<float>> m2Mat ={
+        {17},
+        {18}, 
+        {19},
+        {20}
+    };
     vector<vector<float>> expResult = {
         {538},
         {612},
@@ -94,7 +99,7 @@ void mulTest4(){
     };
     FastMatrix expectedResult(4, 1, expResult);
     FastMatrix m1(4, 4, m1Mat);
-    FastMatrix m2(m2Mat, 4);
+    FastMatrix m2(4, 1, m2Mat);
     FastMatrix result = m1*m2;
     assert(result == expectedResult);
     std::cout << "MATRIX MULTIPLICATION TEST 4 PASSED!\n";

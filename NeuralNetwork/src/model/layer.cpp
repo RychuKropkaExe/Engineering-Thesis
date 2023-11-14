@@ -1,6 +1,6 @@
 #include "layer.h"
 #include <cmath>
-
+#include <iostream>
 //======================= CONSTRUCTORS ==========================================
 
 Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weightsDimensions,
@@ -11,9 +11,11 @@ Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weights
     this->biases = FastMatrix(GET_ROWS_FROM_PAIR(biasesDimensions), GET_COLS_FROM_PAIR(biasesDimensions));
     if(randomize){
         this->weights.randomize();
+        this->biases.randomize();
+
     }
-    this->biases.randomize();
     this->functionType = f;
+
 }
 
 Layer::Layer(){
@@ -27,14 +29,15 @@ inline float sigmoidf(float x){
 }
 
 void Layer::activate(){
-    switch(this->functionType){
+    switch(functionType){
         case SIGMOID:
             {
-                for(size_t i = 0; i < (this->output).rows; ++i){
-                   for(size_t j = 0; i < (this->output).cols; ++j){
-                        MAT_ACCESS(this->output, i, j) = sigmoidf(MAT_ACCESS(this->output, i, j));
+                for(size_t i = 0; i < output.rows; ++i){
+                   for(size_t j = 0; j < output.cols; ++j){
+                        MAT_ACCESS(output, i, j) = sigmoidf(MAT_ACCESS(output, i, j));
                     } 
                 }
+                break;
             } 
         case RELU:
             {
@@ -44,8 +47,7 @@ void Layer::activate(){
 }
 
 FastMatrix Layer::forward(FastMatrix input){
-    this->output = input*(this->weights);
-    this->output = (this->output) + (this->biases);
+    output = (input*(weights)) + (biases);
     activate();
-    return this->output;
+    return output;
 }

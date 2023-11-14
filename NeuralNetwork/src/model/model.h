@@ -32,6 +32,8 @@ class Model{
         void setEps(float val);
         void learn(TrainingData& trainingData, size_t iterations);
 
+        void printModel();
+
 
 };
 
