@@ -17,11 +17,11 @@ void xorModelTest(){
         {0},
         {1},
         {1},
-        {0}
+        {1}
     };
 
     TrainingData td = TrainingData(trainingInputs, 2, 4, trainingOutputs, 1, 4);
-
+    td.printTrainingData();
     vector<size_t> arch = {2, 2, 1};
     size_t archSize = 3;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
@@ -29,7 +29,7 @@ void xorModelTest(){
     Model model(arch, archSize, actFunc, archSize, true);
 
     float eps = 1e-1;
-    float learningRate = 1e-1;
+    float learningRate = 1.f;
 
     model.setEps(eps);
     model.setLearningRate(learningRate);
@@ -42,9 +42,10 @@ void xorModelTest(){
 
     for(size_t i = 0; i < 4; ++i){
         FastMatrix inp(trainingInputs[i], 2, ROW_VECTOR);
-        std::cout << "RESULT FOR: " << "\n";
+        std::cout << "INPUT: " << "\n";
         printFastMatrix(inp);
         FastMatrix res = model.run(inp);
+        std::cout << "RESULT: " << "\n";
         printFastMatrix(res);
     }
     // model.printModel();

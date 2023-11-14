@@ -72,7 +72,6 @@ void Model::learn(TrainingData& trainingData, size_t iterations){
         }
 
         finiteDifference();
-        //std::cout << "COST FUNCTION VALUE: " << cost() << "\n";
 
     }
 
