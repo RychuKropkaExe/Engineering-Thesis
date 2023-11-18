@@ -7,6 +7,10 @@ TrainingData::TrainingData(vector<vector<float>> trainingInputs, size_t inputSiz
 {
     std::cout << "CREATING TRAINING DATA" << "\n";
     assert(inputCount == outputCount);
+
+    this->inputSize = inputSize;
+    this->outputSize = outputSize;
+
     inputs.resize(inputCount);
     outputs.resize(outputCount);
     numOfSamples = inputCount;

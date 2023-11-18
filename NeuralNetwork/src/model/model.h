@@ -29,6 +29,7 @@ class Model{
 
         float cost();
         void finiteDifference();
+        void backPropagation();
 
         void setLearningRate(float val);
         void setEps(float val);
