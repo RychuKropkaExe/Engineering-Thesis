@@ -3,25 +3,13 @@
 #include <vector>
 #include "trainingData.h"
 #include "model.h"
+#include <string>
 using std::vector;
 
 void xorModelTest(){
 
-    vector<vector<float>> trainingInputs {
-        {0.f,0.f},
-        {0.f,1.f},
-        {1.f,0.f},
-        {1.f,1.f}
-    };
-
-    vector<vector<float>> trainingOutputs {
-        {0.f},
-        {1.f},
-        {1.f},
-        {0.f}
-    };
-
-    TrainingData td = TrainingData(trainingInputs, 2, 4, trainingOutputs, 1, 4);
+    TrainingData td = TrainingData(std::string("/home/rychu/Engineering-Thesis/NeuralNetwork/test/modelTest/xorData.txt"));
+    td.printTrainingData();
     vector<size_t> arch = {2, 2, 4, 1};
     size_t archSize = 4;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};

@@ -347,19 +347,6 @@ Model parseModelFromFile(std::string filename){
     layers.resize(numberOfLayers);
     for(size_t i = 0; i < numberOfLayers; ++i){
 
-        // f << layers[i].functionType << "\n";
-        // f << layers[i].weights.rows << "\n";
-        // f << layers[i].weights.cols << "\n";
-        // for(size_t j = 0; j < layers[i].weights.rows*layers[i].weights.cols; ++j){
-        //     f << layers[i].weights.mat[j] << " ";
-        // }
-        // f << "\n";
-        // f << layers[i].biases.rows << "\n";
-        // f << layers[i].biases.cols << "\n";
-        // for(size_t j = 0; j < layers[i].biases.rows*layers[i].biases.cols; ++j){
-        //     f << layers[i].biases.mat[j] << " ";
-        // }
-        // f << "\n";
         getline (f, buffer);
         ActivationFunctionE funcType = (ActivationFunctionE)stoi(buffer);
         getline (f, buffer);
@@ -370,13 +357,11 @@ Model parseModelFromFile(std::string filename){
         wieghtsMat.resize(weightsRows*weightsCols);
         getline (f, buffer);
         std::stringstream check(buffer);
-        //std::cout << buffer << "\n";
 
         size_t counter = 0;
 
         while(getline(check, buffer, ' '))
         {   
-            //std::cout << buffer << "\n";
             wieghtsMat[counter] = stof(buffer);
             counter++;
         }
