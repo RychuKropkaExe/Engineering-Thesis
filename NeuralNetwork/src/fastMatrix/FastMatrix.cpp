@@ -135,6 +135,11 @@ float randomFloat()
     return (float)(rand()) / (float)(RAND_MAX);
 }
 
+float randomFloat(float low, float high)
+{
+    return low + randomFloat()*(high-low);
+}
+
 void FastMatrix::randomize(){
     for(size_t i = 0; i < rows; ++i){
         for(size_t j = 0; j < cols; ++j){

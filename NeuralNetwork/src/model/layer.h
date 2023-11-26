@@ -13,7 +13,8 @@ using std::pair;
 
 enum ActivationFunctionE{
     SIGMOID,
-    RELU
+    RELU,
+    NO_ACTIVATION
 };
 
 class Layer{

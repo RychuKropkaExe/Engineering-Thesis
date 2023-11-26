@@ -35,5 +35,7 @@ class FastMatrix{
 };
 
 void printFastMatrix(FastMatrix &mat);
+float randomFloat();
+float randomFloat(float low, float high);
 
 #endif
