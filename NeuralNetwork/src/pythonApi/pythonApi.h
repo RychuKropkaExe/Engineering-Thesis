@@ -1,8 +1,8 @@
 #ifndef PYTHON_API_H
 #define PYTHON_API_H
-#include "FastMatrix.h"
-#include "trainingData.h"
-#include "model.h"
+#include "../fastMatrix/FastMatrix.h"
+#include "../model/trainingData.h"
+#include "../model/model.h"
 
 enum ActionsE{
     NO_ACTION,

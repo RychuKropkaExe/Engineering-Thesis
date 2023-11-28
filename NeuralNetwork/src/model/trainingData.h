@@ -1,8 +1,9 @@
 #ifndef TRAINING_DATA_H
 #define TRAINING_DATA_H
 
-#include "FastMatrix.h"
+#include "../fastMatrix/FastMatrix.h"
 #include <vector>
+#include <string>
 using std::vector;
 
 class TrainingData{

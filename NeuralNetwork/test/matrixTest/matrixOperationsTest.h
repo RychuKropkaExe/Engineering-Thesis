@@ -1,7 +1,7 @@
 #ifndef MATRIX_OPERATION_TEST_H
 #define MATRIX_OPERATION_TEST_H
 
-#include "FastMatrix.h"
+#include "../fastMatrix/FastMatrix.h"
 #include <cassert>
 #include <iostream>
 void testMatrixAddition();

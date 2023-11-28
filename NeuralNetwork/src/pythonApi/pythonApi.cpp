@@ -1,9 +1,12 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <algorithm>
+#include <cmath>
 #include <iostream>
-#include "FastMatrix.h"
-#include "trainingData.h"
-#include "model.h"
+#include <vector>
+#include "../fastMatrix/FastMatrix.h"
+#include "../model/trainingData.h"
+#include "../model/model.h"
 #include "pythonApi.h"
 
 TrackmaniaAgent agent;
@@ -36,18 +39,12 @@ void initializeBuffers(size_t size){
     agent.rewardBuffer.resize(size);
     agent.nextStateBuffer.resize(size);
     agent.doneBuffer.resize(size);
+    agent.maxBufferSize = size;
 }
 
 // 100000/10 = 10000 -> 10000 sekund -> 10000/60 minut -> ~150 minut -> 2,5 h
 
 void remember(vector<float> state, ActionsE action, vector<float> nextState, float reward, bool done){
-    if(agent.bufferSize >= agent.maxBufferSize){
-        agent.stateBuffer.resize(agent.bufferSize+agent.maxBufferSize);
-        agent.actionBuffer.resize(agent.bufferSize+agent.maxBufferSize);
-        agent.rewardBuffer.resize(agent.bufferSize+agent.maxBufferSize);
-        agent.nextStateBuffer.resize(agent.bufferSize+agent.maxBufferSize);
-        agent.doneBuffer.resize(agent.bufferSize+agent.maxBufferSize);
-    }
     agent.stateBuffer[agent.bufferSize] = state;
     agent.actionBuffer[agent.bufferSize] = action;
     agent.nextStateBuffer[agent.bufferSize] = nextState;
@@ -102,7 +99,7 @@ void dumpModel(std::string filename){
     agent.mainModel.printModelToFile(filename);
 }
 
-PYBIND11_MODULE(example, m) {
+PYBIND11_MODULE(agent, m) {
     m.def("do_something", &do_something, "A function that does something");
     m.def("initializeBuffers", &initializeBuffers, "A function that does something");
     m.def("remember", &remember, "A function that does something");

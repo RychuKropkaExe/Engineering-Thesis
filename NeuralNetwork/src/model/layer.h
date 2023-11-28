@@ -1,8 +1,9 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include "FastMatrix.h"
+#include "../fastMatrix/FastMatrix.h"
 #include <utility>
+#include <string>
 
 using std::pair;
 
