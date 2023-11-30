@@ -125,5 +125,6 @@ PYBIND11_MODULE(agent, m) {
     .value("LEFT", ActionsE::LEFT)
     .value("RIGHT", ActionsE::RIGHT)
     .value("FORWARD_RIGHT", ActionsE::FORWARD_RIGHT)
-    .value("FORWARD_LEFT", ActionsE::FORWARD_LEFT);
+    .value("FORWARD_LEFT", ActionsE::FORWARD_LEFT)
+    .value("ACTIONS_COUNT", ActionsE::ACTIONS_COUNT);
 }

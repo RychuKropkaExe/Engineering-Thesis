@@ -10,7 +10,8 @@ enum ActionsE{
     LEFT,
     RIGHT,
     FORWARD_RIGHT,
-    FORWARD_LEFT
+    FORWARD_LEFT,
+    ACTIONS_COUNT
 };
 
 class TrackmaniaAgent{

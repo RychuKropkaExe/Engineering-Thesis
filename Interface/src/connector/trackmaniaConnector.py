@@ -5,10 +5,14 @@ from tminterface.client import Client, run_client
 import sys
 from src.logger.log import log
 from src.blocks.blockPositions import STADIUM_BLOCKS_DICT, createPositionDictionary, checkPosition, checkNextBlock, checkNextElements
+from src.agentCommunicator.agentCommunicator import createModel, createState
+
 class MainClient(Client):
     logFile = open("logFile.txt", "w")
-    x = 1000
+    nextInputTime = 0
+    timeDelta = 1000
     def __init__(self) -> None:
+        createModel()
         super(MainClient, self).__init__()
 
     def on_registered(self, iface: TMInterface) -> None:
@@ -17,6 +21,12 @@ class MainClient(Client):
     def on_run_step(self, iface: TMInterface, _time: int):
         state = iface.get_simulation_state()
         checkPosition(state.position)
+        if nextInputTime == 0:
+            iface.set_input_state(accelerate=True) 
+            iface.set_input_state(accelerate=True)
+            curState = 
+        if _time >= nextInputTime:
+            
         # Neural network inputs:
         # map = MAPS_SET[mapName]
         # x = state.position.x
@@ -64,7 +74,7 @@ class MainClient(Client):
 
 
 def start():
-    g = Gbx('C:\\Users\Admin\Documents\\TrackMania\\Tracks\\Challenges\\My Challenges\\Test12.Challenge.Gbx')
+    g = Gbx('MyChallenges/Test12.Challenge.Gbx')
     challenges = g.get_classes_by_ids([GbxType.CHALLENGE, GbxType.CHALLENGE_OLD])
     challenge = challenges[0]
     log("MAP BLOCKS:")
