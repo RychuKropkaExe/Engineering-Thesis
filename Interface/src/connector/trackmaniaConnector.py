@@ -1,3 +1,4 @@
+import array
 from tminterface.commandlist import InputCommand, InputType
 from pygbx import Gbx, GbxType
 from tminterface.interface import TMInterface
@@ -5,14 +6,50 @@ from tminterface.client import Client, run_client
 import sys
 from src.logger.log import log
 from src.blocks.blockPositions import STADIUM_BLOCKS_DICT, createPositionDictionary, checkPosition, checkNextBlock, checkNextElements
-from src.agentCommunicator.agentCommunicator import createModel, createState
+from src.agentCommunicator.agentCommunicator import createModel, createState, reward, remember, getGreedyInput, batchSize, train, updateTargetModel, printModels
+from agent import ActionsE
+from pynput.keyboard import Key, Controller
+import time
+import threading
+keyboard = Controller()
+
+def pressEnterKey():
+    print("SIEMA ENIU PRESS KEY")
+    keyboard.press(Key.enter)
+    keyboard.release(Key.enter)
 
 class MainClient(Client):
     logFile = open("logFile.txt", "w")
-    nextInputTime = 0
-    timeDelta = 1000
+
+    nextInputTime = 200
+    timeDelta = 200
+
+    maxStagnationTime = 3000
+    lastBlockChangeTime: int = 0
+
+    curState: list[float] = []
+    prevState: list[float] = []
+
+    actionTaken = 0
+
+    curBlockKey: int = 0
+    prevBlockKey: int = 0
+
+    curReward: float = 0.0
+
+    firstStateFlag = True
+
+    epsilon = 1.0
+
+    resetFlag = False
+
+    curIteration = 0
+
+    samplesTaken = 0
+
     def __init__(self) -> None:
         createModel()
+        printModels()
         super(MainClient, self).__init__()
 
     def on_registered(self, iface: TMInterface) -> None:
@@ -20,61 +57,78 @@ class MainClient(Client):
 
     def on_run_step(self, iface: TMInterface, _time: int):
         state = iface.get_simulation_state()
-        checkPosition(state.position)
-        if nextInputTime == 0:
-            iface.set_input_state(accelerate=True) 
+        if _time == 0:
             iface.set_input_state(accelerate=True)
-            curState = 
-        if _time >= nextInputTime:
-            
-        # Neural network inputs:
-        # map = MAPS_SET[mapName]
-        # x = state.position.x
-        # y = state.position.y
-        # z = state.position.z
-        # speed = state.display_speed
-        # velocity = state.velocity
-        # ypw = state.yaw_pitch_roll
-        # yaw = ypw[0]
-        # pitch = ypw[1]
-        # roll = ypw[2]
-        # turningRate = state.scene_mobil.turning_rate
-        # gerabox = state.scene_mobil.engine.gear
-        # currBlock = checkPosition(state.position)
-        # currBlockRotation = 
-        # nextBlocks = checkNextElements(state.position)
-        # nextBlock = nextElements[0]
-        # nextBlockRotation = 
-        # secondNextBlock = nextElements[1]
-        # secondNextBlockRotation = 
-        # distanceToCurrentBlock ? 
-        # distanceToNextBlock -> Distance to current block end
-        # distance to secondNextBlock -> Distance to next block end 
-        # iface.set_input_state(accelerate=True)
-        if _time > self.x:
-            print("TURNING RATE:", state.scene_mobil.turning_rate)
-            print("CURRENT GEAR:", state.scene_mobil.engine.gear)
-            print("CURRENT BLOCK:",checkPosition(state.position))
-            nextElements = checkNextElements(state.position)
-            print("NEXT BLOCK:", nextElements[0])
-            print("SECOND NEXT BLOCK:", nextElements[1])
-            print(state.yaw_pitch_roll)
-            self.x += 1000
-        #     iface.set_input_state(accelerate=False, steer=30000)
-        # if _time > 10000:
-        #     iface.give_up()
-        #self.logFile.write(str(state.dyna.current_state.position))
-        # self.logFile.write(
-        #     f'Time: {_time}\n'
-        #     f'Display Speed: {state.display_speed}\n'
-        #     f'Position: {state.position}\n'
-        #     f'Velocity: {state.velocity}\n'
-        #     f'YPW: {state.yaw_pitch_roll}\n'
-        # )
+            self.actionTaken = ActionsE.FORWARD
+        if self.firstStateFlag == True and _time >= 100:
+            self.prevState, self.curBlockKey = createState(iface)
+            self.nextInputTime += self.timeDelta
+            log("FIRST STATE: ", self.prevState)
+            self.firstStateFlag = False
+        if _time >= self.nextInputTime:
+            self.curState, self.curBlockKey = createState(iface)
+            self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, _time)
+            if self.curBlockKey != self.prevBlockKey:
+                self.lastBlockChangeTime = _time
+            remember(self.prevState, self.actionTaken, self.curState, self.curReward, False)
+            self.samplesTaken += 1
+            log("PREV STATE: ", self.prevState, "CUR STATE: ", self.curState, "REWARD: ", self.curReward)
+            self.actionTaken = getGreedyInput(self.curState, self.epsilon)
+            match int(self.actionTaken):
+                case int(ActionsE.NO_ACTION):
+                    iface.set_input_state(accelerate=False, left=False, right=False)
+                    self.actionTaken = ActionsE.NO_ACTION
+                case int(ActionsE.FORWARD):
+                    iface.set_input_state(accelerate=True, left=False, right=False)
+                    self.actionTaken = ActionsE.FORWARD
+                case int(ActionsE.LEFT):
+                    iface.set_input_state(accelerate=False, left=True, right=False)
+                    self.actionTaken = ActionsE.LEFT
+                case int(ActionsE.RIGHT):
+                    iface.set_input_state(accelerate=False, left=False, right=True)
+                    self.actionTaken = ActionsE.RIGHT
+                case int(ActionsE.FORWARD_RIGHT):
+                    iface.set_input_state(accelerate=True, left=False, right=True)
+                    self.actionTaken = ActionsE.FORWARD_RIGHT
+                case int(ActionsE.FORWARD_LEFT):
+                    iface.set_input_state(accelerate=True, left=True, right=False)
+                    self.actionTaken = ActionsE.FORWARD_LEFT
+                case default:
+                    print("ERROR NO VALID INPUT: ", int(self.actionTaken))
+            if self.samplesTaken >= batchSize:
+                train(self.samplesTaken)
+            if self.curIteration % 50 == 0:
+                updateTargetModel()
+            self.nextInputTime += self.timeDelta
+            self.prevBlockKey = self.curBlockKey
+            self.prevState = self.curState
+        if state.player_info.race_finished == True:
+            keyboard.press(Key.backspace)
+            keyboard.release(Key.backspace)
+            self.nextInputTime = 200
+            if self.epsilon >= 0.02:
+                self.epsilon -= 0.02
+            self.firstStateFlag = True
+            self.curReward = 0
+            self.curReward += 100
+            threading.Timer(2, pressEnterKey).start()
+        if _time - self.lastBlockChangeTime >= 3000:
+            self.curState, self.curBlockKey = createState(iface)
+            self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, _time)
+            self.curReward += 100
+            remember(self.prevState, self.actionTaken, self.curState, self.curReward, False)
+            self.samplesTaken += 1
+            keyboard.press(Key.backspace)
+            keyboard.release(Key.backspace)
+            if self.epsilon >= 0.02:
+                self.epsilon -= 0.02
+            self.nextInputTime = 200
+            self.firstStateFlag = True
+            self.curReward = 0
 
 
 def start():
-    g = Gbx('MyChallenges/Test12.Challenge.Gbx')
+    g = Gbx('MyChallenges/Map1.Challenge.Gbx')
     challenges = g.get_classes_by_ids([GbxType.CHALLENGE, GbxType.CHALLENGE_OLD])
     challenge = challenges[0]
     log("MAP BLOCKS:")

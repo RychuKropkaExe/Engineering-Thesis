@@ -1,47 +1,49 @@
 import agent
 from src.logger.log import log
-from enum import Enum, auto
+from enum import IntEnum, auto
 from tminterface.interface import TMInterface
 from src.blocks.blockPositions import STADIUM_BLOCKS_DICT, createPositionDictionary, checkPosition, checkNextBlock, checkNextElements, getEndsDistances
+import random
 
-class StateValuesE(Enum):
-    X_CORD = auto()
-    Y_CORD = auto()
-    Z_CORD = auto()
-    SPEED = auto()
-    VELOCITY = auto()
-    YAW = auto()
-    PITCH = auto()
-    ROLL = auto()
-    TURNING_RATE = auto()
-    GEAR_BOX = auto()
-    CURR_BLOCK_ID = auto()
-    CURR_BLOCK_ROTATION = auto()
-    NEXT_BLOCK_ID = auto()
-    NEXT_BLOCK_ROTATION = auto()
-    SECOND_NEXT_BLOCK_ID  = auto()
-    SECOND_NEXT_BLOCK_ROTATION = auto()
-    DISTANCE_TO_END_1 = auto()
-    DISTANCE_TO_END_2 = auto()
-    STATE_VALUES_COUNT = auto()
+class StateValuesE(IntEnum):
+    X_CORD: int = auto()
+    Y_CORD: int  = auto()
+    Z_CORD: int  = auto()
+    SPEED: int  = auto()
+    VELOCITY_X: int  = auto()
+    VELOCITY_Z: int  = auto()
+    YAW: int  = auto()
+    PITCH: int  = auto()
+    ROLL: int  = auto()
+    TURNING_RATE: int  = auto()
+    GEAR_BOX: int  = auto()
+    CURR_BLOCK_ID: int  = auto()
+    CURR_BLOCK_ROTATION: int  = auto()
+    NEXT_BLOCK_ID: int  = auto()
+    NEXT_BLOCK_ROTATION: int  = auto()
+    SECOND_NEXT_BLOCK_ID: int   = auto()
+    SECOND_NEXT_BLOCK_ROTATION: int  = auto()
+    DISTANCE_TO_END_1: int  = auto()
+    DISTANCE_TO_END_2: int  = auto()
+    STATE_VALUES_COUNT: int  = auto()
 
 # Hyperparameters.
 numOfEpisodes = 1000
 iterationsInEachLearningSession = 10
-epsilon = 1.0
 batchSize = 100
 discount = 0.99
 curFrame = 0
+MAX_NUMBER_OF_BATCHES=100000
 
 def createState(iface: TMInterface):
 
     state = iface.get_simulation_state()
-    curState = [0]*int(StateValuesE.STATE_VALUES_COUNT)
+    curState = [0.0]*int(StateValuesE.STATE_VALUES_COUNT)
     #Neural network inputs:
     #map = MAPS_SET[mapName] -> probably not
-    x = state.position.x
-    y = state.position.y
-    z = state.position.z
+    x = state.position[0]
+    y = state.position[1]
+    z = state.position[2]
 
     speed = state.display_speed
     velocity = state.velocity
@@ -67,32 +69,41 @@ def createState(iface: TMInterface):
     secondNextBlockId = STADIUM_BLOCKS_DICT[secondNextBlock.blockName]
     secondNextBlockRotation = secondNextBlock.rotation
 
-    distancesToEnds = getEndsDistances(currBlock)
+    distancesToEnds = getEndsDistances(currBlock, state.position)
     end1Distance = distancesToEnds[0]
     end2Distance = distancesToEnds[1]
     # distanceToNextBlock -> Distance to current block end
     # distance to secondNextBlock -> Distance to next block end
-    curState[StateValuesE.X_CORD] = x
-    curState[StateValuesE.Y_CORD] = y
-    curState[StateValuesE.Z_CORD] = z
-    curState[StateValuesE.SPEED] = speed
-    curState[StateValuesE.VELOCITY] = velocity
-    curState[StateValuesE.YAW] = yaw
-    curState[StateValuesE.PITCH] = pitch
-    curState[StateValuesE.ROLL] = roll
-    curState[StateValuesE.TURNING_RATE] = turningRate
-    curState[StateValuesE.GEAR_BOX] = gerabox
-    curState[StateValuesE.CURR_BLOCK_ID] = currBlockId
-    curState[StateValuesE.CURR_BLOCK_ROTATION] = currBlockRotation
-    curState[StateValuesE.NEXT_BLOCK_ID] = nextBlockId
-    curState[StateValuesE.NEXT_BLOCK_ROTATION] = nextBlockRotation
-    curState[StateValuesE.SECOND_NEXT_BLOCK_ID] = secondNextBlockId
-    curState[StateValuesE.SECOND_NEXT_BLOCK_ROTATION] = secondNextBlockRotation
-    curState[StateValuesE.DISTANCE_TO_END_1] = end1Distance
-    curState[StateValuesE.DISTANCE_TO_END_2] = end2Distance
+    curState[StateValuesE.X_CORD] = float(x)
+    curState[StateValuesE.Y_CORD] = float(y)
+    curState[StateValuesE.Z_CORD] = float(z)
+    curState[StateValuesE.SPEED] = float(speed/50)
+    curState[StateValuesE.VELOCITY_X] = float(velocity[0]/10)
+    curState[StateValuesE.VELOCITY_Z] = float(velocity[2]/10)
+    curState[StateValuesE.YAW] = float(yaw)
+    curState[StateValuesE.PITCH] = float(pitch)
+    curState[StateValuesE.ROLL] = float(roll)
+    curState[StateValuesE.TURNING_RATE] = float(turningRate)
+    curState[StateValuesE.GEAR_BOX] = float(gerabox)
+    curState[StateValuesE.CURR_BLOCK_ID] = float(currBlockId)
+    curState[StateValuesE.CURR_BLOCK_ROTATION] = float(currBlockRotation)
+    curState[StateValuesE.NEXT_BLOCK_ID] = float(nextBlockId)
+    curState[StateValuesE.NEXT_BLOCK_ROTATION] = float(nextBlockRotation)
+    curState[StateValuesE.SECOND_NEXT_BLOCK_ID] = float(secondNextBlockId)
+    curState[StateValuesE.SECOND_NEXT_BLOCK_ROTATION] = float(secondNextBlockRotation)
+    curState[StateValuesE.DISTANCE_TO_END_1] = float(end1Distance)
+    curState[StateValuesE.DISTANCE_TO_END_2] = float(end2Distance)
 
-    return curState
+    return curState, currBlock.elementsDictKey
 
+def reward(prevState, curState, prevKey, curKey, time):
+    res = 0
+    if prevKey != curKey:
+        res+=10
+    
+    res += int((curState[StateValuesE.SPEED] - prevState[StateValuesE.SPEED]))
+
+    return res/(time/1000)
 
 def remember(state, action, nextState, reward, done):
     agent.remember(state, action, nextState, reward, done)
@@ -101,7 +112,33 @@ def train(stateSize):
     agent.agentLearn(iterationsInEachLearningSession, batchSize, stateSize, int(agent.ActionsE.ACTIONS_COUNT), discount)
 
 def createModel():
-    return
+    modelArch = [int(StateValuesE.STATE_VALUES_COUNT), int(StateValuesE.STATE_VALUES_COUNT), 30, 10, int(agent.ActionsE.ACTIONS_COUNT)]
+    archSize = len(modelArch)
+    activationLayers = [agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.NO_ACTIVATION]
+    activationLayersSize = len(activationLayers)
+    randomize = True
+    agent.createMainModel(modelArch, archSize, activationLayers, activationLayersSize, randomize)
+    agent.createTargetModel()
+    agent.initializeBuffers(MAX_NUMBER_OF_BATCHES)
+
+def printModels():
+    agent.printModels()
 
 def updateTargetModel():
-    return
+    agent.createTargetModel()
+
+def getGreedyInput(state, epsilon):
+    """Take random action with probability epsilon, else take best action."""
+    value = random.random()
+    if value > epsilon:
+        result = agent.runModel(state)
+        maxQ = -1
+        result = 0
+        for i in range(len(result)):
+            if result[i] > maxQ:
+                maxQ = result[i]
+                result = i
+        # Random action (left or right).
+        return result
+    else:
+        return random.randint(0, int(agent.ActionsE.ACTIONS_COUNT)-1)
