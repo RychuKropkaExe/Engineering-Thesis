@@ -12,6 +12,5 @@ def main():
     elif "-r" in sys.argv:
         start()
 
-
 if __name__ == '__main__':
     main()

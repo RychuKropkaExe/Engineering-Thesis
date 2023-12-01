@@ -46,14 +46,17 @@ void Model::setEps(float val){
 float Model::cost(){
 
     float totalCost = 0;
+    std::cout << "COST FUNCTION!!! " << "\n";
+    std::cout << "NUMBER OF SAMPLES: " << "\n";
+    std::cout << trainingData.numOfSamples << "\n";
+    trainingData.printTrainingData();
+    for(size_t i = 0; i < trainingData.numOfSamples; ++i){
 
-    for(size_t i = 0; i < this->trainingData.numOfSamples; ++i){
-
-        FastMatrix result = run(this->trainingData.inputs[i]);
+        FastMatrix result = run(trainingData.inputs[i]);
 
         for(size_t j = 0; j < result.cols; ++j){
 
-            float d = MAT_ACCESS(result, 0, j) - MAT_ACCESS(this->trainingData.outputs[i], 0, j);
+            float d = MAT_ACCESS(result, 0, j) - MAT_ACCESS(trainingData.outputs[i], 0, j);
             totalCost += d*d;
 
         }
@@ -64,10 +67,11 @@ float Model::cost(){
 
 }
 
-void Model::learn(TrainingData& trainingData, size_t iterations){
+void Model::learn(TrainingData& trainingDataIn, size_t iterations){
 
     std::cout << "STARTED LEARNING" << "\n";
-    this->trainingData = trainingData;
+    this->trainingData = trainingDataIn;
+    std::cout << "NUMBER OF SAMPLES: " << this->trainingData.numOfSamples << "\n";
     std::cout << "COST FUNCTION VALUE: " << cost() << "\n";
     float percentage = 0.1f;
     for(size_t i = 0; i < iterations; ++i){
@@ -76,8 +80,6 @@ void Model::learn(TrainingData& trainingData, size_t iterations){
             std::cout << "COST FUNCTION VALUE: " << cost() << "\n";
             percentage += 0.1f;
         }
-
-        //finiteDifference();
         backPropagation();
 
     }

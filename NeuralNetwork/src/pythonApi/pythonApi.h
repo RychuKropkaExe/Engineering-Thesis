@@ -22,9 +22,7 @@ class TrackmaniaAgent{
         TrainingData trainingData;
 
         vector<vector<float>> stateBuffer {};
-        size_t stateSize {};
         vector<ActionsE> actionBuffer {};
-        size_t actionSiize {};
         vector<float> rewardBuffer {};
         vector<vector<float>> nextStateBuffer {};
         vector<bool> doneBuffer {};

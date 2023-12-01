@@ -29,9 +29,9 @@ class StateValuesE(IntEnum):
 
 # Hyperparameters.
 numOfEpisodes = 1000
-iterationsInEachLearningSession = 10
-batchSize = 100
-discount = 0.99
+iterationsInEachLearningSession = 1
+batchSize = 25
+discount = 0.5
 curFrame = 0
 MAX_NUMBER_OF_BATCHES=100000
 
@@ -74,9 +74,9 @@ def createState(iface: TMInterface):
     end2Distance = distancesToEnds[1]
     # distanceToNextBlock -> Distance to current block end
     # distance to secondNextBlock -> Distance to next block end
-    curState[StateValuesE.X_CORD] = float(x)
-    curState[StateValuesE.Y_CORD] = float(y)
-    curState[StateValuesE.Z_CORD] = float(z)
+    curState[StateValuesE.X_CORD] = float(x)/100
+    curState[StateValuesE.Y_CORD] = float(y)/100
+    curState[StateValuesE.Z_CORD] = float(z)/100
     curState[StateValuesE.SPEED] = float(speed/50)
     curState[StateValuesE.VELOCITY_X] = float(velocity[0]/10)
     curState[StateValuesE.VELOCITY_Z] = float(velocity[2]/10)
@@ -91,8 +91,8 @@ def createState(iface: TMInterface):
     curState[StateValuesE.NEXT_BLOCK_ROTATION] = float(nextBlockRotation)
     curState[StateValuesE.SECOND_NEXT_BLOCK_ID] = float(secondNextBlockId)
     curState[StateValuesE.SECOND_NEXT_BLOCK_ROTATION] = float(secondNextBlockRotation)
-    curState[StateValuesE.DISTANCE_TO_END_1] = float(end1Distance)
-    curState[StateValuesE.DISTANCE_TO_END_2] = float(end2Distance)
+    curState[StateValuesE.DISTANCE_TO_END_1] = float(end1Distance)/100
+    curState[StateValuesE.DISTANCE_TO_END_2] = float(end2Distance)/100
 
     return curState, currBlock.elementsDictKey
 
@@ -106,7 +106,9 @@ def reward(prevState, curState, prevKey, curKey, time):
     return res/(time/1000)
 
 def remember(state, action, nextState, reward, done):
+    print("TRYING TO SAVE VALUES: ", state, action, nextState, reward, done)
     agent.remember(state, action, nextState, reward, done)
+    print("SAVED VALUES SUCCESFULLY")
 
 def train(stateSize):
     agent.agentLearn(iterationsInEachLearningSession, batchSize, stateSize, int(agent.ActionsE.ACTIONS_COUNT), discount)
@@ -114,10 +116,9 @@ def train(stateSize):
 def createModel():
     modelArch = [int(StateValuesE.STATE_VALUES_COUNT), int(StateValuesE.STATE_VALUES_COUNT), 30, 10, int(agent.ActionsE.ACTIONS_COUNT)]
     archSize = len(modelArch)
-    activationLayers = [agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.NO_ACTIVATION]
+    activationLayers = [agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.NO_ACTIVATION]
     activationLayersSize = len(activationLayers)
-    randomize = True
-    agent.createMainModel(modelArch, archSize, activationLayers, activationLayersSize, randomize)
+    agent.createMainModel(modelArch, archSize, activationLayers, activationLayersSize, True)
     agent.createTargetModel()
     agent.initializeBuffers(MAX_NUMBER_OF_BATCHES)
 
@@ -131,14 +132,15 @@ def getGreedyInput(state, epsilon):
     """Take random action with probability epsilon, else take best action."""
     value = random.random()
     if value > epsilon:
-        result = agent.runModel(state)
+        result = agent.runModel(state, int(StateValuesE.STATE_VALUES_COUNT))
+        print("RESULT:", result)
         maxQ = -1
-        result = 0
+        resultAction = 0
         for i in range(len(result)):
             if result[i] > maxQ:
                 maxQ = result[i]
-                result = i
+                resultAction = i
         # Random action (left or right).
-        return result
+        return resultAction
     else:
         return random.randint(0, int(agent.ActionsE.ACTIONS_COUNT)-1)

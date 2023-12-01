@@ -10,8 +10,8 @@ Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weights
     this->weights = FastMatrix(GET_ROWS_FROM_PAIR(weightsDimensions), GET_COLS_FROM_PAIR(weightsDimensions));
     this->biases = FastMatrix(GET_ROWS_FROM_PAIR(biasesDimensions), GET_COLS_FROM_PAIR(biasesDimensions));
     if(randomize){
-        this->weights.randomize(0.f, 1.f);
-        this->biases.randomize(0.f, 1.f);
+        this->weights.randomize(-1.f, 1.f);
+        this->biases.randomize(-1.f, 1.f);
 
     }
     this->functionType = f;

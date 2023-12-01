@@ -39,7 +39,7 @@ class MainClient(Client):
 
     firstStateFlag = True
 
-    epsilon = 1.0
+    epsilon = 0.80
 
     resetFlag = False
 
@@ -49,11 +49,12 @@ class MainClient(Client):
 
     def __init__(self) -> None:
         createModel()
-        printModels()
+        #printModels()
         super(MainClient, self).__init__()
 
     def on_registered(self, iface: TMInterface) -> None:
         print(f'Registered to {iface.server_name}')
+        iface.set_speed(4.0)
 
     def on_run_step(self, iface: TMInterface, _time: int):
         state = iface.get_simulation_state()
@@ -96,6 +97,7 @@ class MainClient(Client):
                 case default:
                     print("ERROR NO VALID INPUT: ", int(self.actionTaken))
             if self.samplesTaken >= batchSize:
+                print("STARTING TRENING")
                 train(self.samplesTaken)
             if self.curIteration % 50 == 0:
                 updateTargetModel()

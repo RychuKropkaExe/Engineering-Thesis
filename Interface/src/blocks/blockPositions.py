@@ -13,6 +13,9 @@ class PositionDictEntry():
     blockStartingPosition: tuple
     elementsDictKey: int
 
+    nextBlocks: tuple = (None, None)
+    nextBlocksSaved: bool = False
+
     def __init__(self, blockName: str, rotation: int, blockEndingPoints: tuple, visited: bool, blockStartingPosition: tuple, elementsDictKey: int):
         self.blockName = blockName
         self.rotation = rotation
@@ -22,7 +25,7 @@ class PositionDictEntry():
         self.elementsDictKey = elementsDictKey
     
     def __str__(self):
-        return f'Name: {self.blockName} Rotation: {self.rotation} Visited: {self.visited} BlockEndingPoints: {self.blockEndingPoints} BlockStartingPosition: {self.blockStartingPosition}'
+        return f'Name: {self.blockName} Rotation: {self.rotation} Visited: {self.visited} BlockEndingPoints: {self.blockEndingPoints} BlockStartingPosition: {self.blockStartingPosition} NextBlocks: {self.nextBlocks}'
 
 # Dictionary containing info about given position
 # e.g what block is that
@@ -160,13 +163,24 @@ def checkPosition(position):
 def checkNextElements(position):
     currPosition = checkPosition(position)
     excludedHash = currPosition.elementsDictKey
-    nextElement = checkNextBlock(position, excludedHash)
-    nextElementBlockPosition = nextElement[1]
-    nextExcludedHash = nextElement[0].elementsDictKey
-    
-    secondNextElement = checkNextBlock(nextElementBlockPosition, nextExcludedHash)
-    #print(secondNextElement)
-    return (nextElement[0], secondNextElement[0])
+    if not currPosition.nextBlocksSaved:
+        nextElement = checkNextBlock(position, excludedHash)
+        nextElementBlockPosition = nextElement[1]
+        nextExcludedHash = nextElement[0].elementsDictKey
+        
+        secondNextElement = checkNextBlock(nextElementBlockPosition, nextExcludedHash)
+        #print(secondNextElement)
+        currPosition.nextBlocksSaved = True
+        posX = math.floor(int(position[0]) / BLOCK_SIZE_XZ)
+        posY = math.floor(int(position[1]) / BLOCK_SIZE_Y)
+        posZ = math.floor(int(position[2]) / BLOCK_SIZE_XZ)
+        #print("CAR POSITION: ", posX, posY, posZ)
+        hashValue = hashPosition(posX,posY,posZ)
+        currPosition.nextBlocks = (nextElement[0], secondNextElement[0])
+        positionsDict[hashValue] = currPosition
+        return (nextElement[0], secondNextElement[0])
+    return currPosition.nextBlocks
+
 
 def getEndsDistances(block: PositionDictEntry, position):
     blockEndingPoints = block.blockEndingPoints
