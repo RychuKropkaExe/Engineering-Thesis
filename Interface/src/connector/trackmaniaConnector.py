@@ -18,6 +18,11 @@ def pressEnterKey():
     keyboard.press(Key.enter)
     keyboard.release(Key.enter)
 
+def pressResetKey():
+    print("SIEMA ENIU PRESS KEY")
+    keyboard.press(Key.backspace)
+    keyboard.release(Key.backspace)
+
 class MainClient(Client):
     logFile = open("logFile.txt", "w")
 
@@ -39,13 +44,15 @@ class MainClient(Client):
 
     firstStateFlag = True
 
-    epsilon = 0.80
+    epsilon = 1.0
 
     resetFlag = False
 
     curIteration = 0
 
     samplesTaken = 0
+
+    bestTime = 1000000000
 
     def __init__(self) -> None:
         createModel()
@@ -59,12 +66,15 @@ class MainClient(Client):
     def on_run_step(self, iface: TMInterface, _time: int):
         state = iface.get_simulation_state()
         if _time == 0:
+            self.curReward = 0
             iface.set_input_state(accelerate=True)
             self.actionTaken = ActionsE.FORWARD
+            self.resetFlag = False
         if self.firstStateFlag == True and _time >= 100:
+            self.curReward = 0
             self.prevState, self.curBlockKey = createState(iface)
             self.nextInputTime += self.timeDelta
-            log("FIRST STATE: ", self.prevState)
+            #log("FIRST STATE: ", self.prevState)
             self.firstStateFlag = False
         if _time >= self.nextInputTime:
             self.curState, self.curBlockKey = createState(iface)
@@ -73,7 +83,7 @@ class MainClient(Client):
                 self.lastBlockChangeTime = _time
             remember(self.prevState, self.actionTaken, self.curState, self.curReward, False)
             self.samplesTaken += 1
-            log("PREV STATE: ", self.prevState, "CUR STATE: ", self.curState, "REWARD: ", self.curReward)
+            #log("PREV STATE: ", self.prevState, "CUR STATE: ", self.curState, "REWARD: ", self.curReward)
             self.actionTaken = getGreedyInput(self.curState, self.epsilon)
             match int(self.actionTaken):
                 case int(ActionsE.NO_ACTION):
@@ -97,40 +107,53 @@ class MainClient(Client):
                 case default:
                     print("ERROR NO VALID INPUT: ", int(self.actionTaken))
             if self.samplesTaken >= batchSize:
-                print("STARTING TRENING")
+                #print("STARTING TRENING")
                 train(self.samplesTaken)
-            if self.curIteration % 50 == 0:
+            if self.samplesTaken % 50 == 0:
+                printModels()
                 updateTargetModel()
             self.nextInputTime += self.timeDelta
             self.prevBlockKey = self.curBlockKey
             self.prevState = self.curState
-        if state.player_info.race_finished == True:
-            keyboard.press(Key.backspace)
-            keyboard.release(Key.backspace)
-            self.nextInputTime = 200
-            if self.epsilon >= 0.02:
-                self.epsilon -= 0.02
-            self.firstStateFlag = True
-            self.curReward = 0
-            self.curReward += 100
-            threading.Timer(2, pressEnterKey).start()
-        if _time - self.lastBlockChangeTime >= 3000:
+        if state.player_info.race_finished == True and self.resetFlag == False:
+            print("FINISHED!!!!!!!!!!!")
+            if _time < self.bestTime:
+                print("NEW RECORD: ", _time)
+                self.bestTime = _time
             self.curState, self.curBlockKey = createState(iface)
             self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, _time)
             self.curReward += 100
+            remember(self.prevState, self.actionTaken, self.curState, self.curReward, True)
+            self.samplesTaken += 1
+            self.resetFlag = True
+            train(self.samplesTaken)
+            self.nextInputTime = 200
+            if self.epsilon >= 0.02:
+                self.epsilon -= 0.01
+            self.firstStateFlag = True
+            keyboard.press(Key.backspace)
+            keyboard.release(Key.backspace)
+            threading.Timer(0.01, pressResetKey).start()
+            threading.Timer(3, pressEnterKey).start()
+        if _time - self.lastBlockChangeTime >= 10000 and self.resetFlag == False:
+            self.curState, self.curBlockKey = createState(iface)
+            self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, _time)
             remember(self.prevState, self.actionTaken, self.curState, self.curReward, False)
             self.samplesTaken += 1
+            train(self.samplesTaken)
             keyboard.press(Key.backspace)
             keyboard.release(Key.backspace)
             if self.epsilon >= 0.02:
-                self.epsilon -= 0.02
+                self.epsilon -= 0.01
             self.nextInputTime = 200
             self.firstStateFlag = True
+            self.lastBlockChangeTime = 0
             self.curReward = 0
+            self.resetFlag = True
 
 
 def start():
-    g = Gbx('MyChallenges/Map1.Challenge.Gbx')
+    g = Gbx('C:\\Users\\Admin\\Desktop\\Umieralnia\\PracaDyplomowa\\Engineering-Thesis\\Interface\\MyChallenges\\Map2.Challenge.Gbx')
     challenges = g.get_classes_by_ids([GbxType.CHALLENGE, GbxType.CHALLENGE_OLD])
     challenge = challenges[0]
     log("MAP BLOCKS:")

@@ -10,12 +10,12 @@ class StateValuesE(IntEnum):
     Y_CORD: int  = auto()
     Z_CORD: int  = auto()
     SPEED: int  = auto()
-    VELOCITY_X: int  = auto()
-    VELOCITY_Z: int  = auto()
-    YAW: int  = auto()
-    PITCH: int  = auto()
-    ROLL: int  = auto()
-    TURNING_RATE: int  = auto()
+    # VELOCITY_X: int  = auto()
+    # VELOCITY_Z: int  = auto()
+    # YAW: int  = auto()
+    # PITCH: int  = auto()
+    # ROLL: int  = auto()
+    # TURNING_RATE: int  = auto()
     GEAR_BOX: int  = auto()
     CURR_BLOCK_ID: int  = auto()
     CURR_BLOCK_ROTATION: int  = auto()
@@ -29,11 +29,15 @@ class StateValuesE(IntEnum):
 
 # Hyperparameters.
 numOfEpisodes = 1000
-iterationsInEachLearningSession = 1
-batchSize = 25
-discount = 0.5
+iterationsInEachLearningSession = 10
+batchSize = 100
+discount = 0.05
 curFrame = 0
 MAX_NUMBER_OF_BATCHES=100000
+
+# def normalize(state):
+#     for i in range(len(state)):
+#         state[i] = state[i]
 
 def createState(iface: TMInterface):
 
@@ -74,53 +78,60 @@ def createState(iface: TMInterface):
     end2Distance = distancesToEnds[1]
     # distanceToNextBlock -> Distance to current block end
     # distance to secondNextBlock -> Distance to next block end
-    curState[StateValuesE.X_CORD] = float(x)/100
-    curState[StateValuesE.Y_CORD] = float(y)/100
-    curState[StateValuesE.Z_CORD] = float(z)/100
-    curState[StateValuesE.SPEED] = float(speed/50)
-    curState[StateValuesE.VELOCITY_X] = float(velocity[0]/10)
-    curState[StateValuesE.VELOCITY_Z] = float(velocity[2]/10)
-    curState[StateValuesE.YAW] = float(yaw)
-    curState[StateValuesE.PITCH] = float(pitch)
-    curState[StateValuesE.ROLL] = float(roll)
-    curState[StateValuesE.TURNING_RATE] = float(turningRate)
-    curState[StateValuesE.GEAR_BOX] = float(gerabox)
-    curState[StateValuesE.CURR_BLOCK_ID] = float(currBlockId)
-    curState[StateValuesE.CURR_BLOCK_ROTATION] = float(currBlockRotation)
-    curState[StateValuesE.NEXT_BLOCK_ID] = float(nextBlockId)
-    curState[StateValuesE.NEXT_BLOCK_ROTATION] = float(nextBlockRotation)
-    curState[StateValuesE.SECOND_NEXT_BLOCK_ID] = float(secondNextBlockId)
-    curState[StateValuesE.SECOND_NEXT_BLOCK_ROTATION] = float(secondNextBlockRotation)
+    curState[StateValuesE.X_CORD] = float(x)/1000
+    curState[StateValuesE.Y_CORD] = float(y)/1000
+    curState[StateValuesE.Z_CORD] = float(z)/1000
+    curState[StateValuesE.SPEED] = float(speed)/1000
+    # curState[StateValuesE.VELOCITY_X] = float(velocity[0])
+    # curState[StateValuesE.VELOCITY_Z] = float(velocity[2])
+    # curState[StateValuesE.YAW] = float(yaw)
+    # curState[StateValuesE.PITCH] = float(pitch)
+    # curState[StateValuesE.ROLL] = float(roll)
+    # curState[StateValuesE.TURNING_RATE] = float(turningRate)
+    curState[StateValuesE.GEAR_BOX] = float(gerabox)/10
+    curState[StateValuesE.CURR_BLOCK_ID] = float(currBlockId)/10
+    curState[StateValuesE.CURR_BLOCK_ROTATION] = float(currBlockRotation)/10
+    curState[StateValuesE.NEXT_BLOCK_ID] = float(nextBlockId)/10
+    curState[StateValuesE.NEXT_BLOCK_ROTATION] = float(nextBlockRotation)/10
+    curState[StateValuesE.SECOND_NEXT_BLOCK_ID] = float(secondNextBlockId)/10
+    curState[StateValuesE.SECOND_NEXT_BLOCK_ROTATION] = float(secondNextBlockRotation)/10
     curState[StateValuesE.DISTANCE_TO_END_1] = float(end1Distance)/100
     curState[StateValuesE.DISTANCE_TO_END_2] = float(end2Distance)/100
+
+    #normalize(curState)
 
     return curState, currBlock.elementsDictKey
 
 def reward(prevState, curState, prevKey, curKey, time):
     res = 0
     if prevKey != curKey:
+        print("REWARD GIVEN")
         res+=10
     
-    res += int((curState[StateValuesE.SPEED] - prevState[StateValuesE.SPEED]))
+    res += int((curState[StateValuesE.SPEED] - prevState[StateValuesE.SPEED]))/10
 
-    return res/(time/1000)
+    return res*(1000/(1000+(time/10000)))
 
 def remember(state, action, nextState, reward, done):
-    print("TRYING TO SAVE VALUES: ", state, action, nextState, reward, done)
+    #print("TRYING TO SAVE VALUES: ", state, action, nextState, reward, done)
+    print("CURRENT REWARD: ", reward)
     agent.remember(state, action, nextState, reward, done)
-    print("SAVED VALUES SUCCESFULLY")
+    #print("SAVED VALUES SUCCESFULLY")
 
-def train(stateSize):
-    agent.agentLearn(iterationsInEachLearningSession, batchSize, stateSize, int(agent.ActionsE.ACTIONS_COUNT), discount)
+def train(sampleCount):
+    agent.agentLearn(iterationsInEachLearningSession, sampleCount, int(StateValuesE.STATE_VALUES_COUNT), int(agent.ActionsE.ACTIONS_COUNT), discount, batchSize)
+    #agent.printModels()
+
 
 def createModel():
-    modelArch = [int(StateValuesE.STATE_VALUES_COUNT), int(StateValuesE.STATE_VALUES_COUNT), 30, 10, int(agent.ActionsE.ACTIONS_COUNT)]
+    modelArch = [int(StateValuesE.STATE_VALUES_COUNT), int(StateValuesE.STATE_VALUES_COUNT), 30, 20, 10, int(agent.ActionsE.ACTIONS_COUNT)]
     archSize = len(modelArch)
-    activationLayers = [agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.NO_ACTIVATION]
+    activationLayers = [agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU]
     activationLayersSize = len(activationLayers)
     agent.createMainModel(modelArch, archSize, activationLayers, activationLayersSize, True)
     agent.createTargetModel()
     agent.initializeBuffers(MAX_NUMBER_OF_BATCHES)
+    agent.setTrainingRate(1e-20)
 
 def printModels():
     agent.printModels()
@@ -129,8 +140,10 @@ def updateTargetModel():
     agent.createTargetModel()
 
 def getGreedyInput(state, epsilon):
+    print("EPSILON VALUE: ", epsilon)
     """Take random action with probability epsilon, else take best action."""
     value = random.random()
+    print("RANDOM VALUE: ", value)
     if value > epsilon:
         result = agent.runModel(state, int(StateValuesE.STATE_VALUES_COUNT))
         print("RESULT:", result)
@@ -143,4 +156,6 @@ def getGreedyInput(state, epsilon):
         # Random action (left or right).
         return resultAction
     else:
-        return random.randint(0, int(agent.ActionsE.ACTIONS_COUNT)-1)
+        randomAction = random.randint(0, int(agent.ActionsE.ACTIONS_COUNT)-1)
+        print("RANDOM ACTION: ", randomAction) 
+        return randomAction

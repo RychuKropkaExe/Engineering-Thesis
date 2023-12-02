@@ -38,7 +38,7 @@ FastMatrix::FastMatrix(size_t rows, size_t cols){
     this->mat.resize(rows*cols);
 }
 
-FastMatrix::FastMatrix(size_t rows, size_t cols, float val){
+FastMatrix::FastMatrix(size_t rows, size_t cols, double val){
     this->rows = rows;
     this->cols = cols;
     this->mat.resize(rows*cols);
@@ -49,7 +49,7 @@ FastMatrix::FastMatrix(size_t rows, size_t cols, float val){
     }
 }
 
-FastMatrix::FastMatrix(vector<float>& vec, size_t vectorSize, Vector_Type vtype){
+FastMatrix::FastMatrix(vector<double>& vec, size_t vectorSize, Vector_Type vtype){
     if(vtype == COLUMN_VECTOR){
         this->rows = vectorSize;
         this->cols = 1;
@@ -67,7 +67,7 @@ FastMatrix::FastMatrix(vector<float>& vec, size_t vectorSize, Vector_Type vtype)
     }
 }
 
-FastMatrix::FastMatrix(size_t rows, size_t cols, vector<vector<float>>& arr){
+FastMatrix::FastMatrix(size_t rows, size_t cols, vector<vector<double>>& arr){
     this->rows = rows;
     this->cols = cols;
     this->mat.resize(rows*cols);
@@ -130,34 +130,34 @@ bool FastMatrix::operator== (FastMatrix const& obj){
 
 //======================= MATRIX VALUE FUNCTIONS ==========================================
 
-float randomFloat()
+double randomdouble()
 {
-    return (float)(rand()) / (float)(RAND_MAX);
+    return (double)(rand()) / (double)(RAND_MAX);
 }
 
-float randomFloat(float low, float high)
+double randomdouble(double low, double high)
 {
-    return low + randomFloat()*(high-low);
+    return low + randomdouble()*(high-low);
 }
 
 void FastMatrix::randomize(){
     for(size_t i = 0; i < rows; ++i){
         for(size_t j = 0; j < cols; ++j){
-            MAT_ACCESS((*this), i, j) = randomFloat();
+            MAT_ACCESS((*this), i, j) = randomdouble();
         }
     }
     
 }
 
-void FastMatrix::randomize(float low, float high){
+void FastMatrix::randomize(double low, double high){
     for(size_t i = 0; i < rows; ++i){
         for(size_t j = 0; j < cols; ++j){
-            MAT_ACCESS((*this), i, j) = low + randomFloat()*(high-low);
+            MAT_ACCESS((*this), i, j) = low + randomdouble()*(high-low);
         }
     }
 }
 
-void FastMatrix::set(float val){
+void FastMatrix::set(double val){
     for(size_t i = 0; i < rows; ++i){
         for(size_t j = 0; j < cols; ++j){
             MAT_ACCESS((*this), i, j) = val;

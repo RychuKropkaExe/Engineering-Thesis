@@ -19,20 +19,20 @@ class Model{
         size_t archSize;
 
         TrainingData trainingData {};
-        float learningRate = 1.f;
-        float eps = 1e-1;
+        double learningRate = 1e-8;
+        double eps = 1e-3;
 
         Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> actFunctions, size_t actFunctionsSize, bool randomize);
         Model();
 
         FastMatrix run(FastMatrix input);
 
-        float cost();
+        double cost();
         void finiteDifference();
         void backPropagation();
 
-        void setLearningRate(float val);
-        void setEps(float val);
+        void setLearningRate(double val);
+        void setEps(double val);
         void learn(TrainingData& trainingData, size_t iterations);
 
         void printModel();

@@ -10,9 +10,8 @@ Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weights
     this->weights = FastMatrix(GET_ROWS_FROM_PAIR(weightsDimensions), GET_COLS_FROM_PAIR(weightsDimensions));
     this->biases = FastMatrix(GET_ROWS_FROM_PAIR(biasesDimensions), GET_COLS_FROM_PAIR(biasesDimensions));
     if(randomize){
-        this->weights.randomize(-1.f, 1.f);
-        this->biases.randomize(-1.f, 1.f);
-
+        this->weights.randomize(0.0, 1.0);
+        this->biases.randomize(0.0, 1.0);
     }
     this->functionType = f;
 
@@ -24,8 +23,8 @@ Layer::Layer(){
 
 //======================= UTILITIES ============================================
 
-inline float sigmoidf(float x){
-    return 1.f/(1.f + std::exp(-x));
+inline double sigmoidf(double x){
+    return (double)1.0/((double)1.0 + std::exp(-x));
 }
 
 void Layer::activate(){
@@ -43,7 +42,7 @@ void Layer::activate(){
             {
                 for(size_t i = 0; i < output.rows; ++i){
                    for(size_t j = 0; j < output.cols; ++j){
-                        MAT_ACCESS(output, i, j) = std::max(0.f, MAT_ACCESS(output, i, j));
+                        MAT_ACCESS(output, i, j) = std::max(0.0, MAT_ACCESS(output, i, j));
                     } 
                 }
                 break;

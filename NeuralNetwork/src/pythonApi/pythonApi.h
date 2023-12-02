@@ -21,10 +21,10 @@ class TrackmaniaAgent{
         Model targetModel;
         TrainingData trainingData;
 
-        vector<vector<float>> stateBuffer {};
+        vector<vector<double>> stateBuffer {};
         vector<ActionsE> actionBuffer {};
-        vector<float> rewardBuffer {};
-        vector<vector<float>> nextStateBuffer {};
+        vector<double> rewardBuffer {};
+        vector<vector<double>> nextStateBuffer {};
         vector<bool> doneBuffer {};
         size_t bufferSize {};
         size_t maxBufferSize {};

@@ -4,8 +4,8 @@
 #include <fstream>
 #include <sstream>      
 
-TrainingData::TrainingData(vector<vector<float>> trainingInputs, size_t inputSize, size_t inputCount,
-                           vector<vector<float>> trainingOutputs, size_t outputSize, size_t outputCount)
+TrainingData::TrainingData(vector<vector<double>> trainingInputs, size_t inputSize, size_t inputCount,
+                           vector<vector<double>> trainingOutputs, size_t outputSize, size_t outputCount)
 {
     std::cout << "CREATING TRAINING DATA" << "\n";
     assert(inputCount == outputCount);
@@ -56,7 +56,7 @@ TrainingData::TrainingData(std::string filename){
 
         size_t counter = 0;
 
-        vector<float> sampleInput;
+        vector<double> sampleInput;
 
         sampleInput.resize(inputSize);
 
@@ -78,7 +78,7 @@ TrainingData::TrainingData(std::string filename){
 
         size_t counter = 0;
 
-        vector<float> sampleOutput;
+        vector<double> sampleOutput;
 
         sampleOutput.resize(outputSize);
 

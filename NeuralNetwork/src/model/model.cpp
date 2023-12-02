@@ -35,28 +35,28 @@ Model::Model(){
     this->activationFunctions.resize(1);
 }
 
-void Model::setLearningRate(float val){
+void Model::setLearningRate(double val){
     this->learningRate = val;
 }
 
-void Model::setEps(float val){
+void Model::setEps(double val){
     this->eps = val;
 }
 
-float Model::cost(){
+double Model::cost(){
 
-    float totalCost = 0;
-    std::cout << "COST FUNCTION!!! " << "\n";
-    std::cout << "NUMBER OF SAMPLES: " << "\n";
-    std::cout << trainingData.numOfSamples << "\n";
-    trainingData.printTrainingData();
+    double totalCost = 0;
+    // std::cout << "COST FUNCTION!!! " << "\n";
+    // std::cout << "NUMBER OF SAMPLES: " << "\n";
+    // std::cout << trainingData.numOfSamples << "\n";
+    //trainingData.printTrainingData();
     for(size_t i = 0; i < trainingData.numOfSamples; ++i){
 
         FastMatrix result = run(trainingData.inputs[i]);
 
         for(size_t j = 0; j < result.cols; ++j){
 
-            float d = MAT_ACCESS(result, 0, j) - MAT_ACCESS(trainingData.outputs[i], 0, j);
+            double d = MAT_ACCESS(result, 0, j) - MAT_ACCESS(trainingData.outputs[i], 0, j);
             totalCost += d*d;
 
         }
@@ -69,18 +69,21 @@ float Model::cost(){
 
 void Model::learn(TrainingData& trainingDataIn, size_t iterations){
 
-    std::cout << "STARTED LEARNING" << "\n";
+    //std::cout << "STARTED LEARNING" << "\n";
     this->trainingData = trainingDataIn;
-    std::cout << "NUMBER OF SAMPLES: " << this->trainingData.numOfSamples << "\n";
+    //std::cout << "NUMBER OF SAMPLES: " << this->trainingData.numOfSamples << "\n";
     std::cout << "COST FUNCTION VALUE: " << cost() << "\n";
-    float percentage = 0.1f;
+    double percentage = 0.1f;
     for(size_t i = 0; i < iterations; ++i){
-        if( ((float)i / (float)iterations) >= percentage ){
-            std::cout << "LEARNING COMPLETION: " << 100*percentage << "\n";
+        if( ((double)i / (double)iterations) >= percentage ){
+            //std::cout << "LEARNING COMPLETION: " << 100*percentage << "\n";
             std::cout << "COST FUNCTION VALUE: " << cost() << "\n";
             percentage += 0.1f;
         }
+        //std::cout << "LEARNING STARTED 2" << "\n";
         backPropagation();
+        //std::cout << "LEARNING COMPLETED 2" << "\n";
+        //finiteDifference();
 
     }
 
@@ -104,8 +107,8 @@ void Model::finiteDifference(){
 
     Model fakeGradient(arch, archSize, activationFunctions, archSize, false);
 
-    float saved;
-    float curCost = cost();
+    double saved;
+    double curCost = cost();
 
     for(size_t i = 0; i < numberOfLayers; ++i){
 
@@ -113,7 +116,7 @@ void Model::finiteDifference(){
             for(size_t k = 0; k < layers[i].weights.cols; k++){
                 saved = MAT_ACCESS(layers[i].weights, j, k);
                 MAT_ACCESS(layers[i].weights, j, k) += this->eps;
-                float newCost = cost();
+                double newCost = cost();
                 MAT_ACCESS(fakeGradient.layers[i].weights, j, k) = (newCost - curCost) / this->eps;
                 MAT_ACCESS(layers[i].weights, j, k) = saved;
             }
@@ -123,7 +126,7 @@ void Model::finiteDifference(){
             for(size_t k = 0; k < layers[i].biases.cols; k++){
                 saved = MAT_ACCESS(layers[i].biases, j, k);
                 MAT_ACCESS(layers[i].biases, j, k) += this->eps;
-                float newCost = cost();
+                double newCost = cost();
                 MAT_ACCESS(fakeGradient.layers[i].biases, j, k) = (newCost - curCost) / this->eps;
                 MAT_ACCESS(layers[i].biases, j, k) = saved;
             }
@@ -150,27 +153,34 @@ void Model::finiteDifference(){
 
 void Model::backPropagation(){
     size_t n = trainingData.numOfSamples;
-
+    // std::cout << "NUMBER OF SAMPLES IN BACK PROPAGATION: " << n << "\n";
     Model gradient(arch, archSize, activationFunctions, archSize, false);
 
+    // std::cout << "ARCH SIZE: " << archSize << "\n";
+    // for(size_t i = 0; i < archSize; ++i){
+    //     std::cout << "ARCH: " << i << " " << arch[i] << "\n";
+    // }
+
     for(size_t i = 0; i < gradient.numberOfLayers; ++i){
-        gradient.layers[i].weights.set(0.f);
-        gradient.layers[i].biases.set(0.f);
-        gradient.layers[i].output.set(0.f);
+        gradient.layers[i].weights.set(0.0);
+        gradient.layers[i].biases.set(0.0);
+        gradient.layers[i].output.set(0.0);
     }
 
     // i - current sample
     // l - current layer
     // j - current activation
     // k - previous activation
-
+    
     for (size_t i = 0; i < n; ++i) {
 
         run(trainingData.inputs[i]);
-
+        // std::cout << "NUMBER OF LAYERS: " << numberOfLayers << "\n";
         for (size_t j = 0; j < numberOfLayers; ++j) {
-            gradient.layers[j].output.set(0);
+            gradient.layers[j].output.set(0.0);
         }
+
+        // std::cout << "OUTPUT SIZE: " << trainingData.outputSize << "\n";
 
         for (size_t j = 0; j < trainingData.outputSize; ++j) {
             MAT_ACCESS(gradient.layers[numberOfLayers-1].output, 0, j) = MAT_ACCESS(layers[numberOfLayers-1].output, 0, j) - MAT_ACCESS(trainingData.outputs[i], 0, j);
@@ -203,17 +213,18 @@ void Model::backPropagation(){
         // And then iterating over first layer separetly.
 
         for (size_t l = numberOfLayers - 1; l > 0; --l) {
+            // std::cout << "LAYER: " << l << " OUTPUT COLS: " << layers[l].output.cols << "\n";
             for (size_t j = 0; j < layers[l].output.cols; ++j) {
 
-                float a = MAT_ACCESS(layers[l].output, 0, j);
-                float da = MAT_ACCESS(gradient.layers[l].output, 0, j);
+                double a = MAT_ACCESS(layers[l].output, 0, j);
+                double da = MAT_ACCESS(gradient.layers[l].output, 0, j);
                 MAT_ACCESS(gradient.layers[l].biases, 0, j) += 2*da*a*(1-a);
-
+                // std::cout << "LAYER: " << l-1 << " OUTPUT COLS: " << layers[l-1].output.cols << "\n";
                 for (size_t k = 0; k < layers[l-1].output.cols; ++k) {
                     // j - weight matrix col
                     // k - weight matrix row
-                    float pa = MAT_ACCESS(layers[l-1].output, 0, k);
-                    float w = MAT_ACCESS(layers[l].weights, k, j);
+                    double pa = MAT_ACCESS(layers[l-1].output, 0, k);
+                    double w = MAT_ACCESS(layers[l].weights, k, j);
                     MAT_ACCESS(gradient.layers[l].weights, k, j) += 2*da*a*(1 - a)*pa;
                     MAT_ACCESS(gradient.layers[l-1].output, 0, k) += 2*da*a*(1 - a)*w;
                 }
@@ -226,18 +237,20 @@ void Model::backPropagation(){
         inp.mat = trainingData.inputs[i].mat;
 
         // Here the iteration over first layer happens
-
+        // std::cout << "LAYER 0 OUTPUT COLS: " << layers[0].output.cols << "\n";
         for (size_t j = 0; j < layers[0].output.cols; ++j) {
 
-            float a = MAT_ACCESS(layers[0].output, 0, j);
-            float da = MAT_ACCESS(gradient.layers[0].output, 0, j);
+            double a = MAT_ACCESS(layers[0].output, 0, j);
+            double da = MAT_ACCESS(gradient.layers[0].output, 0, j);
             MAT_ACCESS(gradient.layers[0].biases, 0, j) += 2*da*a*(1-a);
+
+            // std::cout << "INPUT NUMBER OF COLS: " << inp.cols << "\n";
 
             for (size_t k = 0; k < inp.cols; ++k) {
                 // j - weight matrix col
                 // k - weight matrix row
-                float pa = MAT_ACCESS(inp, 0, k);
-                float w = MAT_ACCESS(layers[0].weights, k, j);
+                double pa = MAT_ACCESS(inp, 0, k);
+                double w = MAT_ACCESS(layers[0].weights, k, j);
                 MAT_ACCESS(gradient.layers[0].weights, k, j) += 2*da*a*(1 - a)*pa;
                 MAT_ACCESS(inp, 0, k) += 2*da*a*(1 - a)*w;
             }
@@ -249,6 +262,8 @@ void Model::backPropagation(){
     }
 
     //gradient.printModel();
+
+    std::cout << "NUMBER WHICH DIVIDES: " << n << "\n";
 
     for (size_t i = 0; i < numberOfLayers; ++i) {
         for (size_t j = 0; j < gradient.layers[i].weights.rows; ++j) {
@@ -262,6 +277,8 @@ void Model::backPropagation(){
             }
         }
     }
+
+        // std::cout << "APPLYING GRADIENT: " << numberOfLayers << "\n";
 
     //gradient.printModel();
     for(size_t i = 0; i < numberOfLayers; ++i){
@@ -279,6 +296,8 @@ void Model::backPropagation(){
         }
 
     }
+
+    // std::cout << "BACK PROPAGATION APPLIED " << "\n";
 
 }
 
@@ -340,10 +359,10 @@ Model parseModelFromFile(std::string filename){
     size_t numberOfLayers = (size_t)stoi(buffer);
 
     getline (f, buffer);
-    float learningRate = (float)stof(buffer);
+    double learningRate = (double)stof(buffer);
 
     getline (f, buffer);
-    float eps = (float)stof(buffer);
+    double eps = (double)stof(buffer);
 
     vector<Layer> layers;
     layers.resize(numberOfLayers);
@@ -355,7 +374,7 @@ Model parseModelFromFile(std::string filename){
         size_t weightsRows = (size_t)stoi(buffer);
         getline (f, buffer);
         size_t weightsCols = (size_t)stoi(buffer);
-        vector<float> wieghtsMat;
+        vector<double> wieghtsMat;
         wieghtsMat.resize(weightsRows*weightsCols);
         getline (f, buffer);
         std::stringstream check(buffer);
@@ -372,7 +391,7 @@ Model parseModelFromFile(std::string filename){
         size_t biasesRows = (size_t)stoi(buffer);
         getline (f, buffer);
         size_t biasesCols = (size_t)stoi(buffer);
-        vector<float> biasesMat;
+        vector<double> biasesMat;
         biasesMat.resize(biasesCols*biasesRows);
         
         counter = 0;
