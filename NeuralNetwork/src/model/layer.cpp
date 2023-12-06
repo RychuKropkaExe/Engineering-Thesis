@@ -10,8 +10,8 @@ Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weights
     this->weights = FastMatrix(GET_ROWS_FROM_PAIR(weightsDimensions), GET_COLS_FROM_PAIR(weightsDimensions));
     this->biases = FastMatrix(GET_ROWS_FROM_PAIR(biasesDimensions), GET_COLS_FROM_PAIR(biasesDimensions));
     if(randomize){
-        this->weights.randomize(0.0, 1.0);
-        this->biases.randomize(0.0, 1.0);
+        this->weights.randomize(-1.0, 1.0);
+        this->biases.randomize(-1.0, 1.0);
     }
     this->functionType = f;
 
@@ -22,6 +22,11 @@ Layer::Layer(){
 }
 
 //======================= UTILITIES ============================================
+
+void Layer::xavierInitialization(size_t prevLayerSize){
+    biases.set(0.0);
+    weights.randomize(-(sqrt(6)/sqrt(prevLayerSize + weights.cols)), (sqrt(6)/sqrt(prevLayerSize + weights.cols)));
+}
 
 inline double sigmoidf(double x){
     return (double)1.0/((double)1.0 + std::exp(-x));

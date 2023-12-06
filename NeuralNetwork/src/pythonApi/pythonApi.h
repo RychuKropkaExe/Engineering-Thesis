@@ -7,8 +7,8 @@
 enum ActionsE{
     NO_ACTION,
     FORWARD,
-    LEFT,
-    RIGHT,
+    // LEFT,
+    // RIGHT,
     FORWARD_RIGHT,
     FORWARD_LEFT,
     ACTIONS_COUNT

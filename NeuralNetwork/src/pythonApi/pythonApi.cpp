@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <string>
 #include "../fastMatrix/FastMatrix.h"
 #include "../model/trainingData.h"
 #include "../model/model.h"
@@ -15,6 +16,7 @@ namespace py = pybind11;
 
 void createMainModel(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> actFunctions, size_t actFunctionsSize, bool randomize){
     agent.mainModel = Model(arch, archSize, actFunctions, actFunctionsSize, randomize);
+    agent.mainModel.modelXavierInitialize();
 }
 
 void loadMainModel(std::string filename){
@@ -22,11 +24,32 @@ void loadMainModel(std::string filename){
 }
 
 void createTargetModel(){
-    agent.targetModel = agent.mainModel;
+    agent.targetModel = Model(agent.mainModel.arch, agent.mainModel.archSize, agent.mainModel.activationFunctions, agent.mainModel.activationFunctions.size(), false);
+    for(size_t i = 0; i < agent.mainModel.numberOfLayers; ++i){
+        for(size_t j = 0; j < agent.mainModel.layers[i].weights.rows; ++j){
+            for(size_t k = 0; k < agent.mainModel.layers[i].weights.cols; ++k){
+                MAT_ACCESS(agent.targetModel.layers[i].weights, j, k) = MAT_ACCESS(agent.mainModel.layers[i].weights, j, k);
+            }
+        }
+
+        for(size_t j = 0; j < agent.mainModel.layers[i].biases.rows; ++j){
+            for(size_t k = 0; k < agent.mainModel.layers[i].biases.cols; ++k){
+                MAT_ACCESS(agent.targetModel.layers[i].biases, j, k) = MAT_ACCESS(agent.mainModel.layers[i].biases, j, k);
+            }
+        }
+    }
 }
 
 void setTrainingRate(double val){
     agent.mainModel.learningRate = val;
+}
+
+void setMinThreshold(double val){
+    agent.mainModel.minThreshold = val;
+}
+
+void setMaxThreshold(double val){
+    agent.mainModel.maxThreshold = val;
 }
 
 vector<double> runModel(vector<double> input, size_t inputSize){
@@ -68,7 +91,7 @@ void setTrainingData(size_t sampleCount, size_t inputSize, size_t outputSize, do
     for(size_t i = 0; i < batchSize; ++i){
 
         int index = (int)randomdouble(0.f, (double)(agent.bufferSize - 1));
-        std::cout << "RANDOM STATE: " << index << "\n";
+        //std::cout << "RANDOM STATE: " << index << "\n";
         vector<double> state = agent.stateBuffer[index];
         vector<double> nextState = agent.nextStateBuffer[index];
         double reward = agent.rewardBuffer[index];
@@ -81,6 +104,8 @@ void setTrainingData(size_t sampleCount, size_t inputSize, size_t outputSize, do
         //printFastMatrix(currsQs);
         //printFastMatrix(nextsQs);
 
+        //FastMatrix nextsQs(nextQs, outputSize, ROW_VECTOR);
+        //printFastMatrix(nextsQs);
         double maxNextQ = *max_element(std::begin(nextQs), std::end(nextQs));
 
         //std::cout << "MAXNEXTQ: " << maxNextQ << "\n";
@@ -88,10 +113,9 @@ void setTrainingData(size_t sampleCount, size_t inputSize, size_t outputSize, do
         //     currQs[k] = 0;
         // }
         currQs[action] = reward+maxNextQ*discountRate;
-        std::cout << "REWARD FOR STATE: " << reward << "\n";
-        FastMatrix nextsQs(nextQs, outputSize, ROW_VECTOR);
-        FastMatrix currsQs(currQs, outputSize, ROW_VECTOR);
-        printFastMatrix(currsQs);
+        //std::cout << "REWARD FOR STATE: " << reward << "\n";
+        //FastMatrix currsQs(currQs, outputSize, ROW_VECTOR);
+        //printFastMatrix(currsQs);
         inputs[i] = state;
         outputs[i] = currQs;
     }
@@ -100,11 +124,11 @@ void setTrainingData(size_t sampleCount, size_t inputSize, size_t outputSize, do
 
 }
 
-void agentLearn(size_t numberOfIterations, size_t sampleCount, size_t inputSize, size_t outputSize, double discountRate, size_t batchSize){
+void agentLearn(size_t numberOfIterations, size_t sampleCount, size_t inputSize, size_t outputSize, double discountRate, size_t batchSize, bool clipGradient){
     //std::cout << "SETTING TRAINING DATA" << "\n";
     setTrainingData(sampleCount, inputSize, outputSize, discountRate, batchSize);
     //std::cout << "TRAINING DATA SET" << "\n";
-    agent.mainModel.learn(agent.trainingData, numberOfIterations);
+    agent.mainModel.learn(agent.trainingData, numberOfIterations, clipGradient);
     //std::cout << "LEARNING COMPLETED" << "\n";
 }
 
@@ -119,6 +143,31 @@ void printModels(){
 
 void dumpModel(std::string filename){
     agent.mainModel.printModelToFile(filename);
+}
+
+void xorModelTest(){
+
+    TrainingData td = TrainingData(std::string("C:\\Users\\Admin\\Desktop\\Umieralnia\\PracaDyplomowa\\Engineering-Thesis\\NeuralNetwork\\test\\modelTest\\xorData.txt"));
+    td.printTrainingData();
+    vector<size_t> arch = {2, 2, 4, 1};
+    size_t archSize = 4;
+    vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
+
+    Model model(arch, archSize, actFunc, archSize, true);
+
+    // model.printModel();
+
+    float eps = 1e-3;
+    float learningRate = 1e-1f;
+
+    model.setEps(eps);
+    model.setLearningRate(learningRate);
+
+    model.learn(td, 100000, true);
+
+    //model.printModelToFile("/home/rychu/Engineering-Thesis/NeuralNetwork/printedModel.log");
+
+    assert(model.cost() < 0.05f);
 }
 
 PYBIND11_MODULE(agent, m) {
@@ -137,6 +186,9 @@ PYBIND11_MODULE(agent, m) {
     m.def("loadMainModel", &loadMainModel, "A function that does something");
     m.def("printModels", &printModels, "A function that does something");
     m.def("setTrainingRate", &setTrainingRate, "A function that does something");
+    m.def("xorModelTest", &xorModelTest, "A function that does something");
+    m.def("setMinThreshold", &setMinThreshold, "A function that does something");
+    m.def("setMaxThreshold", &setMaxThreshold, "A function that does something");
 
     py::enum_<ActivationFunctionE>(m, "ActivationFunctionE")
     .value("SIGMOID", ActivationFunctionE::SIGMOID)
@@ -146,8 +198,8 @@ PYBIND11_MODULE(agent, m) {
     py::enum_<ActionsE>(m, "ActionsE")
     .value("NO_ACTION", ActionsE::NO_ACTION)
     .value("FORWARD", ActionsE::FORWARD)
-    .value("LEFT", ActionsE::LEFT)
-    .value("RIGHT", ActionsE::RIGHT)
+    // .value("LEFT", ActionsE::LEFT)
+    // .value("RIGHT", ActionsE::RIGHT)
     .value("FORWARD_RIGHT", ActionsE::FORWARD_RIGHT)
     .value("FORWARD_LEFT", ActionsE::FORWARD_LEFT)
     .value("ACTIONS_COUNT", ActionsE::ACTIONS_COUNT);

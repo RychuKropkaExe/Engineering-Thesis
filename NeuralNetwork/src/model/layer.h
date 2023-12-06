@@ -31,6 +31,8 @@ class Layer{
               pair<size_t, size_t> biasesDimensions, ActivationFunctionE f, bool randomize);
         Layer();
 
+        void xavierInitialization(size_t prevLayerSize);
+
         FastMatrix forward(FastMatrix input);
         void activate();
 

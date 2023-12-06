@@ -22,22 +22,29 @@ class Model{
         double learningRate = 1e-8;
         double eps = 1e-3;
 
+        double maxThreshold {0.1};
+        double minThreshold {-0.1};
+
         Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> actFunctions, size_t actFunctionsSize, bool randomize);
         Model();
+
+        void modelXavierInitialize();
 
         FastMatrix run(FastMatrix input);
 
         double cost();
         void finiteDifference();
-        void backPropagation();
+        void backPropagation(bool clipGradient);
 
         void setLearningRate(double val);
         void setEps(double val);
-        void learn(TrainingData& trainingData, size_t iterations);
+        void learn(TrainingData& trainingData, size_t iterations, bool clipGradient);
 
         void printModel();
 
         void printModelToFile(std::string filename);
+
+        void clipValues();
 
 
 };

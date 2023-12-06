@@ -183,28 +183,30 @@ def checkNextElements(position):
 
 
 def getEndsDistances(block: PositionDictEntry, position):
+    if block.blockName == 'Nothing':
+        return (0.0, 0.0)
     blockEndingPoints = block.blockEndingPoints
     end1 = blockEndingPoints[0]
     end2 = blockEndingPoints[1]
-    end1X = end1[0]
-    end1Z = end1[1]
+    end1X = position[0] + end1[0]*BLOCK_SIZE_XZ
+    end1Z = position[2] + end1[2]*BLOCK_SIZE_XZ
 
-    end1XMax = end1X*BLOCK_SIZE_XZ
-    end1ZMax = end1Z*BLOCK_SIZE_XZ
+    end1XMax = end1X + BLOCK_SIZE_XZ
+    end1ZMax = end1Z + BLOCK_SIZE_XZ
 
     end1XDistance = abs(position[0] - int((end1X+end1XMax)/2))
-    end1ZDistance = abs(position[1] - int((end1Z+end1ZMax)/2))
+    end1ZDistance = abs(position[2] - int((end1Z+end1ZMax)/2))
 
-    end2X = end2[0]
-    end2Z = end2[1]
+    end2X = position[0] + end2[0]*BLOCK_SIZE_XZ
+    end2Z = position[2] + end2[2]*BLOCK_SIZE_XZ
 
-    end2XMax = end2X*BLOCK_SIZE_XZ
-    end2ZMax = end2Z*BLOCK_SIZE_XZ
+    end2XMax = end2X + BLOCK_SIZE_XZ
+    end2ZMax = end2Z + BLOCK_SIZE_XZ
 
     end2XDistance = abs(position[0] - int((end2X+end2XMax)/2))
     end2ZDistance = abs(position[2]- int((end2Z+end2ZMax)/2))
 
-    end1Distance = math.sqrt((end1XDistance**2) + (end1ZDistance**2))
-    end2Distance = math.sqrt((end2XDistance**2) + (end2ZDistance**2))
+    end1Distance = abs(math.sqrt((end1XDistance**2) + (end1ZDistance**2)) - BLOCK_SIZE_XZ/2)
+    end2Distance = abs(math.sqrt((end2XDistance**2) + (end2ZDistance**2))- BLOCK_SIZE_XZ/2)
 
     return (end1Distance, end2Distance)

@@ -35,6 +35,15 @@ Model::Model(){
     this->activationFunctions.resize(1);
 }
 
+void Model::modelXavierInitialize(){
+
+    layers[0].xavierInitialization(arch[0]);
+
+    for(size_t i = 1; i < archSize - 1; ++i){
+        layers[i].xavierInitialization(arch[i-1]);
+    }
+}
+
 void Model::setLearningRate(double val){
     this->learningRate = val;
 }
@@ -63,11 +72,15 @@ double Model::cost(){
 
     }
 
-    return totalCost/(this->trainingData.numOfSamples);
+    if(trainingData.numOfSamples == 0){
+        std::cout << "ERROR, NUMBER OF SAMPLES == 0" << "\n";
+    }
+
+    return totalCost/(trainingData.numOfSamples);
 
 }
 
-void Model::learn(TrainingData& trainingDataIn, size_t iterations){
+void Model::learn(TrainingData& trainingDataIn, size_t iterations, bool clipGradient){
 
     //std::cout << "STARTED LEARNING" << "\n";
     this->trainingData = trainingDataIn;
@@ -77,11 +90,16 @@ void Model::learn(TrainingData& trainingDataIn, size_t iterations){
     for(size_t i = 0; i < iterations; ++i){
         if( ((double)i / (double)iterations) >= percentage ){
             //std::cout << "LEARNING COMPLETION: " << 100*percentage << "\n";
-            std::cout << "COST FUNCTION VALUE: " << cost() << "\n";
+            double c = cost();
+            //std::cout << "COST FUNCTION VALUE: " << c << "\n";
+            // if(c >= 10000 || c < 0){
+            //     this->trainingData.printTrainingData();
+            //     printModel();
+            // }
             percentage += 0.1f;
         }
         //std::cout << "LEARNING STARTED 2" << "\n";
-        backPropagation();
+        backPropagation(clipGradient);
         //std::cout << "LEARNING COMPLETED 2" << "\n";
         //finiteDifference();
 
@@ -151,7 +169,28 @@ void Model::finiteDifference(){
 
 }
 
-void Model::backPropagation(){
+void Model::clipValues(){
+    for(size_t i = 0; i < numberOfLayers; ++i){
+        for(size_t j = 0; j < layers[i].weights.rows; ++j){
+            for(size_t k = 0; k < layers[i].weights.cols; ++k){
+                if(MAT_ACCESS(layers[i].weights, j, k) > maxThreshold)
+                    MAT_ACCESS(layers[i].weights, j, k) = maxThreshold;
+                if(MAT_ACCESS(layers[i].weights, j, k) < minThreshold)
+                    MAT_ACCESS(layers[i].weights, j, k) = minThreshold;
+            }
+        }
+        for(size_t j = 0; j < layers[i].biases.rows; ++j){
+            for(size_t k = 0; k < layers[i].biases.cols; ++k){
+                if(MAT_ACCESS(layers[i].biases, j, k) > maxThreshold)
+                    MAT_ACCESS(layers[i].biases, j, k) = maxThreshold;
+                if(MAT_ACCESS(layers[i].biases, j, k) < minThreshold)
+                    MAT_ACCESS(layers[i].biases, j, k) = minThreshold;
+            }
+        }
+    }
+}
+
+void Model::backPropagation(bool clipGradient){
     size_t n = trainingData.numOfSamples;
     // std::cout << "NUMBER OF SAMPLES IN BACK PROPAGATION: " << n << "\n";
     Model gradient(arch, archSize, activationFunctions, archSize, false);
@@ -263,7 +302,7 @@ void Model::backPropagation(){
 
     //gradient.printModel();
 
-    std::cout << "NUMBER WHICH DIVIDES: " << n << "\n";
+    //std::cout << "NUMBER WHICH DIVIDES: " << n << "\n";
 
     for (size_t i = 0; i < numberOfLayers; ++i) {
         for (size_t j = 0; j < gradient.layers[i].weights.rows; ++j) {
@@ -279,7 +318,8 @@ void Model::backPropagation(){
     }
 
         // std::cout << "APPLYING GRADIENT: " << numberOfLayers << "\n";
-
+    if(clipGradient)
+        gradient.clipValues();
     //gradient.printModel();
     for(size_t i = 0; i < numberOfLayers; ++i){
 
