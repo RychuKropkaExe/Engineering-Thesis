@@ -1,5 +1,8 @@
 #include "layer.h"
 #include <cmath>
+#include <algorithm>
+#include <iostream>
+#include <vector>
 #include <iostream>
 //======================= CONSTRUCTORS ==========================================
 
@@ -51,6 +54,20 @@ void Layer::activate(){
                     } 
                 }
                 break;
+            }
+        case SOFTMAX:
+            {
+                double maxValue = *max_element(std::begin(output.mat), std::end(output.mat));
+                double sum = 0.0;
+                for (size_t i = 0; i < output.cols; ++i) {
+                    sum += exp(MAT_ACCESS(output, 0, i) - maxValue);
+                }
+
+                double constant = maxValue + log(sum);
+                for (size_t i = 0; i < output.cols; ++i) {
+                    MAT_ACCESS(output, 0, i) = exp(MAT_ACCESS(output, 0, i) - maxValue)/sum;
+                }
+
             }
         case NO_ACTIVATION:
             {

@@ -33,6 +33,7 @@ class Model{
         FastMatrix run(FastMatrix input);
 
         double cost();
+        double costCrossEntropy();
         void finiteDifference();
         void backPropagation(bool clipGradient);
 

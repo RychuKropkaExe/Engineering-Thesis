@@ -181,6 +181,34 @@ def checkNextElements(position):
         return (nextElement[0], secondNextElement[0])
     return currPosition.nextBlocks
 
+def getEndsAngles(block: PositionDictEntry, position):
+    if block.blockName == 'Nothing':
+        return (0.0, 0.0)
+    blockEndingPoints = block.blockEndingPoints
+    end1 = blockEndingPoints[0]
+    end2 = blockEndingPoints[1]
+    end1X = position[0] + end1[0]*BLOCK_SIZE_XZ
+    end1Z = position[2] + end1[2]*BLOCK_SIZE_XZ
+
+    end1XMax = end1X + BLOCK_SIZE_XZ
+    end1ZMax = end1Z + BLOCK_SIZE_XZ
+
+    end1XDistance = abs(position[0] - int((end1X+end1XMax)/2))
+    end1ZDistance = abs(position[2] - int((end1Z+end1ZMax)/2))
+
+    end2X = position[0] + end2[0]*BLOCK_SIZE_XZ
+    end2Z = position[2] + end2[2]*BLOCK_SIZE_XZ
+
+    end2XMax = end2X + BLOCK_SIZE_XZ
+    end2ZMax = end2Z + BLOCK_SIZE_XZ
+
+    end2XDistance = abs(position[0] - int((end2X+end2XMax)/2))
+    end2ZDistance = abs(position[2]- int((end2Z+end2ZMax)/2))
+
+    end1Angle = math.atan2(end1XDistance,end1ZDistance)
+    end2Angle = math.atan2(end2XDistance,end2ZDistance)
+
+    return (end1Angle, end2Angle)
 
 def getEndsDistances(block: PositionDictEntry, position):
     if block.blockName == 'Nothing':

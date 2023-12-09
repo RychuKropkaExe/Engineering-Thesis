@@ -52,6 +52,32 @@ void Model::setEps(double val){
     this->eps = val;
 }
 
+double Model::costCrossEntropy(){
+    double totalCost = 0;
+    // std::cout << "COST FUNCTION!!! " << "\n";
+    // std::cout << "NUMBER OF SAMPLES: " << "\n";
+    // std::cout << trainingData.numOfSamples << "\n";
+    //trainingData.printTrainingData();
+    for(size_t i = 0; i < trainingData.numOfSamples; ++i){
+
+        FastMatrix result = run(trainingData.inputs[i]);
+
+        for(size_t j = 0; j < result.cols; ++j){
+
+            double d = log(MAT_ACCESS(result, 0, j))*(MAT_ACCESS(trainingData.outputs[i], 0, j));
+            totalCost -= d;
+
+        }
+
+    }
+
+    if(trainingData.numOfSamples == 0){
+        std::cout << "ERROR, NUMBER OF SAMPLES == 0" << "\n";
+    }
+
+    return totalCost/(trainingData.numOfSamples);
+}
+
 double Model::cost(){
 
     double totalCost = 0;
@@ -126,7 +152,7 @@ void Model::finiteDifference(){
     Model fakeGradient(arch, archSize, activationFunctions, archSize, false);
 
     double saved;
-    double curCost = cost();
+    double curCost = costCrossEntropy();
 
     for(size_t i = 0; i < numberOfLayers; ++i){
 
@@ -134,7 +160,7 @@ void Model::finiteDifference(){
             for(size_t k = 0; k < layers[i].weights.cols; k++){
                 saved = MAT_ACCESS(layers[i].weights, j, k);
                 MAT_ACCESS(layers[i].weights, j, k) += this->eps;
-                double newCost = cost();
+                double newCost = costCrossEntropy();
                 MAT_ACCESS(fakeGradient.layers[i].weights, j, k) = (newCost - curCost) / this->eps;
                 MAT_ACCESS(layers[i].weights, j, k) = saved;
             }
@@ -144,7 +170,7 @@ void Model::finiteDifference(){
             for(size_t k = 0; k < layers[i].biases.cols; k++){
                 saved = MAT_ACCESS(layers[i].biases, j, k);
                 MAT_ACCESS(layers[i].biases, j, k) += this->eps;
-                double newCost = cost();
+                double newCost = costCrossEntropy();
                 MAT_ACCESS(fakeGradient.layers[i].biases, j, k) = (newCost - curCost) / this->eps;
                 MAT_ACCESS(layers[i].biases, j, k) = saved;
             }

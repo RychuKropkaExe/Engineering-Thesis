@@ -26,7 +26,7 @@ def pressResetKey():
 class MainClient(Client):
     logFile = open("logFile.txt", "w")
 
-    nextInputTime = 400
+    nextInputTime = 100
     timeDelta = 200
 
     maxStagnationTime = 3000
@@ -55,7 +55,7 @@ class MainClient(Client):
 
     bestTime = 1000000000
 
-    learningRate = 1e-10
+    learningRate = 1e-8
     maximumLearningRate = 1e-3
 
     def __init__(self) -> None:
@@ -78,35 +78,40 @@ class MainClient(Client):
             if self.learningRate < self.maximumLearningRate:
                 self.learningRate += self.learningRate
                 setLearningRate(self.learningRate)
+        if self.samplesTaken >= 200000:
+            exit()
         if _time == 0:
             self.curReward = 0
             iface.set_input_state(accelerate=True)
             self.actionTaken = ActionsE.FORWARD
             self.resetFlag = False
-        if self.firstStateFlag == True and _time >= 100:
-            self.curReward = 0
             self.prevState, self.curBlockKey = createState(iface, _time)
-            self.nextInputTime += self.timeDelta
-            #log("FIRST STATE: ", self.prevState)
-            self.firstStateFlag = False
-            self.resetFlag = False
+        # if self.firstStateFlag == True and _time >= 100:
+        #     self.curReward = 0
+        #     self.prevState, self.curBlockKey = createState(iface, _time)
+        #     self.nextInputTime += self.timeDelta
+        #     #log("FIRST STATE: ", self.prevState)
+        #     self.firstStateFlag = False
+        #     self.resetFlag = False
         if _time >= self.nextInputTime and self.resetFlag == False:
             self.curState, self.curBlockKey = createState(iface, _time)
+            #print("CURRENT STATE: ", self.curState)
+            #print("PREV STATE: ", self.prevState)
             self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, _time)
             self.curReward = round(self.curReward, 3)
-            print("CURRENT REWARD: ", self.curReward)
+            #print("CURRENT REWARD: ", self.curReward)
             # if self.curBlockKey != self.prevBlockKey:
             #     self.lastBlockChangeTime = _time
             self.samplesTaken += 1
-            if (self.sameSpeedCount >= 3 or self.curState[StateValuesE.SPEED]*SPEED_CONSTANT < 50) and _time >= 2000:
+            if (self.sameSpeedCount >= 20 or self.curState[StateValuesE.SPEED]*SPEED_CONSTANT < 5) and _time >= 2000:
                 #print("SPEEDS: ", self.prevState[StateValuesE.SPEED], self.curState[StateValuesE.SPEED])
                 #print("SIEMA EINU?????")
                 remember(self.prevState, self.actionTaken, self.curState, self.curReward, False)
                 self.samplesTaken += 1
-                if self.epsilon >= 0.10:
+                if self.epsilon >= 0.15:
                     self.epsilon -= 0.002
-                    sys.stderr.write(f'CURRENT EPSIOL: {self.epsilon}\n')
-                    sys.stderr.flush()
+                    #sys.stderr.write(f'CURRENT EPSIOL: {self.epsilon}\n')
+                    #sys.stderr.flush()
                 self.nextInputTime = 200
                 self.lastBlockChangeTime = 0
                 self.curReward = 0
@@ -148,15 +153,15 @@ class MainClient(Client):
                 #     if self.learningRate < self.maximumLearningRate:
                 #         self.learningRate += self.learningRate
                 #         setLearningRate(self.learningRate)
-                if self.samplesTaken % (batchSize/5) == 0:
-                    print("BOTH MODELS: ")
-                    printModels()
+                if self.samplesTaken % (batchSize/10) == 0:
+                    #print("BOTH MODELS: ")
+                    #printModels()
                     updateTargetModel()
                 self.nextInputTime += self.timeDelta
                 self.prevBlockKey = self.curBlockKey
                 self.prevState = self.curState
         if state.player_info.race_finished == True and self.resetFlag == False:
-            print("FINISHED!!!!!!!!!!!")
+            print("FINISHED!!!!!!!!!!!", _time)
             if _time < self.bestTime:
                 print("NEW RECORD: ", _time)
                 self.bestTime = _time
@@ -171,7 +176,7 @@ class MainClient(Client):
             #train(self.samplesTaken)
             self.nextInputTime = 200
             if self.epsilon >= 0.05:
-                self.epsilon -= 0.02
+                self.epsilon -= 0.05
                 sys.stderr.write(f'CURRENT EPSIOL: {self.epsilon}\n')
                 sys.stderr.flush()
             self.firstStateFlag = True
@@ -199,7 +204,7 @@ class MainClient(Client):
 
 
 def start():
-    g = Gbx('C:\\Users\\Admin\\Desktop\\Umieralnia\\PracaDyplomowa\\Engineering-Thesis\\Interface\\MyChallenges\\Map3.Challenge.Gbx')
+    g = Gbx('C:\\Users\\Admin\\Desktop\\Umieralnia\\PracaDyplomowa\\Engineering-Thesis\\Interface\\MyChallenges\\Map4.Challenge.Gbx')
     challenges = g.get_classes_by_ids([GbxType.CHALLENGE, GbxType.CHALLENGE_OLD])
     challenge = challenges[0]
     log("MAP BLOCKS:")

@@ -193,6 +193,7 @@ PYBIND11_MODULE(agent, m) {
     py::enum_<ActivationFunctionE>(m, "ActivationFunctionE")
     .value("SIGMOID", ActivationFunctionE::SIGMOID)
     .value("RELU", ActivationFunctionE::RELU)
+    .value("SOFTMAX", ActivationFunctionE::SOFTMAX)
     .value("NO_ACTIVATION", ActivationFunctionE::NO_ACTIVATION);
 
     py::enum_<ActionsE>(m, "ActionsE")

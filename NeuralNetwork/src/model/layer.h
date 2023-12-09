@@ -15,6 +15,7 @@ using std::pair;
 enum ActivationFunctionE{
     SIGMOID,
     RELU,
+    SOFTMAX,
     NO_ACTIVATION
 };
 

@@ -2,15 +2,16 @@ import agent
 from src.logger.log import log
 from enum import IntEnum, auto
 from tminterface.interface import TMInterface
-from src.blocks.blockPositions import STADIUM_BLOCKS_DICT, createPositionDictionary, checkPosition, checkNextBlock, checkNextElements, getEndsDistances
+from src.blocks.blockPositions import STADIUM_BLOCKS_DICT, getEndsAngles, createPositionDictionary, checkPosition, checkNextBlock, checkNextElements, getEndsDistances, hashPosition
 import random
+from src.blocks.stadiumBlocks import BLOCK_SIZE_XZ, BLOCK_SIZE_Y
 
 SPEED_CONSTANT = 100
 
 class StateValuesE(IntEnum):
-    # X_CORD: int = 0
-    # # Y_CORD: int  = auto()
-    # Z_CORD: int  = auto()
+    X_CORD: int = 0
+    # Y_CORD: int  = auto()
+    Z_CORD: int  = auto()
     SPEED: int  = auto()
     # VELOCITY_X: int  = auto()
     # VELOCITY_Z: int  = auto()
@@ -26,14 +27,16 @@ class StateValuesE(IntEnum):
     # SECOND_NEXT_BLOCK_ID: int   = auto()
     # SECOND_NEXT_BLOCK_ROTATION: int  = auto()
     DISTANCE_TO_END_1: int  = auto()
+    ANGLE_TO_END_1: int = auto()
     DISTANCE_TO_END_2: int  = auto()
+    ANGLE_TO_END_2: int = auto()
     STATE_VALUES_COUNT: int  = auto()
 
 # Hyperparameters.
 numOfEpisodes = 1000
 iterationsInEachLearningSession = 10
-batchSize = 100
-discount = 1.0
+batchSize = 200
+discount = 0.99
 curFrame = 0
 MAX_NUMBER_OF_BATCHES=200000
 
@@ -78,11 +81,17 @@ def createState(iface: TMInterface, _time):
     distancesToEnds = getEndsDistances(currBlock, state.position)
     end1Distance = distancesToEnds[0]
     end2Distance = distancesToEnds[1]
+    endsAngles = getEndsAngles(currBlock, state.position)
+    end1Angle = endsAngles[0]
+    end2Angle = endsAngles[1]
+
+    curState[StateValuesE.ANGLE_TO_END_1] = end1Angle
+    curState[StateValuesE.ANGLE_TO_END_2] = end2Angle
     # distanceToNextBlock -> Distance to current block end
     # distance to secondNextBlock -> Distance to next block end
-    # curState[StateValuesE.X_CORD] = round(float(x)/100, 3)
-    # # curState[StateValuesE.Y_CORD] = round(float(y)/1000, 3)
-    # curState[StateValuesE.Z_CORD] = round(float(z)/100, 3)
+    curState[StateValuesE.X_CORD] = round(float(x)/100, 3)
+    # curState[StateValuesE.Y_CORD] = round(float(y)/1000, 3)
+    curState[StateValuesE.Z_CORD] = round(float(z)/100, 3)
     curState[StateValuesE.SPEED] = round(float(speed)/SPEED_CONSTANT, 3)
     #curState[StateValuesE.VELOCITY_X] = round(float(velocity[0])/100, 3)
     #curState[StateValuesE.VELOCITY_Z] = round(float(velocity[2])/100, 3)
@@ -102,22 +111,26 @@ def createState(iface: TMInterface, _time):
 
     #normalize(curState)
 
-    return curState, currBlock.elementsDictKey
+    # return curState, currBlock.elementsDictKey
+    return curState, hashPosition(int(x/BLOCK_SIZE_XZ), int(y/BLOCK_SIZE_Y), int(z/BLOCK_SIZE_XZ))
 
 def reward(prevState, curState, prevKey, curKey, time):
     res = 0
-    print("PREVIOUS KEY: ", prevKey)
-    print("CURRENT KEY: ", curKey)
+    #print("PREVIOUS KEY: ", prevKey)
+    #print("CURRENT KEY: ", curKey)
     if prevKey != curKey:
-        print("REWARD GIVEN")
-        res+=10
-    
-    res += int((curState[StateValuesE.SPEED]*SPEED_CONSTANT - prevState[StateValuesE.SPEED]*SPEED_CONSTANT))/(SPEED_CONSTANT*5)
-
-    return res*(((10000+time)/10000))
+        #print("REWARD GIVEN")
+        res+=2
+    if curState[StateValuesE.SPEED]*SPEED_CONSTANT >= prevState[StateValuesE.SPEED]*SPEED_CONSTANT:
+        res+=0.01
+    else:
+        res-=0.01
+    # res += int((curState[StateValuesE.SPEED]*SPEED_CONSTANT - prevState[StateValuesE.SPEED]*SPEED_CONSTANT))/(SPEED_CONSTANT*10)
+    return res
+    # return res*(((10000+time)/10000))
 
 def remember(state, action, nextState, reward, done):
-    print("TRYING TO SAVE VALUES: ", state, action, nextState, reward, done)
+    #print("TRYING TO SAVE VALUES: ", state, action, nextState, reward, done)
     #print("CURRENT REWARD: ", reward/10)
     agent.remember(state, action, nextState, reward/10, done)
     #print("SAVED VALUES SUCCESFULLY")
@@ -133,7 +146,7 @@ def setThresholds(minThreshold, maxThreshold):
 def createModel():
     modelArch = [int(StateValuesE.STATE_VALUES_COUNT), int(StateValuesE.STATE_VALUES_COUNT), int(agent.ActionsE.ACTIONS_COUNT)]
     archSize = len(modelArch)
-    activationLayers = [agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.NO_ACTIVATION]
+    activationLayers = [agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.SOFTMAX]
     activationLayersSize = len(activationLayers)
     agent.createMainModel(modelArch, archSize, activationLayers, activationLayersSize, True)
     agent.createTargetModel()
@@ -156,13 +169,13 @@ def getGreedyInput(state, epsilon):
     if value > epsilon:
         result = agent.runModel(state, int(StateValuesE.STATE_VALUES_COUNT))
         print("RESULT:", result)
-        maxQ = -1
+        moveChance = random.random()
+        prob = 1
         resultAction = 0
         for i in range(len(result)):
-            if result[i] > maxQ:
-                maxQ = result[i]
+            if result[i] >= moveChance:
                 resultAction = i
-        # Random action (left or right).
+                break
         return resultAction
     else:
         randomAction = random.randint(0, int(agent.ActionsE.ACTIONS_COUNT)-1)
