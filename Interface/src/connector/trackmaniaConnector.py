@@ -14,19 +14,17 @@ import threading
 keyboard = Controller()
 
 def pressEnterKey():
-    print("SIEMA ENIU PRESS KEY")
     keyboard.press(Key.enter)
     keyboard.release(Key.enter)
 
 def pressResetKey():
-    print("SIEMA ENIU PRESS KEY")
     keyboard.press(Key.backspace)
     keyboard.release(Key.backspace)
 
 class MainClient(Client):
     logFile = open("logFile.txt", "w")
 
-    nextInputTime = 100
+    nextInputTime = 50
     timeDelta = 200
 
     maxStagnationTime = 3000
@@ -57,6 +55,7 @@ class MainClient(Client):
 
     learningRate = 1e-8
     maximumLearningRate = 1e-3
+    flip = True
 
     def __init__(self) -> None:
         createModel()
@@ -71,13 +70,14 @@ class MainClient(Client):
 
     def on_run_step(self, iface: TMInterface, _time: int):
         state = iface.get_simulation_state()
-        if self.samplesTaken >= batchSize:
+        if self.samplesTaken >= batchSize and self.flip:
             #print("STARTING TRENING")
             #print("CURRENT LEARNING RATE: ", self.learningRate)
             train(self.samplesTaken, True)
             if self.learningRate < self.maximumLearningRate:
                 self.learningRate += self.learningRate
                 setLearningRate(self.learningRate)
+        self.flip = not self.flip
         if self.samplesTaken >= 200000:
             exit()
         if _time == 0:
@@ -93,27 +93,38 @@ class MainClient(Client):
         #     #log("FIRST STATE: ", self.prevState)
         #     self.firstStateFlag = False
         #     self.resetFlag = False
-        if _time >= self.nextInputTime and self.resetFlag == False:
+        if _time >= self.nextInputTime+50 and self.resetFlag == False:
             self.curState, self.curBlockKey = createState(iface, _time)
+            if self.curState[StateValuesE.CURR_BLOCK_ID] == STADIUM_BLOCKS_DICT['Nothing']:
+                self.nextInputTime = 200
+                self.lastBlockChangeTime = 0
+                self.curReward = 0
+                print("REWARD: ", self.curReward)
+                print("EPSILON: ", self.epsilon)
+                self.sameSpeedCount = 0
+                self.resetFlag = True
+                iface.give_up()
             #print("CURRENT STATE: ", self.curState)
             #print("PREV STATE: ", self.prevState)
-            self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, _time)
+            if self.curBlockKey != self.prevBlockKey:
+                self.lastBlockChangeTime = _time
+            self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, self.lastBlockChangeTime, _time)
             self.curReward = round(self.curReward, 3)
             #print("CURRENT REWARD: ", self.curReward)
-            # if self.curBlockKey != self.prevBlockKey:
-            #     self.lastBlockChangeTime = _time
             self.samplesTaken += 1
-            if (self.sameSpeedCount >= 20 or self.curState[StateValuesE.SPEED]*SPEED_CONSTANT < 5) and _time >= 2000:
+            if (self.sameSpeedCount == 20 or self.curState[StateValuesE.SPEED]*SPEED_CONSTANT < 20) and _time >= 2000:
                 #print("SPEEDS: ", self.prevState[StateValuesE.SPEED], self.curState[StateValuesE.SPEED])
                 #print("SIEMA EINU?????")
-                remember(self.prevState, self.actionTaken, self.curState, self.curReward, False)
+                remember(self.prevState, self.actionTaken, self.curState, self.curReward, True)
                 self.samplesTaken += 1
                 if self.epsilon >= 0.15:
-                    self.epsilon -= 0.002
+                    self.epsilon -= 0.005
                     #sys.stderr.write(f'CURRENT EPSIOL: {self.epsilon}\n')
                     #sys.stderr.flush()
                 self.nextInputTime = 200
                 self.lastBlockChangeTime = 0
+                print("REWARD: ", self.curReward)
+                print("EPSILON: ", self.epsilon)
                 self.curReward = 0
                 self.sameSpeedCount = 0
                 self.resetFlag = True
@@ -121,6 +132,8 @@ class MainClient(Client):
             else:
                 if self.prevState[StateValuesE.SPEED]*SPEED_CONSTANT == self.curState[StateValuesE.SPEED]*SPEED_CONSTANT:
                     self.sameSpeedCount += 1
+                else:
+                    self.sameSpeedCount = 0
                 remember(self.prevState, self.actionTaken, self.curState, self.curReward, False)
                 #log("PREV STATE: ", self.prevState, "CUR STATE: ", self.curState, "REWARD: ", self.curReward)
                 self.actionTaken = getGreedyInput(self.curState, self.epsilon)
@@ -166,12 +179,14 @@ class MainClient(Client):
                 print("NEW RECORD: ", _time)
                 self.bestTime = _time
             self.curState, self.curBlockKey = createState(iface, _time)
-            self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, _time)
+            self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, self.lastBlockChangeTime, _time)
             self.curReward += 10
             remember(self.prevState, self.actionTaken, self.curState, self.curReward, True)
             self.samplesTaken += 1
             self.resetFlag = True
             self.sameSpeedCount = 0
+            print("REWARD: ", self.curReward)
+            print("EPSILON: ", self.epsilon)
             self.curReward = 0
             #train(self.samplesTaken)
             self.nextInputTime = 200
@@ -184,8 +199,8 @@ class MainClient(Client):
             keyboard.release(Key.backspace)
             keyboard.press(Key.backspace)
             keyboard.release(Key.backspace)
-            threading.Timer(0.01, pressResetKey).start()
-            threading.Timer(3, pressEnterKey).start()
+            threading.Timer(3, pressResetKey).start()
+            threading.Timer(6, pressEnterKey).start()
         # if _time - self.lastBlockChangeTime >= 4000 and self.resetFlag == False:
         #     self.curState, self.curBlockKey = createState(iface)
         #     self.curReward += reward(self.prevState, self.curState, self.prevBlockKey, self.curBlockKey, _time)
@@ -204,7 +219,7 @@ class MainClient(Client):
 
 
 def start():
-    g = Gbx('C:\\Users\\Admin\\Desktop\\Umieralnia\\PracaDyplomowa\\Engineering-Thesis\\Interface\\MyChallenges\\Map4.Challenge.Gbx')
+    g = Gbx('.\\MyChallenges\\Map5.Challenge.Gbx')
     challenges = g.get_classes_by_ids([GbxType.CHALLENGE, GbxType.CHALLENGE_OLD])
     challenge = challenges[0]
     log("MAP BLOCKS:")

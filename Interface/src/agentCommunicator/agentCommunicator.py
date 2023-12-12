@@ -114,20 +114,22 @@ def createState(iface: TMInterface, _time):
     # return curState, currBlock.elementsDictKey
     return curState, hashPosition(int(x/BLOCK_SIZE_XZ), int(y/BLOCK_SIZE_Y), int(z/BLOCK_SIZE_XZ))
 
-def reward(prevState, curState, prevKey, curKey, time):
+def reward(prevState, curState, prevKey, curKey, blockChangeTime, time):
     res = 0
     #print("PREVIOUS KEY: ", prevKey)
     #print("CURRENT KEY: ", curKey)
     if prevKey != curKey:
         #print("REWARD GIVEN")
-        res+=2
-    if curState[StateValuesE.SPEED]*SPEED_CONSTANT >= prevState[StateValuesE.SPEED]*SPEED_CONSTANT:
-        res+=0.01
-    else:
-        res-=0.01
-    # res += int((curState[StateValuesE.SPEED]*SPEED_CONSTANT - prevState[StateValuesE.SPEED]*SPEED_CONSTANT))/(SPEED_CONSTANT*10)
-    return res
-    # return res*(((10000+time)/10000))
+        if blockChangeTime <= 300:
+            res+=4
+        else:
+            res+=2
+    # if curState[StateValuesE.SPEED]*SPEED_CONSTANT > prevState[StateValuesE.SPEED]*SPEED_CONSTANT:
+    #     res+=0.05
+    #res+=(curState[StateValuesE.SPEED]*SPEED_CONSTANT)/250
+    res += int((curState[StateValuesE.SPEED]*SPEED_CONSTANT - prevState[StateValuesE.SPEED]*SPEED_CONSTANT))/(15)
+    #return res
+    return res*(10000/(10000+time))
 
 def remember(state, action, nextState, reward, done):
     #print("TRYING TO SAVE VALUES: ", state, action, nextState, reward, done)
@@ -144,9 +146,9 @@ def setThresholds(minThreshold, maxThreshold):
     agent.setMaxThreshold(maxThreshold)
 
 def createModel():
-    modelArch = [int(StateValuesE.STATE_VALUES_COUNT), int(StateValuesE.STATE_VALUES_COUNT), int(agent.ActionsE.ACTIONS_COUNT)]
+    modelArch = [int(StateValuesE.STATE_VALUES_COUNT), int(StateValuesE.STATE_VALUES_COUNT), 10, 10, int(agent.ActionsE.ACTIONS_COUNT)]
     archSize = len(modelArch)
-    activationLayers = [agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.SOFTMAX]
+    activationLayers = [agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.RELU, agent.ActivationFunctionE.SOFTMAX]
     activationLayersSize = len(activationLayers)
     agent.createMainModel(modelArch, archSize, activationLayers, activationLayersSize, True)
     agent.createTargetModel()

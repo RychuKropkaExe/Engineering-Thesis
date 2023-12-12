@@ -57,7 +57,7 @@ vector<double> runModel(vector<double> input, size_t inputSize){
 }
 
 void do_something() {
-    std::cout << "SIEMA ENIU" << "\n";
+    std::cout << "Hello" << "\n";
 }
 
 void initializeBuffers(size_t size){
@@ -96,6 +96,7 @@ void setTrainingData(size_t sampleCount, size_t inputSize, size_t outputSize, do
         vector<double> nextState = agent.nextStateBuffer[index];
         double reward = agent.rewardBuffer[index];
         ActionsE action = agent.actionBuffer[index];
+        bool done = agent.doneBuffer[index];
 
         //std::cout << "ACTION TAKEN: " << action << "\n";
 
@@ -112,7 +113,7 @@ void setTrainingData(size_t sampleCount, size_t inputSize, size_t outputSize, do
         // for(size_t k = 0; k < outputSize; ++k){
         //     currQs[k] = 0;
         // }
-        currQs[action] = reward+maxNextQ*discountRate;
+        currQs[action] = reward+(1-(int)done)*maxNextQ*discountRate;
         //std::cout << "REWARD FOR STATE: " << reward << "\n";
         //FastMatrix currsQs(currQs, outputSize, ROW_VECTOR);
         //printFastMatrix(currsQs);
