@@ -1,7 +1,7 @@
 #ifndef MATRIX_OPERATION_TEST_H
 #define MATRIX_OPERATION_TEST_H
 
-#include "../fastMatrix/FastMatrix.h"
+#include "FastMatrix.h"
 #include <cassert>
 #include <iostream>
 void testMatrixAddition();
@@ -17,7 +17,7 @@ void addTest1(){
 }
 
 void addTest2(){
-    vector<vector<float>> expResult = {
+    vector<vector<double>> expResult = {
         {1,2,3,4},
         {5,6,7,8},
         {9,10,11,12},
@@ -55,17 +55,17 @@ void mulTest2(){
 }
 
 void mulTest3(){
-    vector<vector<float>> expResult = {
+    vector<vector<double>> expResult = {
         {30, 24, 18},
         {84, 69, 54},
         {138, 114, 90}
     };
-    vector<vector<float>> m1Mat = {
+    vector<vector<double>> m1Mat = {
         {1, 2, 3},
         {4, 5, 6},
         {7, 8, 9}
     };
-    vector<vector<float>> m2Mat = {
+    vector<vector<double>> m2Mat = {
         {9, 8, 7},
         {6, 5, 4},
         {3, 2, 1}
@@ -79,19 +79,19 @@ void mulTest3(){
 }
 
 void mulTest4(){
-    vector<vector<float>> m1Mat = {
+    vector<vector<double>> m1Mat = {
         {1, 5, 9, 13},
         {2, 6, 10, 14},
         {3, 7, 11, 15},
         {4, 8, 12, 16}
     };
-    vector<vector<float>> m2Mat ={
+    vector<vector<double>> m2Mat ={
         {17},
         {18}, 
         {19},
         {20}
     };
-    vector<vector<float>> expResult = {
+    vector<vector<double>> expResult = {
         {538},
         {612},
         {686},

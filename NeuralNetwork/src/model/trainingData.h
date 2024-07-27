@@ -1,7 +1,7 @@
 #ifndef TRAINING_DATA_H
 #define TRAINING_DATA_H
 
-#include "../fastMatrix/FastMatrix.h"
+#include "FastMatrix.h"
 #include <vector>
 #include <string>
 using std::vector;

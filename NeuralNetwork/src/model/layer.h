@@ -1,7 +1,7 @@
 #ifndef LAYER_H
 #define LAYER_H
 
-#include "../fastMatrix/FastMatrix.h"
+#include "FastMatrix.h"
 #include <utility>
 #include <string>
 

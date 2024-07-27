@@ -1,6 +1,7 @@
 #include "model.h"
 #include <cassert>
 #include <iostream>
+#include <cmath>
 #include <fstream>
 #include <sstream>      
 
@@ -64,7 +65,7 @@ double Model::costCrossEntropy(){
 
         for(size_t j = 0; j < result.cols; ++j){
 
-            double d = log(MAT_ACCESS(result, 0, j))*(MAT_ACCESS(trainingData.outputs[i], 0, j));
+            double d = std::log(MAT_ACCESS(result, 0, j))*(MAT_ACCESS(trainingData.outputs[i], 0, j));
             totalCost -= d;
 
         }

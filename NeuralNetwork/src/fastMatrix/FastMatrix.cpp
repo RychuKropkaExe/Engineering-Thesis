@@ -1,4 +1,4 @@
-#include "../fastMatrix/FastMatrix.h"
+#include "FastMatrix.h"
 #include <iostream>
 using std::cout;
 using std::vector;

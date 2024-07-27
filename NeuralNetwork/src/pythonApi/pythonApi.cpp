@@ -5,9 +5,9 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "../fastMatrix/FastMatrix.h"
-#include "../model/trainingData.h"
-#include "../model/model.h"
+#include "FastMatrix.h"
+#include "trainingData.h"
+#include "model.h"
 #include "pythonApi.h"
 
 TrackmaniaAgent agent;
