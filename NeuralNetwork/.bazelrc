@@ -1,2 +1,0 @@
-build --copt=-O3
-run --copt=-O3

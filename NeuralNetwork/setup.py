@@ -1,7 +1,8 @@
 # Available at setup time due to pyproject.toml
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
-
+import os
+os.environ["CC"] = "g++-13.2.0"
 __version__ = "0.0.1"
 
 # The main interface is through Pybind11Extension.
@@ -15,8 +16,9 @@ __version__ = "0.0.1"
 
 ext_modules = [
     Pybind11Extension(
-        "agent",
-        ["src/pythonApi/pythonApi.cpp", "src/fastMatrix/FastMatrix.cpp", "src/model/layer.cpp", "src/model/model.cpp", "src/model/trainingData.cpp"],
+        "AgentControl",
+        ["src/AgentControl/AgentControl.cpp", "src/FastMatrix/FastMatrix.cpp", "src/Layer/layer.cpp", "src/Model/model.cpp", "src/TrainingData/trainingData.cpp"],
+        include_dirs=["src/FastMatrix", "src/Layer", "src/Model", "src/TrainingData"],
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
     ),

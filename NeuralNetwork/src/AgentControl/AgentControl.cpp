@@ -8,7 +8,7 @@
 #include "FastMatrix.h"
 #include "trainingData.h"
 #include "model.h"
-#include "pythonApi.h"
+#include "agentControl.h"
 
 TrackmaniaAgent agent;
 
@@ -171,7 +171,7 @@ void xorModelTest(){
     assert(model.cost() < 0.05f);
 }
 
-PYBIND11_MODULE(agent, m) {
+PYBIND11_MODULE(AgentControl, m) {
     m.def("do_something", &do_something, "A function that does something");
     m.def("initializeBuffers", &initializeBuffers, "A function that does something");
     m.def("remember", &remember, "A function that does something");

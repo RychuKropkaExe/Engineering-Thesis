@@ -1,4 +1,0 @@
-bazel*
-*.exe
-build
-agent.egg-info
