@@ -168,7 +168,7 @@ void xorModelTest(){
 
     //model.printModelToFile("/home/rychu/Engineering-Thesis/NeuralNetwork/printedModel.log");
 
-    assert(model.cost() < 0.05f);
+    assert(model.costMeanSquare() < 0.05f);
 }
 
 PYBIND11_MODULE(AgentControl, m) {

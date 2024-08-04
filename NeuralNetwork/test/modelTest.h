@@ -8,7 +8,7 @@ using std::vector;
 
 void xorModelTest(){
 
-    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/modelTest/xorData.txt"));
+    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/xorData.txt"));
     //td.printTrainingData();
     vector<size_t> arch = {2, 2, 4, 1};
     size_t archSize = 4;
@@ -30,7 +30,7 @@ void xorModelTest(){
 
     //model.printModelToFile("/home/rychu/Engineering-Thesis/NeuralNetwork/printedModel.log");
 
-    assert(model.cost() < 0.05f);
+    assert(model.costMeanSquare() < 0.05f);
 }
 
 void parityModelTest(){
@@ -580,7 +580,7 @@ void parityModelTest(){
         printFastMatrix(result);
     }
 
-    assert(model.cost() < 0.05f);
+    assert(model.costMeanSquare() < 0.05f);
 }
 
 void hammingLengthTest(){
@@ -869,7 +869,7 @@ void hammingLengthTest(){
         printFastMatrix(result);
     }
 
-    assert(model.cost() < 0.05f);
+    assert(model.costMeanSquare() < 0.05f);
 }
 
 void parsingTest(){

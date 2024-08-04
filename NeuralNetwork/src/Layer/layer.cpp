@@ -7,21 +7,35 @@
 //======================= CONSTRUCTORS ==========================================
 
 Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weightsDimensions,
-             pair<size_t, size_t> biasesDimensions, ActivationFunctionE f, bool randomize)
+             pair<size_t, size_t> biasesDimensions, ActivationFunctionE f, bool randomize,
+             LayerTypeE type)
 {
     this->output = FastMatrix(GET_ROWS_FROM_PAIR(outputDimensions), GET_COLS_FROM_PAIR(outputDimensions));
     this->weights = FastMatrix(GET_ROWS_FROM_PAIR(weightsDimensions), GET_COLS_FROM_PAIR(weightsDimensions));
     this->biases = FastMatrix(GET_ROWS_FROM_PAIR(biasesDimensions), GET_COLS_FROM_PAIR(biasesDimensions));
+
     if(randomize){
         this->weights.randomize(-1.0, 1.0);
         this->biases.randomize(-1.0, 1.0);
     }
-    this->functionType = f;
 
+    this->functionType = f;
+    this->layerType = type;
 }
 
+// Default constructor
+// When any object that uses layers is initialized
+// The layers are empty.
 Layer::Layer(){
-    this->functionType = SIGMOID;
+    this->layerType = EMPTY_LAYER;
+}
+
+
+// Constructor for input layer
+Layer::Layer(pair<size_t, size_t> inputDimensions)
+{
+    this->output = FastMatrix(GET_ROWS_FROM_PAIR(inputDimensions), GET_COLS_FROM_PAIR(inputDimensions));
+    this->layerType = INPUT_LAYER;
 }
 
 //======================= UTILITIES ============================================
@@ -63,7 +77,7 @@ void Layer::activate(){
                     sum += exp(MAT_ACCESS(output, 0, i) - maxValue);
                 }
 
-                double constant = maxValue + log(sum);
+                //double constant = maxValue + log(sum);
                 for (size_t i = 0; i < output.cols; ++i) {
                     MAT_ACCESS(output, 0, i) = exp(MAT_ACCESS(output, 0, i) - maxValue)/sum;
                 }

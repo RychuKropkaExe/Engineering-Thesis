@@ -19,6 +19,13 @@ enum ActivationFunctionE{
     NO_ACTIVATION
 };
 
+enum LayerTypeE{
+    INPUT_LAYER,
+    INTERMEDIATE_LAYER,
+    OUTPUT_LAYER,
+    EMPTY_LAYER // <-- Used for default constructor
+};
+
 class Layer{
 
     public:
@@ -26,10 +33,15 @@ class Layer{
         FastMatrix weights;
         FastMatrix biases;
         FastMatrix output;
+
+        LayerTypeE layerType;
+
         ActivationFunctionE functionType;
 
         Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weightsDimensions,
-              pair<size_t, size_t> biasesDimensions, ActivationFunctionE f, bool randomize);
+              pair<size_t, size_t> biasesDimensions, ActivationFunctionE f, bool randomize,
+              LayerTypeE type);
+        Layer(pair<size_t, size_t> inputDimensions);
         Layer();
 
         void xavierInitialization(size_t prevLayerSize);

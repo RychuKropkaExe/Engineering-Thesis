@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>      
 
+//======================= CONSTRUCTORS ==========================================
+
 Model::Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> actFunctions, size_t actFunctionsSize, bool randomize){
     assert(archSize == actFunctionsSize);
     this->activationFunctions.resize(actFunctionsSize);
@@ -12,19 +14,38 @@ Model::Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> a
         this->activationFunctions[i] = actFunctions[i];
     }
 
-    this->layers.resize(archSize - 1);
-    this->numberOfLayers = archSize - 1;
-    for(size_t i = 0; i < archSize - 1; ++i){
+    this->layers.resize(archSize);
+    this->numberOfLayers = archSize;
+
+    
+
+    pair<size_t, size_t> inputDimensions;
+    SET_ROWS_IN_PAIR(inputDimensions, 1);
+    SET_COLS_IN_PAIR(inputDimensions, arch[0]);
+    this->layers[0] = Layer(inputDimensions);
+
+    for(size_t i = 1; i < archSize; ++i){
+        
         pair<size_t, size_t> weightsDimensions;
         pair<size_t, size_t> biasesDimensions;
         pair<size_t, size_t> outputDimensions;
-        SET_ROWS_IN_PAIR(weightsDimensions, arch[i]);
-        SET_COLS_IN_PAIR(weightsDimensions, arch[i+1]);
+        SET_ROWS_IN_PAIR(weightsDimensions, arch[i-1]);
+        SET_COLS_IN_PAIR(weightsDimensions, arch[i]);
         SET_ROWS_IN_PAIR(biasesDimensions, 1);
-        SET_COLS_IN_PAIR(biasesDimensions, arch[i+1]);
+        SET_COLS_IN_PAIR(biasesDimensions, arch[i]);
         SET_ROWS_IN_PAIR(outputDimensions, 1);
-        SET_COLS_IN_PAIR(outputDimensions, arch[i+1]);
-        this->layers[i] = Layer(outputDimensions, weightsDimensions , biasesDimensions, actFunctions[i], randomize);
+        SET_COLS_IN_PAIR(outputDimensions, arch[i]);
+
+        LayerTypeE type = INTERMEDIATE_LAYER;
+
+        if(i == 0){
+            type = INPUT_LAYER;
+        }
+        if(i == archSize){
+            type = OUTPUT_LAYER;
+        }
+
+        this->layers[i] = Layer(outputDimensions, weightsDimensions , biasesDimensions, actFunctions[i-1], randomize, type);
     }
 
     this->arch = arch;
@@ -36,14 +57,18 @@ Model::Model(){
     this->activationFunctions.resize(1);
 }
 
+//======================= INITIALIZATION ==========================================
+
 void Model::modelXavierInitialize(){
 
     layers[0].xavierInitialization(arch[0]);
 
-    for(size_t i = 1; i < archSize - 1; ++i){
-        layers[i].xavierInitialization(arch[i-1]);
+    for(size_t i = 1; i < archSize; ++i){
+        layers[i].xavierInitialization(arch[i]);
     }
 }
+
+//======================= HYPERPARAMETERS SETTINGS ==========================================
 
 void Model::setLearningRate(double val){
     this->learningRate = val;
@@ -52,6 +77,8 @@ void Model::setLearningRate(double val){
 void Model::setEps(double val){
     this->eps = val;
 }
+
+//======================= COST FUNCTIONS ==========================================
 
 double Model::costCrossEntropy(){
     double totalCost = 0;
@@ -79,13 +106,10 @@ double Model::costCrossEntropy(){
     return totalCost/(trainingData.numOfSamples);
 }
 
-double Model::cost(){
+double Model::costMeanSquare(){
 
     double totalCost = 0;
-    // std::cout << "COST FUNCTION!!! " << "\n";
-    // std::cout << "NUMBER OF SAMPLES: " << "\n";
-    // std::cout << trainingData.numOfSamples << "\n";
-    //trainingData.printTrainingData();
+
     for(size_t i = 0; i < trainingData.numOfSamples; ++i){
 
         FastMatrix result = run(trainingData.inputs[i]);
@@ -112,19 +136,19 @@ void Model::learn(TrainingData& trainingDataIn, size_t iterations, bool clipGrad
     //std::cout << "STARTED LEARNING" << "\n";
     this->trainingData = trainingDataIn;
     //std::cout << "NUMBER OF SAMPLES: " << this->trainingData.numOfSamples << "\n";
-    std::cout << "COST FUNCTION VALUE: " << cost() << "\n";
-    double percentage = 0.1f;
+    // std::cout << "COST FUNCTION VALUE: " << cost() << "\n";
+    // double percentage = 0.1f;
     for(size_t i = 0; i < iterations; ++i){
-        if( ((double)i / (double)iterations) >= percentage ){
-            //std::cout << "LEARNING COMPLETION: " << 100*percentage << "\n";
-            double c = cost();
-            //std::cout << "COST FUNCTION VALUE: " << c << "\n";
-            // if(c >= 10000 || c < 0){
-            //     this->trainingData.printTrainingData();
-            //     printModel();
-            // }
-            percentage += 0.1f;
-        }
+        // if( ((double)i / (double)iterations) >= percentage ){
+        //     //std::cout << "LEARNING COMPLETION: " << 100*percentage << "\n";
+        //     double c = costMeanSquare();
+        //     //std::cout << "COST FUNCTION VALUE: " << c << "\n";
+        //     // if(c >= 10000 || c < 0){
+        //     //     this->trainingData.printTrainingData();
+        //     //     printModel();
+        //     // }
+        //     percentage += 0.1f;
+        // }
         //std::cout << "LEARNING STARTED 2" << "\n";
         backPropagation(clipGradient);
         //std::cout << "LEARNING COMPLETED 2" << "\n";
@@ -136,15 +160,15 @@ void Model::learn(TrainingData& trainingDataIn, size_t iterations, bool clipGrad
 
 FastMatrix Model::run(FastMatrix input){
 
-    FastMatrix result = input;
+    this->layers[0].output = input;
 
-    for(size_t i = 0; i < numberOfLayers; i++){
+    for(size_t i = 1; i < numberOfLayers; i++){
 
-        result = layers[i].forward(result);
+        layers[i].forward(layers[i-1].output);
 
     }
 
-    return result;
+    return this->layers[this->numberOfLayers].output;
 
 }
 
@@ -221,18 +245,18 @@ void Model::backPropagation(bool clipGradient){
     size_t n = trainingData.numOfSamples;
     // std::cout << "NUMBER OF SAMPLES IN BACK PROPAGATION: " << n << "\n";
     Model gradient(arch, archSize, activationFunctions, archSize, false);
-
+    
     // std::cout << "ARCH SIZE: " << archSize << "\n";
     // for(size_t i = 0; i < archSize; ++i){
     //     std::cout << "ARCH: " << i << " " << arch[i] << "\n";
     // }
 
-    for(size_t i = 0; i < gradient.numberOfLayers; ++i){
+    for(size_t i = 1; i < gradient.numberOfLayers; ++i){
         gradient.layers[i].weights.set(0.0);
         gradient.layers[i].biases.set(0.0);
         gradient.layers[i].output.set(0.0);
     }
-
+    
     // i - current sample
     // l - current layer
     // j - current activation
@@ -241,17 +265,18 @@ void Model::backPropagation(bool clipGradient){
     for (size_t i = 0; i < n; ++i) {
 
         run(trainingData.inputs[i]);
+        
         // std::cout << "NUMBER OF LAYERS: " << numberOfLayers << "\n";
         for (size_t j = 0; j < numberOfLayers; ++j) {
             gradient.layers[j].output.set(0.0);
         }
-
+        
         // std::cout << "OUTPUT SIZE: " << trainingData.outputSize << "\n";
 
         for (size_t j = 0; j < trainingData.outputSize; ++j) {
             MAT_ACCESS(gradient.layers[numberOfLayers-1].output, 0, j) = MAT_ACCESS(layers[numberOfLayers-1].output, 0, j) - MAT_ACCESS(trainingData.outputs[i], 0, j);
         }
-        
+
         // Basically, my model calss does not consider input as a proper
         // member of the first layer, but consider the output as a proper
         // member of the last layer. This create a sort of problem. Since we want
@@ -278,10 +303,10 @@ void Model::backPropagation(bool clipGradient){
         // Hence the process is divided into iterating over all layers until first
         // And then iterating over first layer separetly.
 
-        for (size_t l = numberOfLayers - 1; l > 0; --l) {
+        for (size_t l = numberOfLayers; l > 0; --l) {
             // std::cout << "LAYER: " << l << " OUTPUT COLS: " << layers[l].output.cols << "\n";
             for (size_t j = 0; j < layers[l].output.cols; ++j) {
-
+                
                 double a = MAT_ACCESS(layers[l].output, 0, j);
                 double da = MAT_ACCESS(gradient.layers[l].output, 0, j);
                 MAT_ACCESS(gradient.layers[l].biases, 0, j) += 2*da*a*(1-a);
@@ -297,33 +322,31 @@ void Model::backPropagation(bool clipGradient){
             }
         }
 
-        FastMatrix inp;
-        inp.cols = trainingData.inputs[i].cols;
-        inp.rows = trainingData.inputs[i].rows;
-        inp.mat = trainingData.inputs[i].mat;
+        // FastMatrix inp;
+        // inp.cols = trainingData.inputs[i].cols;
+        // inp.rows = trainingData.inputs[i].rows;
+        // inp.mat = trainingData.inputs[i].mat;
 
-        // Here the iteration over first layer happens
-        // std::cout << "LAYER 0 OUTPUT COLS: " << layers[0].output.cols << "\n";
-        for (size_t j = 0; j < layers[0].output.cols; ++j) {
+        // // Here the iteration over first layer happens
+        // // std::cout << "LAYER 0 OUTPUT COLS: " << layers[0].output.cols << "\n";
+        // for (size_t j = 0; j < layers[0].output.cols; ++j) {
 
-            double a = MAT_ACCESS(layers[0].output, 0, j);
-            double da = MAT_ACCESS(gradient.layers[0].output, 0, j);
-            MAT_ACCESS(gradient.layers[0].biases, 0, j) += 2*da*a*(1-a);
+        //     double a = MAT_ACCESS(layers[0].output, 0, j);
+        //     double da = MAT_ACCESS(gradient.layers[0].output, 0, j);
+        //     MAT_ACCESS(gradient.layers[0].biases, 0, j) += 2*da*a*(1-a);
 
-            // std::cout << "INPUT NUMBER OF COLS: " << inp.cols << "\n";
+        //     // std::cout << "INPUT NUMBER OF COLS: " << inp.cols << "\n";
 
-            for (size_t k = 0; k < inp.cols; ++k) {
-                // j - weight matrix col
-                // k - weight matrix row
-                double pa = MAT_ACCESS(inp, 0, k);
-                double w = MAT_ACCESS(layers[0].weights, k, j);
-                MAT_ACCESS(gradient.layers[0].weights, k, j) += 2*da*a*(1 - a)*pa;
-                MAT_ACCESS(inp, 0, k) += 2*da*a*(1 - a)*w;
-            }
+        //     for (size_t k = 0; k < inp.cols; ++k) {
+        //         // j - weight matrix col
+        //         // k - weight matrix row
+        //         double pa = MAT_ACCESS(inp, 0, k);
+        //         double w = MAT_ACCESS(layers[0].weights, k, j);
+        //         MAT_ACCESS(gradient.layers[0].weights, k, j) += 2*da*a*(1 - a)*pa;
+        //         MAT_ACCESS(inp, 0, k) += 2*da*a*(1 - a)*w;
+        //     }
 
-        }
-
-
+        //}
 
     }
 
@@ -344,7 +367,7 @@ void Model::backPropagation(bool clipGradient){
         }
     }
 
-        // std::cout << "APPLYING GRADIENT: " << numberOfLayers << "\n";
+    // std::cout << "APPLYING GRADIENT: " << numberOfLayers << "\n";
     if(clipGradient)
         gradient.clipValues();
     //gradient.printModel();
