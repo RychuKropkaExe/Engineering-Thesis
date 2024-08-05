@@ -25,7 +25,7 @@ OBJ := $(SRC:%.cpp=%.obj)
 DEPS := $(OBJ:%.obj=%.d)
 
 CC := g++
-C_FLAGS := -Wall -Wextra -Werror
+C_FLAGS := -Wall -Wextra -Werror -O3
 DEP_FLAGS := -MMD -MP
 
 LIB := pthread

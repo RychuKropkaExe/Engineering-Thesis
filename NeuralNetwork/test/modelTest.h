@@ -26,8 +26,6 @@ void xorModelTest(){
 
     model.learn(td, 100000, false);
 
-    std::cout << "TEST RESULT: " << "\n";
-
     //model.printModelToFile("/home/rychu/Engineering-Thesis/NeuralNetwork/printedModel.log");
 
     assert(model.costMeanSquare() < 0.05f);
@@ -572,13 +570,13 @@ void parityModelTest(){
 
     //model.printModel();
 
-    for(size_t i = 0; i < td.numOfSamples; ++i){
-        std::cout << "FOR INPUT: " << "\n";
-        printFastMatrix(td.inputs[i]);
-        std::cout << "OUTPUT IS: " << "\n";
-        FastMatrix result = model.run(td.inputs[i]);
-        printFastMatrix(result);
-    }
+    // for(size_t i = 0; i < td.numOfSamples; ++i){
+    //     std::cout << "FOR INPUT: " << "\n";
+    //     printFastMatrix(td.inputs[i]);
+    //     std::cout << "OUTPUT IS: " << "\n";
+    //     FastMatrix result = model.run(td.inputs[i]);
+    //     printFastMatrix(result);
+    // }
 
     assert(model.costMeanSquare() < 0.05f);
 }
@@ -861,13 +859,13 @@ void hammingLengthTest(){
 
     model.learn(td, 100000, false);
     
-    for(size_t i = 0; i < td.numOfSamples; ++i){
-        std::cout << "FOR INPUT: " << "\n";
-        printFastMatrix(td.inputs[i]);
-        std::cout << "OUTPUT IS: " << "\n";
-        FastMatrix result = model.run(td.inputs[i]);
-        printFastMatrix(result);
-    }
+    // for(size_t i = 0; i < td.numOfSamples; ++i){
+    //     std::cout << "FOR INPUT: " << "\n";
+    //     printFastMatrix(td.inputs[i]);
+    //     std::cout << "OUTPUT IS: " << "\n";
+    //     FastMatrix result = model.run(td.inputs[i]);
+    //     printFastMatrix(result);
+    // }
 
     assert(model.costMeanSquare() < 0.05f);
 }
@@ -885,6 +883,7 @@ void parsingTest(){
 }
 
 void modelTests(){
+
     xorModelTest();
     parityModelTest();
     hammingLengthTest();
