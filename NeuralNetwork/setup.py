@@ -19,6 +19,7 @@ ext_modules = [
         "AgentControl",
         ["src/AgentControl/AgentControl.cpp", "src/FastMatrix/FastMatrix.cpp", "src/Layer/layer.cpp", "src/Model/model.cpp", "src/TrainingData/trainingData.cpp"],
         include_dirs=["src/FastMatrix", "src/Layer", "src/Model", "src/TrainingData"],
+        extra_compile_args=["/O2"],
         # Example: passing in the version to the compiled code
         define_macros=[("VERSION_INFO", __version__)],
     ),

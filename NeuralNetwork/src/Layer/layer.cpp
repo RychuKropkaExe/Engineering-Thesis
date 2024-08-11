@@ -45,6 +45,8 @@ void Layer::xavierInitialization(size_t prevLayerSize){
     weights.randomize(-(sqrt(6)/sqrt(prevLayerSize + weights.cols)), (sqrt(6)/sqrt(prevLayerSize + weights.cols)));
 }
 
+//======================= ACTIVATION FUNCTIONS ============================================
+
 inline double sigmoidf(double x){
     return (double)1.0/((double)1.0 + std::exp(-x));
 }

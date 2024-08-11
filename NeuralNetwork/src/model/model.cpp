@@ -263,76 +263,27 @@ void Model::backPropagation(bool clipGradient){
         }
 
 
-        // Basically, my model calss does not consider input as a proper
-        // member of the first layer, but consider the output as a proper
-        // member of the last layer. This create a sort of problem. Since we want
-        // to iterate backwords in, well, BACKWORDS propagation, we need access to
-        // previous layer at they full. This means that previous actviation is stored
-        // in layer[l-1].output, but at the same time the 0th activation is not present in the model.
-        // It looks for example model like this:
-        //
-        // layer1 weight, layer1 bias, layer1 output
-        // layer2 weight, layer2 bias, layer2 output
-        // layer3 weight, layer3 bias, layer3 output(model output)
-        //
-        // And when doing backwords propagation we pair them like this:
-        //
-        // l3 out(model output), l3 bias, l3 weights, l2 out(l3 input)
-        // l2 out, l2 bias, l2 wieghts, l1 out(l2 input)
-        // l1 out, l1 bias, l1 weights, l0 out(model input) <-- missing
-        //
-        // We both need it to look like that, and don't at the same time.
-        // We could abstract it out, but this provides us with easy access,
-        // and use of intermediate buffers which are layers outputs. 
-        // This also binds the values together in imaginable way, because
-        // They are connected. 
-        // Hence the process is divided into iterating over all layers until first
-        // And then iterating over first layer separetly.
-
         for (size_t l = numberOfLayers - 1; l > 0; --l) {
             // std::cout << "LAYER: " << l << " OUTPUT COLS: " << layers[l].output.cols << "\n";
             for (size_t j = 0; j < layers[l].output.cols; ++j) {
                 double a = MAT_ACCESS(layers[l].output, 0, j);
                 double da = MAT_ACCESS(gradient.layers[l].output, 0, j);
-                
-                MAT_ACCESS(gradient.layers[l].biases, 0, j) += 2*da*a*(1-a);
+                double actFuncDerivative = Layer::activationFunctionDerivative(a, layers[l].functionType);
+                MAT_ACCESS(gradient.layers[l].biases, 0, j) += da*actFuncDerivative;
                 // std::cout << "LAYER: " << l-1 << " OUTPUT COLS: " << layers[l-1].output.cols << "\n";
                 for (size_t k = 0; k < layers[l-1].output.cols; ++k) {
                     // j - weight matrix col
                     // k - weight matrix row
                     double pa = MAT_ACCESS(layers[l-1].output, 0, k);
                     double w = MAT_ACCESS(layers[l].weights, k, j);
-                    MAT_ACCESS(gradient.layers[l].weights, k, j) += 2*da*a*(1 - a)*pa;
-                    MAT_ACCESS(gradient.layers[l-1].output, 0, k) += 2*da*a*(1 - a)*w;
+                    if(activationFunctions[l] == SOFTMAX){
+                        actFuncDerivative = a*((j==k)-w);
+                    }
+                    MAT_ACCESS(gradient.layers[l].weights, k, j) += da*actFuncDerivative*pa;
+                    MAT_ACCESS(gradient.layers[l-1].output, 0, k) += da*actFuncDerivative*w;
                 }
             }
         }
-        
-        // FastMatrix inp;
-        // inp.cols = trainingData.inputs[i].cols;
-        // inp.rows = trainingData.inputs[i].rows;
-        // inp.mat = trainingData.inputs[i].mat;
-
-        // // Here the iteration over first layer happens
-        // // std::cout << "LAYER 0 OUTPUT COLS: " << layers[0].output.cols << "\n";
-        // for (size_t j = 0; j < layers[0].output.cols; ++j) {
-
-        //     double a = MAT_ACCESS(layers[0].output, 0, j);
-        //     double da = MAT_ACCESS(gradient.layers[0].output, 0, j);
-        //     MAT_ACCESS(gradient.layers[0].biases, 0, j) += 2*da*a*(1-a);
-
-        //     // std::cout << "INPUT NUMBER OF COLS: " << inp.cols << "\n";
-
-        //     for (size_t k = 0; k < inp.cols; ++k) {
-        //         // j - weight matrix col
-        //         // k - weight matrix row
-        //         double pa = MAT_ACCESS(inp, 0, k);
-        //         double w = MAT_ACCESS(layers[0].weights, k, j);
-        //         MAT_ACCESS(gradient.layers[0].weights, k, j) += 2*da*a*(1 - a)*pa;
-        //         MAT_ACCESS(inp, 0, k) += 2*da*a*(1 - a)*w;
-        //     }
-
-        //}
 
     }
 

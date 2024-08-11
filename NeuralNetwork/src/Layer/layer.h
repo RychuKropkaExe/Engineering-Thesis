@@ -4,6 +4,7 @@
 #include "FastMatrix.h"
 #include <utility>
 #include <string>
+#include <iostream>
 
 using std::pair;
 
@@ -47,7 +48,20 @@ class Layer{
         void xavierInitialization(size_t prevLayerSize);
 
         FastMatrix forward(FastMatrix input);
+
         void activate();
+
+        static double activationFunctionDerivative(float y, ActivationFunctionE act)
+        {
+            switch (act) {
+                case SIGMOID: return y*(1 - y);
+                case RELU: return y >= 0 ? 1 : 0.01f;
+                case SOFTMAX: return y*(1 - y);
+                case NO_ACTIVATION: return 0.01f;
+                default: return 0;
+            }
+            return 0.0f;
+        }
 
 };
 
