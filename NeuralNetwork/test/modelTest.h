@@ -9,30 +9,23 @@ using std::vector;
 void xorModelTest(){
 
     TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/xorData.txt"));
-    //td.printTrainingData();
     vector<size_t> arch = {2, 2, 4, 1};
     size_t archSize = 4;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
 
     Model model(arch, archSize, actFunc, archSize, true);
 
-    // model.printModel();
-
     double eps = 1e-3;
     double learningRate = 1e-1f;
 
     model.setEps(eps);
     model.setLearningRate(learningRate);
-    //model.printModel();
     model.learn(td, 100000, false);
-
-    //model.printModelToFile("/home/rychu/Engineering-Thesis/NeuralNetwork/printedModel.log");
 
     assert(model.costMeanSquare() < 0.05f);
 }
 
 void paraboleModelTest(){
-    //td.printTrainingData();
     vector<size_t> arch = {1, 10, 10, 10, 1};
 
     vector<vector<double>> trainingInputs;
@@ -69,21 +62,13 @@ void paraboleModelTest(){
 
     model.modelXavierInitialize();
 
-    // model.printModel();
-
     double eps = 1e-3;
     double learningRate = 1e-3;
 
     model.setEps(eps);
     model.setLearningRate(learningRate);
-    //model.printModel();
-    //model.printModel();
 
     model.learn(td, 100000, true);
-
-    //model.printModel();
-
-    //model.printModelToFile("/home/rychu/Engineering-Thesis/NeuralNetwork/printedModel.log");
 
     for(size_t i = 0; i < td.numOfSamples; ++i){
         std::cout << "FOR INPUT: " << std::endl;
@@ -106,8 +91,6 @@ void parityModelTest(){
 
     Model model(arch, archSize, actFunc, archSize, true);
 
-    //model.printModel();
-
     double eps = 1e-1;
     double learningRate = 1e-1;
 
@@ -115,16 +98,6 @@ void parityModelTest(){
     model.setLearningRate(learningRate);
 
     model.learn(td, 10000, false);
-
-    //model.printModel();
-
-    // for(size_t i = 0; i < td.numOfSamples; ++i){
-    //     std::cout << "FOR INPUT: " << std::endl;
-    //     printFastMatrix(td.inputs[i]);
-    //     std::cout << "OUTPUT IS: " << std::endl;
-    //     FastMatrix result = model.run(td.inputs[i]);
-    //     printFastMatrix(result);
-    // }
 
     assert(model.costMeanSquare() < 0.05f);
 }
@@ -399,21 +372,11 @@ void hammingLengthTest(){
 
     Model model(arch, archSize, actFunc, archSize, true);
 
-    //model.printModel();
-
     double learningRate = 1e-1;
 
     model.setLearningRate(learningRate);
 
     model.learn(td, 200000, false);
-    
-    // for(size_t i = 0; i < td.numOfSamples; ++i){
-    //     std::cout << "FOR INPUT: " << std::endl;
-    //     printFastMatrix(td.inputs[i]);
-    //     std::cout << "OUTPUT IS: " << std::endl;
-    //     FastMatrix result = model.run(td.inputs[i]);
-    //     printFastMatrix(result);
-    // }
 
     assert(model.costMeanSquare() < 0.10f);
 }
