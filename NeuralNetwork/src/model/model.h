@@ -35,17 +35,19 @@ public:
     double costMeanSquare();
     double costCrossEntropy();
     void finiteDifference();
-    void backPropagation(bool clipGradient);
+    void backPropagation(bool clipGradientmz, uint32_t batchSize);
 
     void setLearningRate(double val);
     void setEps(double val);
-    void learn(TrainingData &trainingData, size_t iterations, bool clipGradient);
+    void learn(TrainingData &trainingDataIn, size_t iterations, bool clipGradient, uint32_t batchSize);
 
     void printModel();
 
     void printModelToFile(std::string filename);
 
     void clipValues();
+
+    inline uint32_t random_u32(uint32_t prev);
 };
 
 Model parseModelFromFile(std::string filename);

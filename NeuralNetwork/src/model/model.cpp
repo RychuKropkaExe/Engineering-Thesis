@@ -140,7 +140,7 @@ double Model::costMeanSquare()
     return totalCost / (trainingData.numOfSamples);
 }
 
-void Model::learn(TrainingData &trainingDataIn, size_t iterations, bool clipGradient)
+void Model::learn(TrainingData &trainingDataIn, size_t iterations, bool clipGradient, uint32_t batchSize)
 {
 
     // std::cout << "STARTED LEARNING" << "\n";
@@ -151,7 +151,7 @@ void Model::learn(TrainingData &trainingDataIn, size_t iterations, bool clipGrad
     for (size_t i = 0; i < iterations; ++i)
     {
 
-        backPropagation(clipGradient);
+        backPropagation(clipGradient, batchSize);
     }
 
     std::cout << "COST AFTER LEARNING: " << costMeanSquare() << "\n";
@@ -166,7 +166,7 @@ FastMatrix Model::run(FastMatrix input)
     {
         layers[i].forward(layers[i - 1].output);
     }
-
+    // printFastMatrix(this->layers[this->numberOfLayers - 1].output);
     return this->layers[this->numberOfLayers - 1].output;
 }
 
@@ -253,9 +253,13 @@ void Model::clipValues()
     }
 }
 
-void Model::backPropagation(bool clipGradient)
+void Model::backPropagation(bool clipGradient, uint32_t batchSize)
 {
-    size_t n = trainingData.numOfSamples;
+    // printModel();
+    // std::cout << "=================================================================" << "\n";
+    //  trainingData.printTrainingData();
+    //  printModel();
+    size_t n = batchSize == 0 ? trainingData.numOfSamples : batchSize;
     // std::cout << "NUMBER OF SAMPLES IN BACK PROPAGATION: " << n << "\n";
     Model gradient(arch, archSize, activationFunctions, archSize, false);
 
@@ -278,8 +282,13 @@ void Model::backPropagation(bool clipGradient)
 
     for (size_t i = 0; i < n; ++i)
     {
-
-        run(trainingData.inputs[i]);
+        size_t currentIndex = (size_t)rand() % trainingData.numOfSamples;
+        // std::cout << currentIndex << "\n";
+        // std::cout << "CURRENT INPUT: " << "\n";
+        // printFastMatrix(trainingData.inputs[currentIndex]);
+        // std::cout << "CURRENT OUTPUT: " << "\n";
+        FastMatrix tmp{run(trainingData.inputs[currentIndex])};
+        // printFastMatrix(tmp);
 
         // std::cout << "NUMBER OF LAYERS: " << numberOfLayers << "\n";
         for (size_t j = 0; j < numberOfLayers; ++j)
@@ -291,7 +300,10 @@ void Model::backPropagation(bool clipGradient)
 
         for (size_t j = 0; j < trainingData.outputSize; ++j)
         {
-            MAT_ACCESS(gradient.layers[numberOfLayers - 1].output, 0, j) = MAT_ACCESS(layers[numberOfLayers - 1].output, 0, j) - MAT_ACCESS(trainingData.outputs[i], 0, j);
+            // std::cout << "OUTPUT: " << MAT_ACCESS(trainingData.outputs[currentIndex], 0, j) << "\n";
+            MAT_ACCESS(gradient.layers[numberOfLayers - 1].output, 0, j) =
+                (double)((double)MAT_ACCESS(layers[numberOfLayers - 1].output, 0, j) - (double)MAT_ACCESS(trainingData.outputs[currentIndex], 0, j));
+            // std::cout << "MODEL OUTPUT: " << MAT_ACCESS(layers[numberOfLayers - 1].output, 0, j) << "\n";
         }
 
         for (size_t l = numberOfLayers - 1; l > 0; --l)
@@ -310,10 +322,6 @@ void Model::backPropagation(bool clipGradient)
                     // k - weight matrix row
                     double pa = MAT_ACCESS(layers[l - 1].output, 0, k);
                     double w = MAT_ACCESS(layers[l].weights, k, j);
-                    if (activationFunctions[l] == SOFTMAX)
-                    {
-                        actFuncDerivative = a * ((j == k) - w);
-                    }
                     MAT_ACCESS(gradient.layers[l].weights, k, j) += da * actFuncDerivative * pa;
                     MAT_ACCESS(gradient.layers[l - 1].output, 0, k) += da * actFuncDerivative * w;
                 }
@@ -354,6 +362,7 @@ void Model::backPropagation(bool clipGradient)
         {
             for (size_t k = 0; k < layers[i].weights.cols; ++k)
             {
+                // std::cout << "CURRENT GRADIENT: " << MAT_ACCESS(gradient.layers[i].weights, j, k) << "\n";
                 MAT_ACCESS(layers[i].weights, j, k) -= learningRate * MAT_ACCESS(gradient.layers[i].weights, j, k);
             }
         }
@@ -366,6 +375,8 @@ void Model::backPropagation(bool clipGradient)
             }
         }
     }
+    // trainingData.printTrainingData();
+    // printModel();
 
     // std::cout << "BACK PROPAGATION APPLIED " << "\n";
 }
@@ -391,6 +402,11 @@ void Model::printModel()
         printFastMatrix(layers[i].output);
         std::cout << "ACTIVATION FUNCTION: " << layers[i].functionType << "\n";
     }
+}
+
+inline uint32_t Model::random_u32(uint32_t prev)
+{
+    return prev * 1664525U + 1013904223U; // assuming complement-2 integers and non-signaling overflow
 }
 
 void Model::printModelToFile(std::string filename)

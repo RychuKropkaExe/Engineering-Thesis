@@ -20,14 +20,14 @@ void xorModelTest()
 
     model.setEps(eps);
     model.setLearningRate(learningRate);
-    model.learn(td, 100000, false);
+    model.learn(td, 100000, true, 0);
 
     assert(model.costMeanSquare() < 0.05f);
 }
 
 void paraboleModelTest()
 {
-    vector<size_t> arch = {1, 10, 10, 10, 1};
+    vector<size_t> arch = {1, 10, 10, 1};
 
     vector<vector<double>> trainingInputs;
     vector<vector<double>> trainingOutputs;
@@ -48,29 +48,27 @@ void paraboleModelTest()
 
     for (size_t i = 0; i < numberOfSamples; i++)
     {
-
         double inputValue = -20.f + ((double)i / 25.f);
-
         trainingInputs[i][0] = inputValue;
         trainingOutputs[i][0] = inputValue * inputValue;
     }
 
     TrainingData td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
 
-    size_t archSize = 5;
-    vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU, RELU};
+    size_t archSize = 4;
+    vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU};
 
     Model model(arch, archSize, actFunc, archSize, true);
 
     model.modelXavierInitialize();
 
     double eps = 1e-3;
-    double learningRate = 1e-3;
+    double learningRate = 1e-2;
 
     model.setEps(eps);
     model.setLearningRate(learningRate);
 
-    model.learn(td, 100000, true);
+    model.learn(td, 1000000, true, 32);
 
     assert(model.costMeanSquare() < 100.f);
 }
@@ -91,7 +89,7 @@ void parityModelTest()
     model.setEps(eps);
     model.setLearningRate(learningRate);
 
-    model.learn(td, 10000, false);
+    model.learn(td, 10000, false, 0);
 
     assert(model.costMeanSquare() < 0.05f);
 }
@@ -109,7 +107,7 @@ void hammingLengthTest()
 
     model.setLearningRate(learningRate);
 
-    model.learn(td, 300000, false);
+    model.learn(td, 300000, false, 32);
 
     assert(model.costMeanSquare() < 0.10f);
 }
