@@ -1,14 +1,14 @@
 #ifndef MODEL_TEST_H
 #define MODEL_TEST_H
-#include <vector>
-#include "trainingData.h"
 #include "model.h"
+#include "trainingData.h"
 #include <string>
+#include <vector>
 using std::vector;
 
-void xorModelTest(){
-
-    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/xorData.txt"));
+void xorModelTest()
+{
+    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/xorData.txt"));
     vector<size_t> arch = {2, 2, 4, 1};
     size_t archSize = 4;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
@@ -25,7 +25,8 @@ void xorModelTest(){
     assert(model.costMeanSquare() < 0.05f);
 }
 
-void paraboleModelTest(){
+void paraboleModelTest()
+{
     vector<size_t> arch = {1, 10, 10, 10, 1};
 
     vector<vector<double>> trainingInputs;
@@ -39,18 +40,19 @@ void paraboleModelTest(){
     trainingInputs.resize(numberOfSamples);
     trainingOutputs.resize(numberOfSamples);
 
-    for(size_t i = 0; i < numberOfSamples; i++){
+    for (size_t i = 0; i < numberOfSamples; i++)
+    {
         trainingInputs[i].resize(inputSize);
         trainingOutputs[i].resize(outputSize);
     }
 
-    for(size_t i = 0; i < numberOfSamples; i++){
+    for (size_t i = 0; i < numberOfSamples; i++)
+    {
 
-        double inputValue = -20.f + ((double)i/25.f);
+        double inputValue = -20.f + ((double)i / 25.f);
 
         trainingInputs[i][0] = inputValue;
-        trainingOutputs[i][0] = inputValue*inputValue;
-
+        trainingOutputs[i][0] = inputValue * inputValue;
     }
 
     TrainingData td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
@@ -70,21 +72,13 @@ void paraboleModelTest(){
 
     model.learn(td, 100000, true);
 
-    for(size_t i = 0; i < td.numOfSamples; ++i){
-        std::cout << "FOR INPUT: " << std::endl;
-        printFastMatrix(td.inputs[i]);
-        std::cout << "OUTPUT IS: " << std::endl;
-        FastMatrix result = model.run(td.inputs[i]);
-        printFastMatrix(result);
-    }
-
     assert(model.costMeanSquare() < 100.f);
 }
 
+void parityModelTest()
+{
 
-void parityModelTest(){
-
-    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/parityTestData.txt"));
+    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/parityTestData.txt"));
     vector<size_t> arch = {8, 8, 1};
     size_t archSize = 3;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID, SIGMOID};
@@ -102,273 +96,12 @@ void parityModelTest(){
     assert(model.costMeanSquare() < 0.05f);
 }
 
-void hammingLengthTest(){
-    vector<vector<double>> trainingInputs {
-        { 0, 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0, 1 },
-        { 0, 0, 0, 0, 0, 1, 0 },
-        { 0, 0, 0, 0, 0, 1, 1 },
-        { 0, 0, 0, 0, 1, 0, 0 },
-        { 0, 0, 0, 0, 1, 0, 1 },
-        { 0, 0, 0, 0, 1, 1, 0 },
-        { 0, 0, 0, 0, 1, 1, 1 },
-        { 0, 0, 0, 1, 0, 0, 0 },
-        { 0, 0, 0, 1, 0, 0, 1 },
-        { 0, 0, 0, 1, 0, 1, 0 },
-        { 0, 0, 0, 1, 0, 1, 1 },
-        { 0, 0, 0, 1, 1, 0, 0 },
-        { 0, 0, 0, 1, 1, 0, 1 },
-        { 0, 0, 0, 1, 1, 1, 0 },
-        { 0, 0, 0, 1, 1, 1, 1 },
-        { 0, 0, 1, 0, 0, 0, 0 },
-        { 0, 0, 1, 0, 0, 0, 1 },
-        { 0, 0, 1, 0, 0, 1, 0 },
-        { 0, 0, 1, 0, 0, 1, 1 },
-        { 0, 0, 1, 0, 1, 0, 0 },
-        { 0, 0, 1, 0, 1, 0, 1 },
-        { 0, 0, 1, 0, 1, 1, 0 },
-        { 0, 0, 1, 0, 1, 1, 1 },
-        { 0, 0, 1, 1, 0, 0, 0 },
-        { 0, 0, 1, 1, 0, 0, 1 },
-        { 0, 0, 1, 1, 0, 1, 0 },
-        { 0, 0, 1, 1, 0, 1, 1 },
-        { 0, 0, 1, 1, 1, 0, 0 },
-        { 0, 0, 1, 1, 1, 0, 1 },
-        { 0, 0, 1, 1, 1, 1, 0 },
-        { 0, 0, 1, 1, 1, 1, 1 },
-        { 0, 1, 0, 0, 0, 0, 0 },
-        { 0, 1, 0, 0, 0, 0, 1 },
-        { 0, 1, 0, 0, 0, 1, 0 },
-        { 0, 1, 0, 0, 0, 1, 1 },
-        { 0, 1, 0, 0, 1, 0, 0 },
-        { 0, 1, 0, 0, 1, 0, 1 },
-        { 0, 1, 0, 0, 1, 1, 0 },
-        { 0, 1, 0, 0, 1, 1, 1 },
-        { 0, 1, 0, 1, 0, 0, 0 },
-        { 0, 1, 0, 1, 0, 0, 1 },
-        { 0, 1, 0, 1, 0, 1, 0 },
-        { 0, 1, 0, 1, 0, 1, 1 },
-        { 0, 1, 0, 1, 1, 0, 0 },
-        { 0, 1, 0, 1, 1, 0, 1 },
-        { 0, 1, 0, 1, 1, 1, 0 },
-        { 0, 1, 0, 1, 1, 1, 1 },
-        { 0, 1, 1, 0, 0, 0, 0 },
-        { 0, 1, 1, 0, 0, 0, 1 },
-        { 0, 1, 1, 0, 0, 1, 0 },
-        { 0, 1, 1, 0, 0, 1, 1 },
-        { 0, 1, 1, 0, 1, 0, 0 },
-        { 0, 1, 1, 0, 1, 0, 1 },
-        { 0, 1, 1, 0, 1, 1, 0 },
-        { 0, 1, 1, 0, 1, 1, 1 },
-        { 0, 1, 1, 1, 0, 0, 0 },
-        { 0, 1, 1, 1, 0, 0, 1 },
-        { 0, 1, 1, 1, 0, 1, 0 },
-        { 0, 1, 1, 1, 0, 1, 1 },
-        { 0, 1, 1, 1, 1, 0, 0 },
-        { 0, 1, 1, 1, 1, 0, 1 },
-        { 0, 1, 1, 1, 1, 1, 0 },
-        { 0, 1, 1, 1, 1, 1, 1 },
-        { 1, 0, 0, 0, 0, 0, 0 },
-        { 1, 0, 0, 0, 0, 0, 1 },
-        { 1, 0, 0, 0, 0, 1, 0 },
-        { 1, 0, 0, 0, 0, 1, 1 },
-        { 1, 0, 0, 0, 1, 0, 0 },
-        { 1, 0, 0, 0, 1, 0, 1 },
-        { 1, 0, 0, 0, 1, 1, 0 },
-        { 1, 0, 0, 0, 1, 1, 1 },
-        { 1, 0, 0, 1, 0, 0, 0 },
-        { 1, 0, 0, 1, 0, 0, 1 },
-        { 1, 0, 0, 1, 0, 1, 0 },
-        { 1, 0, 0, 1, 0, 1, 1 },
-        { 1, 0, 0, 1, 1, 0, 0 },
-        { 1, 0, 0, 1, 1, 0, 1 },
-        { 1, 0, 0, 1, 1, 1, 0 },
-        { 1, 0, 0, 1, 1, 1, 1 },
-        { 1, 0, 1, 0, 0, 0, 0 },
-        { 1, 0, 1, 0, 0, 0, 1 },
-        { 1, 0, 1, 0, 0, 1, 0 },
-        { 1, 0, 1, 0, 0, 1, 1 },
-        { 1, 0, 1, 0, 1, 0, 0 },
-        { 1, 0, 1, 0, 1, 0, 1 },
-        { 1, 0, 1, 0, 1, 1, 0 },
-        { 1, 0, 1, 0, 1, 1, 1 },
-        { 1, 0, 1, 1, 0, 0, 0 },
-        { 1, 0, 1, 1, 0, 0, 1 },
-        { 1, 0, 1, 1, 0, 1, 0 },
-        { 1, 0, 1, 1, 0, 1, 1 },
-        { 1, 0, 1, 1, 1, 0, 0 },
-        { 1, 0, 1, 1, 1, 0, 1 },
-        { 1, 0, 1, 1, 1, 1, 0 },
-        { 1, 0, 1, 1, 1, 1, 1 },
-        { 1, 1, 0, 0, 0, 0, 0 },
-        { 1, 1, 0, 0, 0, 0, 1 },
-        { 1, 1, 0, 0, 0, 1, 0 },
-        { 1, 1, 0, 0, 0, 1, 1 },
-        { 1, 1, 0, 0, 1, 0, 0 },
-        { 1, 1, 0, 0, 1, 0, 1 },
-        { 1, 1, 0, 0, 1, 1, 0 },
-        { 1, 1, 0, 0, 1, 1, 1 },
-        { 1, 1, 0, 1, 0, 0, 0 },
-        { 1, 1, 0, 1, 0, 0, 1 },
-        { 1, 1, 0, 1, 0, 1, 0 },
-        { 1, 1, 0, 1, 0, 1, 1 },
-        { 1, 1, 0, 1, 1, 0, 0 },
-        { 1, 1, 0, 1, 1, 0, 1 },
-        { 1, 1, 0, 1, 1, 1, 0 },
-        { 1, 1, 0, 1, 1, 1, 1 },
-        { 1, 1, 1, 0, 0, 0, 0 },
-        { 1, 1, 1, 0, 0, 0, 1 },
-        { 1, 1, 1, 0, 0, 1, 0 },
-        { 1, 1, 1, 0, 0, 1, 1 },
-        { 1, 1, 1, 0, 1, 0, 0 },
-        { 1, 1, 1, 0, 1, 0, 1 },
-        { 1, 1, 1, 0, 1, 1, 0 },
-        { 1, 1, 1, 0, 1, 1, 1 },
-        { 1, 1, 1, 1, 0, 0, 0 },
-        { 1, 1, 1, 1, 0, 0, 1 },
-        { 1, 1, 1, 1, 0, 1, 0 },
-        { 1, 1, 1, 1, 0, 1, 1 },
-        { 1, 1, 1, 1, 1, 0, 0 },
-        { 1, 1, 1, 1, 1, 0, 1 },
-        { 1, 1, 1, 1, 1, 1, 0 },
-        { 1, 1, 1, 1, 1, 1, 1 }
-    };
-
-    vector<vector<double>> trainingOutputs {
-        {0, 0, 0},
-        {0, 0, 1},
-        {0, 0, 1},
-        {0, 1, 0},
-        {0, 0, 1},
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 0, 1},
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 0, 1},
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {0, 0, 1},
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 0, 1},
-        {1, 1, 0},
-        {0, 0, 1},
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 0, 1},
-        {1, 1, 0},
-        {0, 1, 0},
-        {0, 1, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 0, 1},
-        {1, 1, 0},
-        {0, 1, 1},
-        {1, 0, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 0, 1},
-        {1, 1, 0},
-        {1, 0, 0},
-        {1, 0, 1},
-        {1, 0, 1},
-        {1, 1, 0},
-        {1, 0, 1},
-        {1, 1, 0},
-        {1, 1, 0},
-        {1, 1, 1}
-    };
-
-    TrainingData td = TrainingData(trainingInputs, (size_t)7, (size_t)128, trainingOutputs, (size_t)3, (size_t)128);
-    vector<size_t> arch = {7, 10, 10, 5, 3};
-    size_t archSize = 5;
-    vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID, SIGMOID};
+void hammingLengthTest()
+{
+    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/hammingLengthTest.txt"));
+    vector<size_t> arch = {7, 10, 10, 3};
+    size_t archSize = 4;
+    vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
 
     Model model(arch, archSize, actFunc, archSize, true);
 
@@ -376,15 +109,16 @@ void hammingLengthTest(){
 
     model.setLearningRate(learningRate);
 
-    model.learn(td, 200000, false);
+    model.learn(td, 300000, false);
 
     assert(model.costMeanSquare() < 0.10f);
 }
 
-void parsingTest(){
+void parsingTest()
+{
     Model model = parseModelFromFile("/home/rychu/Engineering-Thesis/NeuralNetwork/printedModel.log");
     model.printModel();
-    vector<double> v {0.f,1.f};
+    vector<double> v{0.f, 1.f};
     FastMatrix input(v, (size_t)2, ROW_VECTOR);
     FastMatrix res = model.run(input);
     std::cout << "FOR INPUT:" << std::endl;
@@ -393,13 +127,14 @@ void parsingTest(){
     printFastMatrix(res);
 }
 
-void modelTests(){
+void modelTests()
+{
 
     xorModelTest();
     parityModelTest();
     hammingLengthTest();
     paraboleModelTest();
-    //parsingTest();
+    // parsingTest();
 }
 
 #endif
