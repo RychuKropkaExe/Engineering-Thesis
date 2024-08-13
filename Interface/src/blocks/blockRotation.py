@@ -1,13 +1,18 @@
 from src.logger.log import log
+
+
 def getNumberSign(number):
-   if (number>=0):
-      return 1
-   elif (number<0):
-      return -1
+    if number >= 0:
+        return 1
+    elif number < 0:
+        return -1
+
 
 # Next block of 2d block can be either in x axis
 # or z axis, this array describes the cycle
 ROTATION_CYCLE = [[-1, 0, 0], [0, 0, -1], [1, 0, 0], [0, 0, 1]]
+
+
 # This function returns what values to add to sub block to get
 # The whole block ending point
 # Then, we also return what values needs to be added after rotation
@@ -39,7 +44,7 @@ def findRotatedEndings(endsPosition, rotation, maxX, maxZ):
         end1CycleIndex = 1
     elif end1[2] > maxZ:
         end1CycleIndex = 3
-    
+
     if end2[0] < 0:
         end2CycleIndex = 0
     elif end2[0] > maxX:
@@ -49,11 +54,15 @@ def findRotatedEndings(endsPosition, rotation, maxX, maxZ):
     elif end2[2] > maxZ:
         end2CycleIndex = 3
 
-
     log("END1 CYCLE INDEX:", end1CycleIndex)
     log("END2 CYCLE INDEX:", end2CycleIndex)
-    return [(ROTATION_CYCLE[end1CycleIndex], ROTATION_CYCLE[end2CycleIndex])
-            ,(ROTATION_CYCLE[(end1CycleIndex + rotation) % 4], ROTATION_CYCLE[(end2CycleIndex + rotation) % 4])]
+    return [
+        (ROTATION_CYCLE[end1CycleIndex], ROTATION_CYCLE[end2CycleIndex]),
+        (
+            ROTATION_CYCLE[(end1CycleIndex + rotation) % 4],
+            ROTATION_CYCLE[(end2CycleIndex + rotation) % 4],
+        ),
+    ]
 
 
 # Rotate matrix 90 degrees with respect to [0,0,0] point
@@ -76,14 +85,15 @@ def rotateMatrix(mat):
     result = []
 
     for _ in range(newN):
-        row = [0]*newM
+        row = [0] * newM
         result.append(row)
 
     for i in range(N):
         for j in range(M):
-            result[j][newM-(i+1)] = mat[i][j]
-    
+            result[j][newM - (i + 1)] = mat[i][j]
+
     return result
+
 
 def getRotatedPositions(currentPositions, endingPoints, rotation):
     end1 = endingPoints[0]
@@ -126,19 +136,19 @@ def getRotatedPositions(currentPositions, endingPoints, rotation):
         # 1 -> normal block
         # 2 -> end1 congruent block
         # 3 -> end2 congruent block
-        #log("CURRENT X:",x,"Z:", z, "end2: X:", end2[0], "Z:",end2)
+        # log("CURRENT X:",x,"Z:", z, "end2: X:", end2[0], "Z:",end2)
         if x + end1PDF[0] == end1[0] and z + end1PDF[2] == end1[2]:
-            log("ENDING BLOCK POSITION 1: X:",x + end1PDF[0], "Y:", z + end1PDF[2])
+            log("ENDING BLOCK POSITION 1: X:", x + end1PDF[0], "Y:", z + end1PDF[2])
             blockMatrix[z][x] = 2
         elif x + end2PDF[0] == end2[0] and z + end2PDF[2] == end2[2]:
-            log("ENDING BLOCK POSITION 2: X:",x + end2PDF[0], "Y:", z + end2PDF[2])
+            log("ENDING BLOCK POSITION 2: X:", x + end2PDF[0], "Y:", z + end2PDF[2])
             blockMatrix[z][x] = 3
         else:
             blockMatrix[z][x] = 1
     log("MATRIX BEFORE ROTATION:", blockMatrix)
     for i in range(rotation):
         blockMatrix = rotateMatrix(blockMatrix)
-        log("MATRIX AFTER", i, "ROTATION:",blockMatrix)
+        log("MATRIX AFTER", i, "ROTATION:", blockMatrix)
 
     newBlocksPositions = []
     newEnd1 = [0, 0, 0]
@@ -151,13 +161,12 @@ def getRotatedPositions(currentPositions, endingPoints, rotation):
             elif blockMatrix[x][z] == 2:
                 log("ROTATED END CONGRUENT POSITION: ", [z, 0, x])
                 newBlocksPositions.append([z, 0, x])
-                newEnd1 = [z+end1RPDF[0], 0, x+end1RPDF[2]]
+                newEnd1 = [z + end1RPDF[0], 0, x + end1RPDF[2]]
                 log("newEnd1 POSITION: ", newEnd1)
             elif blockMatrix[x][z] == 3:
                 log("ROTATED END CONGRUENT POSITION 2: ", [z, 0, x])
                 newBlocksPositions.append([z, 0, x])
-                newEnd2 = [z+end2RPDF[0], 0, x+end2RPDF[2]]
+                newEnd2 = [z + end2RPDF[0], 0, x + end2RPDF[2]]
                 log("newEnd2 POSITION: ", newEnd2)
-
 
     return (newBlocksPositions, [newEnd1, newEnd2])

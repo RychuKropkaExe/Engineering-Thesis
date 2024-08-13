@@ -1,37 +1,92 @@
 from pygbx import Gbx, GbxType
 from src.logger.log import log
+
 BLOCK_SIZE_XZ = 32
 BLOCK_SIZE_Y = 8
 STADIUM_BLOCKS_DICT = {
-    'StadiumRoadMain': 1,
-    'StadiumRoadMainGTCurve2': 2,
-    'StadiumRoadMainStartLine' : 3,
-    'StadiumRoadMainFinishLine' : 4,
-    'StadiumRoadMainTurbo' : 5,
-    'StadiumHolePillar' : 6,
-    'StadiumRoadMainGTCurve3' : 7,
-    'StadiumRoadMainGTCurve4' : 8,
-    'StadiumRoadMainGTDiag2x2' : 9,
-    'StadiumRoadMainCheckpoint' : 10,
-    'StadiumGrassClip': 11,
-    'Nothing' : 12
+    "StadiumRoadMain": 1,
+    "StadiumRoadMainGTCurve2": 2,
+    "StadiumRoadMainStartLine": 3,
+    "StadiumRoadMainFinishLine": 4,
+    "StadiumRoadMainTurbo": 5,
+    "StadiumHolePillar": 6,
+    "StadiumRoadMainGTCurve3": 7,
+    "StadiumRoadMainGTCurve4": 8,
+    "StadiumRoadMainGTDiag2x2": 9,
+    "StadiumRoadMainCheckpoint": 10,
+    "StadiumGrassClip": 11,
+    "Nothing": 12,
 }
 
-BLOCK_OFFSETS_POSITIONS_KEY = 'positions'
-BLOCK_OFFSETS_ENDS_KEY = 'ends'
+BLOCK_OFFSETS_POSITIONS_KEY = "positions"
+BLOCK_OFFSETS_ENDS_KEY = "ends"
 
 STADIUM_BLOCK_OFFSETS = {
-    'StadiumRoadMain': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0]], BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1],[0, 0, -1])},
-    'StadiumRoadMainGTCurve2': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]], BLOCK_OFFSETS_ENDS_KEY: ([-1, 0, 0], [1,0,2])},
-    'StadiumRoadMainStartLine': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0]], BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1],[0, 0, 0])},
-    'StadiumRoadMainFinishLine': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0]], BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1],[0, 0, 0])},
-    'StadiumRoadMainTurbo': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0]], BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1],[0, 0, -1])},
-    'StadiumHolePillar': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0]], BLOCK_OFFSETS_ENDS_KEY: ([0,0, 1],[0, 0, -1])},
-    'StadiumRoadMainGTCurve3' : {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1], [1, 0, 2], [2, 0, 0], [2, 0, 1], [2, 0, 2]], BLOCK_OFFSETS_ENDS_KEY: ([-1, 0, 0], [2,0,3])},
-    'StadiumRoadMainGTCurve4': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1], [2, 0, 0], [2, 0, 1], [2, 0, 2], [2, 0, 3], [3, 0, 1], [3, 0, 2], [3, 0, 3]], BLOCK_OFFSETS_ENDS_KEY: ([-1, 0, 0], [3,0,4])},
-    'StadiumRoadMainGTDiag2x2': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1]], BLOCK_OFFSETS_ENDS_KEY: ([0, 0, -1], [1,0,2])},
-    'StadiumRoadMainCheckpoint': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0]], BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1],[0, 0, -1])},
-    'StadiumGrassClip': {BLOCK_OFFSETS_POSITIONS_KEY : [[0, 0, 0]], BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1],[0, 0, -1])},
+    "StadiumRoadMain": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [[0, 0, 0]],
+        BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1], [0, 0, -1]),
+    },
+    "StadiumRoadMainGTCurve2": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [[0, 0, 0], [1, 0, 0], [0, 0, 1], [1, 0, 1]],
+        BLOCK_OFFSETS_ENDS_KEY: ([-1, 0, 0], [1, 0, 2]),
+    },
+    "StadiumRoadMainStartLine": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [[0, 0, 0]],
+        BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1], [0, 0, 0]),
+    },
+    "StadiumRoadMainFinishLine": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [[0, 0, 0]],
+        BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1], [0, 0, 0]),
+    },
+    "StadiumRoadMainTurbo": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [[0, 0, 0]],
+        BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1], [0, 0, -1]),
+    },
+    "StadiumHolePillar": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [[0, 0, 0]],
+        BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1], [0, 0, -1]),
+    },
+    "StadiumRoadMainGTCurve3": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [
+            [0, 0, 0],
+            [0, 0, 1],
+            [1, 0, 0],
+            [1, 0, 1],
+            [1, 0, 2],
+            [2, 0, 0],
+            [2, 0, 1],
+            [2, 0, 2],
+        ],
+        BLOCK_OFFSETS_ENDS_KEY: ([-1, 0, 0], [2, 0, 3]),
+    },
+    "StadiumRoadMainGTCurve4": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [
+            [0, 0, 0],
+            [0, 0, 1],
+            [1, 0, 0],
+            [1, 0, 1],
+            [2, 0, 0],
+            [2, 0, 1],
+            [2, 0, 2],
+            [2, 0, 3],
+            [3, 0, 1],
+            [3, 0, 2],
+            [3, 0, 3],
+        ],
+        BLOCK_OFFSETS_ENDS_KEY: ([-1, 0, 0], [3, 0, 4]),
+    },
+    "StadiumRoadMainGTDiag2x2": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [[0, 0, 0], [0, 0, 1], [1, 0, 0], [1, 0, 1]],
+        BLOCK_OFFSETS_ENDS_KEY: ([0, 0, -1], [1, 0, 2]),
+    },
+    "StadiumRoadMainCheckpoint": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [[0, 0, 0]],
+        BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1], [0, 0, -1]),
+    },
+    "StadiumGrassClip": {
+        BLOCK_OFFSETS_POSITIONS_KEY: [[0, 0, 0]],
+        BLOCK_OFFSETS_ENDS_KEY: ([0, 0, 1], [0, 0, -1]),
+    },
 }
 
 # STADIUM_BLOCKS_DICT = {
