@@ -2,6 +2,7 @@
 #define MATRIX_OPERATION_TEST_H
 
 #include "FastMatrix.h"
+#include "testFramework.h"
 #include <cassert>
 #include <iostream>
 void testMatrixAddition();
@@ -13,8 +14,8 @@ void addTest1()
     FastMatrix m1(4, 4, 2.0f);
     FastMatrix m2(4, 4, 2.0f);
     FastMatrix result = m1 + m2;
-    assert(result == expectedResult);
-    std::cout << "MATRIX ADDITION TEST 1 PASSED!\n";
+    MY_TEST_ASSERT(result == expectedResult, "Not a number");
+    TEST_RESULT();
 }
 
 void addTest2()
@@ -28,12 +29,13 @@ void addTest2()
     FastMatrix m1(4, 4, 0.0f);
     FastMatrix m2(4, 4, expResult);
     FastMatrix result = m1 + m2;
-    assert(result == expectedResult);
-    std::cout << "MATRIX ADDITION TEST 2 PASSED!\n";
+    MY_TEST_ASSERT(result == expectedResult, "Not a number");
+    TEST_RESULT();
 }
 
 void testMatrixAddition()
 {
+    TEST_SET;
     addTest1();
     addTest2();
 }
@@ -44,8 +46,8 @@ void mulTest1()
     FastMatrix m1(4, 4, 2.0f);
     FastMatrix m2(4, 4, 2.0f);
     FastMatrix result = m1 * m2;
-    assert(result == expectedResult);
-    std::cout << "MATRIX MULTIPLICATION TEST 1 PASSED!\n";
+    MY_TEST_ASSERT(result == expectedResult, "Not a number");
+    TEST_RESULT();
 }
 
 void mulTest2()
@@ -54,8 +56,8 @@ void mulTest2()
     FastMatrix m1(4, 4, 2.0f);
     FastMatrix m2(4, 2, 2.0f);
     FastMatrix result = m1 * m2;
-    assert(result == expectedResult);
-    std::cout << "MATRIX MULTIPLICATION TEST 2 PASSED!\n";
+    MY_TEST_ASSERT(result == expectedResult, "Not a number");
+    TEST_RESULT();
 }
 
 void mulTest3()
@@ -76,8 +78,8 @@ void mulTest3()
     FastMatrix m1(3, 3, m1Mat);
     FastMatrix m2(3, 3, m2Mat);
     FastMatrix result = m1 * m2;
-    assert(result == expectedResult);
-    std::cout << "MATRIX MULTIPLICATION TEST 3 PASSED!\n";
+    MY_TEST_ASSERT(result == expectedResult, "Not a number");
+    TEST_RESULT();
 }
 
 void mulTest4()
@@ -101,12 +103,13 @@ void mulTest4()
     FastMatrix m1(4, 4, m1Mat);
     FastMatrix m2(4, 1, m2Mat);
     FastMatrix result = m1 * m2;
-    assert(result == expectedResult);
-    std::cout << "MATRIX MULTIPLICATION TEST 4 PASSED!\n";
+    MY_TEST_ASSERT(result == expectedResult, "Not a number");
+    TEST_RESULT();
 }
 
 void testMatrixMultiplication()
 {
+    TEST_SET;
     mulTest1();
     mulTest2();
     mulTest3();

@@ -1,5 +1,7 @@
 #include "matrixOperationsTest.h"
 #include "modelTest.h"
+#include "testFramework.h"
+#include "trainingDataTest.h"
 #include <iostream>
 #include <time.h>
 
@@ -15,5 +17,10 @@ int main()
     uint32_t time_ui = uint32_t(time(NULL));
     srand(time_ui);
     matrixOperationTest();
+    trainingDataTest();
     modelTests();
+    std::cout
+        << c_blue << "\nAsserts Summary: " << passed << " out of " << (assertPassed + assertFailed) << " asserts passed" << c_reset << "\n";
+    std::cout
+        << c_blue << "\nTests Summary: " << passed << " out of " << (passed + failed) << " tests passed" << c_reset << "\n";
 }

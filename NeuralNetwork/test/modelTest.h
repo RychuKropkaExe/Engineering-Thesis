@@ -1,6 +1,7 @@
 #ifndef MODEL_TEST_H
 #define MODEL_TEST_H
 #include "model.h"
+#include "testFramework.h"
 #include "trainingData.h"
 #include <string>
 #include <vector>
@@ -22,7 +23,10 @@ void xorModelTest()
     model.setLearningRate(learningRate);
     model.learn(td, 100000, true, 0);
 
-    assert(model.costMeanSquare() < 0.05f);
+    double cost = model.costMeanSquare();
+
+    MY_TEST_ASSERT(cost < 0.05f, cost);
+    TEST_RESULT();
 }
 
 void paraboleModelTest()
@@ -69,8 +73,10 @@ void paraboleModelTest()
     model.setLearningRate(learningRate);
 
     model.learn(td, 1000000, true, 32);
+    double cost = model.costMeanSquare();
 
-    assert(model.costMeanSquare() < 100.f);
+    MY_TEST_ASSERT(cost < 100.f, cost);
+    TEST_RESULT();
 }
 
 void parityModelTest()
@@ -91,7 +97,10 @@ void parityModelTest()
 
     model.learn(td, 10000, false, 0);
 
-    assert(model.costMeanSquare() < 0.05f);
+    double cost = model.costMeanSquare();
+
+    MY_TEST_ASSERT(cost < 0.05f, cost);
+    TEST_RESULT();
 }
 
 void hammingLengthTest()
@@ -108,31 +117,19 @@ void hammingLengthTest()
     model.setLearningRate(learningRate);
 
     model.learn(td, 300000, false, 32);
+    double cost = model.costMeanSquare();
 
-    assert(model.costMeanSquare() < 0.10f);
-}
-
-void parsingTest()
-{
-    Model model = parseModelFromFile("/home/rychu/Engineering-Thesis/NeuralNetwork/printedModel.log");
-    model.printModel();
-    vector<double> v{0.f, 1.f};
-    FastMatrix input(v, (size_t)2, ROW_VECTOR);
-    FastMatrix res = model.run(input);
-    std::cout << "FOR INPUT:" << std::endl;
-    printFastMatrix(input);
-    std::cout << "RESULT IS: " << std::endl;
-    printFastMatrix(res);
+    MY_TEST_ASSERT(cost < 0.10f, cost);
+    TEST_RESULT();
 }
 
 void modelTests()
 {
-
+    TEST_SET;
     xorModelTest();
     parityModelTest();
     hammingLengthTest();
     paraboleModelTest();
-    // parsingTest();
 }
 
 #endif
