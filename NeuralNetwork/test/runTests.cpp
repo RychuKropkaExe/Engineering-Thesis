@@ -20,7 +20,7 @@ int main()
     trainingDataTest();
     modelTests();
     std::cout
-        << c_blue << "\nAsserts Summary: " << passed << " out of " << (assertPassed + assertFailed) << " asserts passed" << c_reset << "\n";
+        << c_blue << "\nAsserts Summary: " << assertPassed << " out of " << (assertPassed + assertFailed) << " asserts passed" << c_reset << "\n";
     std::cout
         << c_blue << "\nTests Summary: " << passed << " out of " << (passed + failed) << " tests passed" << c_reset << "\n";
 }

@@ -1,13 +1,14 @@
 #include "trainingData.h"
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <sstream>
 
 TrainingData::TrainingData(vector<vector<double>> trainingInputs, size_t inputSize, size_t inputCount,
                            vector<vector<double>> trainingOutputs, size_t outputSize, size_t outputCount)
 {
-    std::cout << "CREATING TRAINING DATA" << "\n";
     assert(inputCount == outputCount);
 
     this->inputSize = inputSize;
@@ -92,6 +93,126 @@ TrainingData::TrainingData(std::string filename)
         }
 
         outputs[i] = FastMatrix(sampleOutput, outputSize, ROW_VECTOR);
+    }
+}
+
+//====================================== DATA NORMALIZATION ============================================
+
+double TrainingData::findMinInput()
+{
+    double curMin = std::numeric_limits<double>::infinity();
+    for (size_t i = 0; i < numOfSamples; i++)
+    {
+        double curSampleMin = *std::min_element(std::begin(inputs[i].mat), std::end(inputs[i].mat));
+        if (curSampleMin < curMin)
+            curMin = curSampleMin;
+    }
+    return curMin;
+}
+
+double TrainingData::findMaxInput()
+{
+    double curMax = -std::numeric_limits<double>::infinity();
+    for (size_t i = 0; i < numOfSamples; i++)
+    {
+        double curSampleMax = *std::max_element(std::begin(inputs[i].mat), std::end(inputs[i].mat));
+        if (curSampleMax > curMax)
+            curMax = curSampleMax;
+    }
+    return curMax;
+}
+
+double TrainingData::findMinOutput()
+{
+    double curMin = std::numeric_limits<double>::infinity();
+    for (size_t i = 0; i < numOfSamples; i++)
+    {
+        double curSampleMin = *std::min_element(std::begin(outputs[i].mat), std::end(outputs[i].mat));
+        if (curSampleMin < curMin)
+            curMin = curSampleMin;
+    }
+    return curMin;
+}
+
+double TrainingData::findMaxOutput()
+{
+    double curMax = -std::numeric_limits<double>::infinity();
+    for (size_t i = 0; i < numOfSamples; i++)
+    {
+        double curSampleMax = *std::max_element(std::begin(outputs[i].mat), std::end(outputs[i].mat));
+        if (curSampleMax > curMax)
+            curMax = curSampleMax;
+    }
+    return curMax;
+}
+
+void TrainingData::normalizeData(NormalizationTypeE normType)
+{
+    switch (normType)
+    {
+    case (MIN_MAX_NORMALIZATION):
+    {
+        double minInput = findMinInput();
+        double maxInput = findMaxInput();
+        double minOutput = findMinOutput();
+        double maxOutput = findMaxOutput();
+
+        for (size_t i = 0; i < numOfSamples; i++)
+        {
+            for (size_t j = 0; j < inputSize; j++)
+            {
+                MAT_ACCESS(inputs[i], 0, j) = (MAT_ACCESS(inputs[i], 0, j) - minInput) / (maxInput - minInput);
+            }
+            for (size_t j = 0; j < outputSize; j++)
+            {
+                MAT_ACCESS(outputs[i], 0, j) = (MAT_ACCESS(outputs[i], 0, j) - minOutput) / (maxOutput - minOutput);
+            }
+        }
+        minMaxNormalizationData.minInputValue = minInput;
+        minMaxNormalizationData.maxInputValue = maxInput;
+        minMaxNormalizationData.minOutputValue = minOutput;
+        minMaxNormalizationData.maxOutputValue = maxOutput;
+    }
+    case (DATA_SCALING_NORMALIZATION):
+    {
+        return;
+    }
+    case (STANDARIZATION):
+    {
+        return;
+    }
+    default:
+    {
+        return;
+    }
+    }
+}
+
+void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &output)
+{
+    switch (normType)
+    {
+    case (MIN_MAX_NORMALIZATION):
+    {
+        double minOutput = minMaxNormalizationData.minOutputValue;
+        double maxOutput = minMaxNormalizationData.maxOutputValue;
+        for (size_t j = 0; j < outputSize; j++)
+        {
+            MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (maxOutput - minOutput) + minOutput;
+        }
+    }
+    case (DATA_SCALING_NORMALIZATION):
+    {
+        return;
+    }
+    case (STANDARIZATION):
+    {
+        return;
+    }
+    default:
+    {
+        return;
+    }
     }
 }
 
