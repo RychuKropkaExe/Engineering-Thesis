@@ -1,6 +1,7 @@
 #include "trainingData.h"
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <limits>
@@ -171,6 +172,46 @@ double TrainingData::findMeanInput()
     return meanValue / (numOfSamples * inputSize);
 }
 
+double TrainingData::findInputStandardDeviation()
+{
+    double meanInput = findMeanInput();
+
+    double meanSquareSum = 0.f;
+
+    for (size_t i = 0; i < numOfSamples; i++)
+    {
+        for (size_t j = 0; j < inputSize; j++)
+        {
+            double tmp = MAT_ACCESS(inputs[i], 0, j) - meanInput;
+            meanSquareSum += tmp * tmp;
+        }
+    }
+
+    double result = std::sqrt(meanSquareSum / (numOfSamples * inputSize));
+
+    return result;
+}
+
+double TrainingData::findOutputStandardDeviation()
+{
+    double meanOutput = findMeanOutput();
+
+    double meanSquareSum = 0.f;
+
+    for (size_t i = 0; i < numOfSamples; i++)
+    {
+        for (size_t j = 0; j < outputSize; j++)
+        {
+            double tmp = MAT_ACCESS(outputs[i], 0, j) - meanOutput;
+            meanSquareSum += tmp * tmp;
+        }
+    }
+
+    double result = std::sqrt(meanSquareSum / (numOfSamples * outputSize));
+
+    return result;
+}
+
 void TrainingData::normalizeData(NormalizationTypeE normType)
 {
     switch (normType)
@@ -232,6 +273,29 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
     }
     case (STANDARIZATION):
     {
+        double meanInput = findMeanInput();
+        double meanOutput = findMeanOutput();
+
+        double inputStandardDeviation = findInputStandardDeviation();
+        double outputStandardDeviation = findOutputStandardDeviation();
+
+        for (size_t i = 0; i < numOfSamples; i++)
+        {
+            for (size_t j = 0; j < inputSize; j++)
+            {
+                MAT_ACCESS(inputs[i], 0, j) = (MAT_ACCESS(inputs[i], 0, j) - meanInput) / (inputStandardDeviation);
+            }
+            for (size_t j = 0; j < outputSize; j++)
+            {
+                MAT_ACCESS(outputs[i], 0, j) = (MAT_ACCESS(outputs[i], 0, j) - meanOutput) / (outputStandardDeviation);
+            }
+        }
+
+        standarizationData.meanInput = meanInput;
+        standarizationData.meanOutput = meanOutput;
+
+        standarizationData.inputStandardDeviation = inputStandardDeviation;
+        standarizationData.outputStandardDeviation = outputStandardDeviation;
         return;
     }
     default:
@@ -268,6 +332,12 @@ void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &ou
     }
     case (STANDARIZATION):
     {
+        double meanOutput = standarizationData.meanOutput;
+        double outputStandardDeviation = standarizationData.outputStandardDeviation;
+        for (size_t j = 0; j < outputSize; j++)
+        {
+            MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (outputStandardDeviation) + meanOutput;
+        }
         return;
     }
     default:

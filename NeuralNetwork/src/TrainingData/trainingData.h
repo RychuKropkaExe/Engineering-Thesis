@@ -39,10 +39,10 @@ class StandarizationData
 {
 public:
     double meanInput{0.f};
-    double standardInputDeviation{0.f};
+    double inputStandardDeviation{0.f};
 
     double meanOutput{0.f};
-    double standardOutputDeviation{0.f};
+    double outputStandardDeviation{0.f};
 };
 
 class TrainingData
@@ -73,6 +73,9 @@ public:
 
     double findMeanInput();
     double findMeanOutput();
+
+    double findInputStandardDeviation();
+    double findOutputStandardDeviation();
 
     void normalizeData(NormalizationTypeE normType);
     void denomralizeOutput(NormalizationTypeE normType, FastMatrix &output);

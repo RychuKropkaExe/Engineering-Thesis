@@ -100,6 +100,62 @@ void findMeanTest()
   TEST_RESULT();
 }
 
+void findStandardDeviationTest()
+{
+  vector<vector<double>> trainingInputs = {
+      {1, 2, 3, 4},
+      {5, 6, 7, 8},
+      {9, 10, 11, 12},
+      {13, 14, 15, 16}};
+  vector<vector<double>> trainingOutputs = {
+      {1},
+      {2},
+      {3},
+      {4},
+  };
+  size_t inputSize = 4;
+  size_t outputSize = 1;
+  size_t numberOfSamples = 4;
+  TrainingData td(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  double inputStandardDeviation = td.findInputStandardDeviation();
+  double outputStandardDeviation = td.findOutputStandardDeviation();
+
+  // Calculated using https://www.calculator.net/standard-deviation-calculator.html
+  double expectedInputStandardDeviation = 4.6097722286464;
+  double expectedOutputStandardDeviation = 1.1180339887499;
+
+  double eps = 1E-9;
+
+  MY_TEST_ASSERT(inputStandardDeviation >= expectedInputStandardDeviation - eps && inputStandardDeviation <= expectedInputStandardDeviation + eps,
+                 inputStandardDeviation);
+  MY_TEST_ASSERT(outputStandardDeviation >= expectedOutputStandardDeviation - eps && outputStandardDeviation <= expectedOutputStandardDeviation + eps,
+                 outputStandardDeviation);
+
+  trainingInputs = {
+      {-1, -2, -3, -4},
+      {-5, -6, -7, -8},
+      {-9, -10, -11, -12},
+      {-13, -14, -15, -16}};
+  trainingOutputs = {
+      {-1},
+      {-2},
+      {-3},
+      {-4},
+  };
+  td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  inputStandardDeviation = td.findInputStandardDeviation();
+  outputStandardDeviation = td.findOutputStandardDeviation();
+
+  MY_TEST_ASSERT(inputStandardDeviation >= expectedInputStandardDeviation - eps && inputStandardDeviation <= expectedInputStandardDeviation + eps,
+                 inputStandardDeviation);
+  MY_TEST_ASSERT(outputStandardDeviation >= expectedOutputStandardDeviation - eps && outputStandardDeviation <= expectedOutputStandardDeviation + eps,
+                 outputStandardDeviation);
+
+  TEST_RESULT();
+}
+
 void minMaxNormalizationTest()
 {
   vector<vector<double>> trainingInputs = {
@@ -358,15 +414,165 @@ void denormalizationTest()
   TEST_RESULT();
 }
 
+void standarizationTest()
+{
+  vector<vector<double>> trainingInputs = {
+      {1, 2, 3, 4},
+      {5, 6, 7, 8},
+      {9, 10, 11, 12},
+      {13, 14, 15, 16}};
+  vector<vector<double>> trainingOutputs = {
+      {1},
+      {2},
+      {3},
+      {4},
+  };
+  size_t inputSize = 4;
+  size_t outputSize = 1;
+  size_t numberOfSamples = 4;
+  TrainingData td(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  td.normalizeData(STANDARIZATION);
+
+  double inputStandardDeviation = td.findInputStandardDeviation();
+  double outputStandardDeviation = td.findOutputStandardDeviation();
+
+  double eps = 1E-9;
+
+  MY_TEST_ASSERT(inputStandardDeviation >= 1.f - eps && inputStandardDeviation <= 1.f + eps,
+                 inputStandardDeviation);
+  MY_TEST_ASSERT(outputStandardDeviation >= 1.f - eps && outputStandardDeviation <= 1.f + eps,
+                 outputStandardDeviation);
+
+  double meanInput = td.findMeanInput();
+  double meanOutput = td.findMeanOutput();
+
+  MY_TEST_ASSERT(meanInput >= 0.f - eps && meanInput <= 0.f + eps,
+                 meanInput);
+  MY_TEST_ASSERT(meanOutput >= 0.f - eps && meanOutput <= 0.f + eps,
+                 meanOutput);
+
+  trainingInputs = {
+      {-1, -2, -3, -4},
+      {-5, -6, -7, -8},
+      {-9, -10, -11, -12},
+      {-13, -14, -15, -16}};
+  trainingOutputs = {
+      {-1},
+      {-2},
+      {-3},
+      {-4},
+  };
+  td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  td.normalizeData(STANDARIZATION);
+
+  inputStandardDeviation = td.findInputStandardDeviation();
+  outputStandardDeviation = td.findOutputStandardDeviation();
+
+  eps = 1E-9;
+
+  MY_TEST_ASSERT(inputStandardDeviation >= 1.f - eps && inputStandardDeviation <= 1.f + eps,
+                 inputStandardDeviation);
+  MY_TEST_ASSERT(outputStandardDeviation >= 1.f - eps && outputStandardDeviation <= 1.f + eps,
+                 outputStandardDeviation);
+
+  meanInput = td.findMeanInput();
+  meanOutput = td.findMeanOutput();
+
+  MY_TEST_ASSERT(meanInput >= 0.f - eps && meanInput <= 0.f + eps,
+                 meanInput);
+  MY_TEST_ASSERT(meanOutput >= 0.f - eps && meanOutput <= 0.f + eps,
+                 meanOutput);
+
+  TEST_RESULT();
+}
+
+void destandarizationTest()
+{
+  vector<vector<double>> trainingInputs = {
+      {1, 2, 3, 4},
+      {5, 6, 7, 8},
+      {9, 10, 11, 12},
+      {13, 14, 15, 16}};
+  vector<vector<double>> trainingOutputs = {
+      {1},
+      {2},
+      {3},
+      {4},
+  };
+  size_t inputSize = 4;
+  size_t outputSize = 1;
+  size_t numberOfSamples = 4;
+  TrainingData td(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  td.normalizeData(STANDARIZATION);
+
+  vector<vector<double>> expectedDenormalizedValues = {
+      {1},
+      {2},
+      {3},
+      {4},
+  };
+  double eps = 1E-9;
+
+  for (size_t i = 0; i < numberOfSamples; i++)
+  {
+    for (size_t j = 0; j < outputSize; j++)
+    {
+      td.denomralizeOutput(STANDARIZATION, td.outputs[i]);
+      MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                         MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
+                     MAT_ACCESS(td.outputs[i], 0, j));
+    }
+  }
+
+  trainingInputs = {
+      {-1, -2, -3, -4},
+      {-5, -6, -7, -8},
+      {-9, -10, -11, -12},
+      {-13, -14, -15, -16}};
+  trainingOutputs = {
+      {-1},
+      {-2},
+      {-3},
+      {-4},
+  };
+  td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  td.normalizeData(STANDARIZATION);
+  expectedDenormalizedValues = {
+      {-1},
+      {-2},
+      {-3},
+      {-4},
+  };
+
+  for (size_t i = 0; i < numberOfSamples; i++)
+  {
+    for (size_t j = 0; j < outputSize; j++)
+    {
+      td.denomralizeOutput(STANDARIZATION, td.outputs[i]);
+      MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                         MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
+                     MAT_ACCESS(td.outputs[i], 0, j));
+    }
+  }
+  TEST_RESULT();
+}
+
 void trainingDataTest()
 {
   TEST_SET;
   findMinMaxTest();
   findMeanTest();
+  findStandardDeviationTest();
   normalizationTest();
   denormalizationTest();
   minMaxNormalizationTest();
   minMaxDenormalizationTest();
+  standarizationTest();
+  destandarizationTest();
 }
 
 #endif // TRAINING_DATA_TEST_H
