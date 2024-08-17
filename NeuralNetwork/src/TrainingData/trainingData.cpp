@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
+#include <numeric>
 #include <sstream>
 
 TrainingData::TrainingData(vector<vector<double>> trainingInputs, size_t inputSize, size_t inputCount,
@@ -146,10 +147,65 @@ double TrainingData::findMaxOutput()
     return curMax;
 }
 
+double TrainingData::findMeanOutput()
+{
+    double meanValue = 0.f;
+    for (size_t i = 0; i < numOfSamples; i++)
+    {
+        double curSampleMean = std::accumulate(std::begin(outputs[i].mat), std::end(outputs[i].mat), 0.0);
+        meanValue += curSampleMean;
+    }
+
+    return meanValue / numOfSamples;
+}
+
+double TrainingData::findMeanInput()
+{
+    double meanValue = 0.f;
+    for (size_t i = 0; i < numOfSamples; i++)
+    {
+        double curSampleMean = std::accumulate(std::begin(inputs[i].mat), std::end(inputs[i].mat), 0.0);
+        meanValue += curSampleMean;
+    }
+
+    return meanValue / (numOfSamples * inputSize);
+}
+
 void TrainingData::normalizeData(NormalizationTypeE normType)
 {
     switch (normType)
     {
+    case (NORMALIZATION):
+    {
+        double minInput = findMinInput();
+        double maxInput = findMaxInput();
+        double minOutput = findMinOutput();
+        double maxOutput = findMaxOutput();
+
+        double meanInput = findMeanInput();
+        double meanOutput = findMeanOutput();
+
+        for (size_t i = 0; i < numOfSamples; i++)
+        {
+            for (size_t j = 0; j < inputSize; j++)
+            {
+                MAT_ACCESS(inputs[i], 0, j) = (MAT_ACCESS(inputs[i], 0, j) - meanInput) / (maxInput - minInput);
+            }
+            for (size_t j = 0; j < outputSize; j++)
+            {
+                MAT_ACCESS(outputs[i], 0, j) = (MAT_ACCESS(outputs[i], 0, j) - meanOutput) / (maxOutput - minOutput);
+            }
+        }
+        normalizationData.minInputValue = minInput;
+        normalizationData.maxInputValue = maxInput;
+
+        normalizationData.minOutputValue = minOutput;
+        normalizationData.maxOutputValue = maxOutput;
+
+        normalizationData.meanInput = meanInput;
+        normalizationData.meanOutput = meanOutput;
+        return;
+    }
     case (MIN_MAX_NORMALIZATION):
     {
         double minInput = findMinInput();
@@ -172,9 +228,6 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
         minMaxNormalizationData.maxInputValue = maxInput;
         minMaxNormalizationData.minOutputValue = minOutput;
         minMaxNormalizationData.maxOutputValue = maxOutput;
-    }
-    case (DATA_SCALING_NORMALIZATION):
-    {
         return;
     }
     case (STANDARIZATION):
@@ -192,6 +245,17 @@ void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &ou
 {
     switch (normType)
     {
+    case (NORMALIZATION):
+    {
+        double minOutput = normalizationData.minOutputValue;
+        double maxOutput = normalizationData.maxOutputValue;
+        double meanOutput = normalizationData.meanOutput;
+        for (size_t j = 0; j < outputSize; j++)
+        {
+            MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (maxOutput - minOutput) + meanOutput;
+        }
+        return;
+    }
     case (MIN_MAX_NORMALIZATION):
     {
         double minOutput = minMaxNormalizationData.minOutputValue;
@@ -200,9 +264,6 @@ void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &ou
         {
             MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (maxOutput - minOutput) + minOutput;
         }
-    }
-    case (DATA_SCALING_NORMALIZATION):
-    {
         return;
     }
     case (STANDARIZATION):

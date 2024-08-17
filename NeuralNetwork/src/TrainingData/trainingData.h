@@ -8,8 +8,8 @@ using std::vector;
 
 enum NormalizationTypeE
 {
+    NORMALIZATION,
     MIN_MAX_NORMALIZATION,
-    DATA_SCALING_NORMALIZATION,
     STANDARIZATION
 };
 
@@ -21,6 +21,18 @@ public:
 
     double minOutputValue{0.f};
     double maxOutputValue{0.f};
+};
+
+class NormalizationData
+{
+public:
+    double minInputValue{0.f};
+    double maxInputValue{0.f};
+    double meanInput{0.f};
+
+    double minOutputValue{0.f};
+    double maxOutputValue{0.f};
+    double meanOutput{0.f};
 };
 
 class StandarizationData
@@ -46,8 +58,8 @@ public:
     size_t numOfSamples;
 
     MinMaxNormalizationData minMaxNormalizationData;
-
     StandarizationData standarizationData;
+    NormalizationData normalizationData;
 
     TrainingData(vector<vector<double>> trainingInputs, size_t inputSize, size_t inputCount,
                  vector<vector<double>> trainingOutputs, size_t outputSize, size_t outputCount);
@@ -58,6 +70,9 @@ public:
     double findMaxInput();
     double findMinOutput();
     double findMaxOutput();
+
+    double findMeanInput();
+    double findMeanOutput();
 
     void normalizeData(NormalizationTypeE normType);
     void denomralizeOutput(NormalizationTypeE normType, FastMatrix &output);

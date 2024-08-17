@@ -53,6 +53,53 @@ void findMinMaxTest()
   TEST_RESULT();
 }
 
+void findMeanTest()
+{
+  vector<vector<double>> trainingInputs = {
+      {1, 2, 3, 4},
+      {5, 6, 7, 8},
+      {9, 10, 11, 12},
+      {13, 14, 15, 16}};
+  vector<vector<double>> trainingOutputs = {
+      {1},
+      {2},
+      {3},
+      {4},
+  };
+  size_t inputSize = 4;
+  size_t outputSize = 1;
+  size_t numberOfSamples = 4;
+  TrainingData td(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  double meanInputValue = td.findMeanInput();
+  double meanOutputValue = td.findMeanOutput();
+  double eps = 1E-9;
+
+  MY_TEST_ASSERT(meanInputValue >= 8.5 - eps && meanInputValue <= 8.5 + eps, meanInputValue);
+  MY_TEST_ASSERT(meanOutputValue >= 2.5 - eps && meanOutputValue <= 2.5 + eps, meanOutputValue);
+
+  trainingInputs = {
+      {-1, -2, -3, -4},
+      {-5, -6, -7, -8},
+      {-9, -10, -11, -12},
+      {-13, -14, -15, -16}};
+  trainingOutputs = {
+      {-1},
+      {-2},
+      {-3},
+      {-4},
+  };
+  td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  meanInputValue = td.findMeanInput();
+  meanOutputValue = td.findMeanOutput();
+
+  MY_TEST_ASSERT(meanInputValue >= -8.5 - eps && meanInputValue <= -8.5 + eps, meanInputValue);
+  MY_TEST_ASSERT(meanOutputValue >= -2.5 - eps && meanOutputValue <= -2.5 + eps, meanOutputValue);
+
+  TEST_RESULT();
+}
+
 void minMaxNormalizationTest()
 {
   vector<vector<double>> trainingInputs = {
@@ -182,10 +229,142 @@ void minMaxDenormalizationTest()
   TEST_RESULT();
 }
 
+void normalizationTest()
+{
+  vector<vector<double>> trainingInputs = {
+      {1, 2, 3, 4},
+      {5, 6, 7, 8},
+      {9, 10, 11, 12},
+      {13, 14, 15, 16}};
+  vector<vector<double>> trainingOutputs = {
+      {1},
+      {2},
+      {3},
+      {4},
+  };
+  size_t inputSize = 4;
+  size_t outputSize = 1;
+  size_t numberOfSamples = 4;
+  TrainingData td(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  td.normalizeData(NORMALIZATION);
+
+  for (size_t i = 0; i < numberOfSamples; i++)
+  {
+    for (size_t j = 0; j < inputSize; j++)
+    {
+      MY_TEST_ASSERT(MAT_ACCESS(td.inputs[i], 0, j) >= -1 && MAT_ACCESS(td.inputs[i], 0, j) <= 1, MAT_ACCESS(td.inputs[i], 0, j));
+    }
+    for (size_t j = 0; j < outputSize; j++)
+    {
+      MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) >= -1 && MAT_ACCESS(td.outputs[i], 0, j) <= 1, MAT_ACCESS(td.outputs[i], 0, j));
+    }
+  }
+
+  trainingInputs = {
+      {-1, -2, -3, -4},
+      {-5, -6, -7, -8},
+      {-9, -10, -11, -12},
+      {-13, -14, -15, -16}};
+  trainingOutputs = {
+      {-1},
+      {-2},
+      {-3},
+      {-4},
+  };
+  td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  td.normalizeData(NORMALIZATION);
+  for (size_t i = 0; i < numberOfSamples; i++)
+  {
+    for (size_t j = 0; j < inputSize; j++)
+    {
+      MY_TEST_ASSERT(MAT_ACCESS(td.inputs[i], 0, j) >= -1 && MAT_ACCESS(td.inputs[i], 0, j) <= 1, MAT_ACCESS(td.inputs[i], 0, j));
+    }
+  }
+  TEST_RESULT();
+}
+
+void denormalizationTest()
+{
+  vector<vector<double>> trainingInputs = {
+      {1, 2, 3, 4},
+      {5, 6, 7, 8},
+      {9, 10, 11, 12},
+      {13, 14, 15, 16}};
+  vector<vector<double>> trainingOutputs = {
+      {1},
+      {2},
+      {3},
+      {4},
+  };
+  size_t inputSize = 4;
+  size_t outputSize = 1;
+  size_t numberOfSamples = 4;
+  TrainingData td(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  td.normalizeData(NORMALIZATION);
+
+  vector<vector<double>> expectedDenormalizedValues = {
+      {1},
+      {2},
+      {3},
+      {4},
+  };
+  double eps = 1E-9;
+
+  for (size_t i = 0; i < numberOfSamples; i++)
+  {
+    for (size_t j = 0; j < outputSize; j++)
+    {
+      td.denomralizeOutput(NORMALIZATION, td.outputs[i]);
+      MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                         MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
+                     MAT_ACCESS(td.outputs[i], 0, j));
+    }
+  }
+
+  trainingInputs = {
+      {-1, -2, -3, -4},
+      {-5, -6, -7, -8},
+      {-9, -10, -11, -12},
+      {-13, -14, -15, -16}};
+  trainingOutputs = {
+      {-1},
+      {-2},
+      {-3},
+      {-4},
+  };
+  td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
+
+  td.normalizeData(NORMALIZATION);
+  expectedDenormalizedValues = {
+      {-1},
+      {-2},
+      {-3},
+      {-4},
+  };
+
+  for (size_t i = 0; i < numberOfSamples; i++)
+  {
+    for (size_t j = 0; j < outputSize; j++)
+    {
+      td.denomralizeOutput(NORMALIZATION, td.outputs[i]);
+      MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                         MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
+                     MAT_ACCESS(td.outputs[i], 0, j));
+    }
+  }
+  TEST_RESULT();
+}
+
 void trainingDataTest()
 {
   TEST_SET;
   findMinMaxTest();
+  findMeanTest();
+  normalizationTest();
+  denormalizationTest();
   minMaxNormalizationTest();
   minMaxDenormalizationTest();
 }
