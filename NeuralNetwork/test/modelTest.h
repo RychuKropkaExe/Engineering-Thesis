@@ -9,6 +9,7 @@ using std::vector;
 
 void xorModelTest()
 {
+    TEST_START;
     TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/xorData.txt"));
     vector<size_t> arch = {2, 2, 4, 1};
     size_t archSize = 4;
@@ -31,6 +32,7 @@ void xorModelTest()
 
 void paraboleModelTest()
 {
+    TEST_START;
     vector<size_t> arch = {1, 10, 10, 1};
 
     vector<vector<double>> trainingInputs;
@@ -81,7 +83,7 @@ void paraboleModelTest()
 
 void parityModelTest()
 {
-
+    TEST_START;
     TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/parityTestData.txt"));
     vector<size_t> arch = {8, 8, 1};
     size_t archSize = 3;
@@ -105,6 +107,7 @@ void parityModelTest()
 
 void hammingLengthTest()
 {
+    TEST_START;
     TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/hammingLengthTest.txt"));
     vector<size_t> arch = {7, 10, 10, 3};
     size_t archSize = 4;

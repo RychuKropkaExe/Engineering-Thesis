@@ -1,4 +1,5 @@
 #include "trainingData.h"
+#include "logger.h"
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -11,6 +12,7 @@
 TrainingData::TrainingData(vector<vector<double>> trainingInputs, size_t inputSize, size_t inputCount,
                            vector<vector<double>> trainingOutputs, size_t outputSize, size_t outputCount)
 {
+    LOG(INFO_LEVEL, "TRAINING DATA INITIALIZED FROM VECTORS");
     assert(inputCount == outputCount);
 
     this->inputSize = inputSize;
@@ -28,6 +30,8 @@ TrainingData::TrainingData(vector<vector<double>> trainingInputs, size_t inputSi
         FastMatrix t(trainingOutputs[i], outputSize, ROW_VECTOR);
         outputs[i] = t;
     }
+
+    LOG(INFO_LEVEL, "INITIALIZATION FINISHED, RESULTING TRAINING DATA: " << *this);
 }
 
 TrainingData::TrainingData()
@@ -39,7 +43,7 @@ TrainingData::TrainingData()
 
 TrainingData::TrainingData(std::string filename)
 {
-
+    LOG(INFO_LEVEL, "TRAINING DATA INITIALIZED FROM FILE");
     std::ifstream f(filename);
     std::string buffer;
 
@@ -96,6 +100,7 @@ TrainingData::TrainingData(std::string filename)
 
         outputs[i] = FastMatrix(sampleOutput, outputSize, ROW_VECTOR);
     }
+    LOG(INFO_LEVEL, "INITIALIZATION FINISHED, RESULTING TRAINING DATA: " << *this);
 }
 
 //====================================== DATA NORMALIZATION ============================================
@@ -214,6 +219,8 @@ double TrainingData::findOutputStandardDeviation()
 
 void TrainingData::normalizeData(NormalizationTypeE normType)
 {
+
+    LOG(INFO_LEVEL, "NORMALIZTING DATA USING NORM TYPE: " << normType);
     switch (normType)
     {
     case (NORMALIZATION):
@@ -245,6 +252,7 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
 
         normalizationData.meanInput = meanInput;
         normalizationData.meanOutput = meanOutput;
+        LOG(INFO_LEVEL, "DATA AFTER NORMALIZATION: " << *this);
         return;
     }
     case (MIN_MAX_NORMALIZATION):
@@ -269,6 +277,7 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
         minMaxNormalizationData.maxInputValue = maxInput;
         minMaxNormalizationData.minOutputValue = minOutput;
         minMaxNormalizationData.maxOutputValue = maxOutput;
+        LOG(INFO_LEVEL, "DATA AFTER NORMALIZATION: " << *this);
         return;
     }
     case (STANDARIZATION):
@@ -296,10 +305,12 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
 
         standarizationData.inputStandardDeviation = inputStandardDeviation;
         standarizationData.outputStandardDeviation = outputStandardDeviation;
+        LOG(INFO_LEVEL, "DATA AFTER NORMALIZATION: " << *this);
         return;
     }
     default:
     {
+        LOG(ERROR_LEVEL, "UNRECOGNIZED NORM TYPE DURING NORMALIZATION" << normType);
         return;
     }
     }
@@ -307,6 +318,7 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
 
 void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &output)
 {
+    LOG(INFO_LEVEL, "DENORMALIZING USING NORM TYPE: " << normType << " VALUES: " << output);
     switch (normType)
     {
     case (NORMALIZATION):
@@ -318,6 +330,7 @@ void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &ou
         {
             MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (maxOutput - minOutput) + meanOutput;
         }
+        LOG(INFO_LEVEL, "VALUES AFTER DENORMALIZATION: " << output);
         return;
     }
     case (MIN_MAX_NORMALIZATION):
@@ -328,6 +341,7 @@ void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &ou
         {
             MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (maxOutput - minOutput) + minOutput;
         }
+        LOG(INFO_LEVEL, "VALUES AFTER DENORMALIZATION: " << output);
         return;
     }
     case (STANDARIZATION):
@@ -338,23 +352,27 @@ void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &ou
         {
             MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (outputStandardDeviation) + meanOutput;
         }
+        LOG(INFO_LEVEL, "VALUES AFTER DENORMALIZATION: " << output);
         return;
     }
     default:
     {
+        LOG(ERROR_LEVEL, "UNRECOGNIZED NORM TYPE");
         return;
     }
     }
 }
 
-void TrainingData::printTrainingData()
+std::ostream &operator<<(std::ostream &os, const TrainingData &td)
 {
 
-    for (size_t i = 0; i < numOfSamples; ++i)
+    for (size_t i = 0; i < td.numOfSamples; ++i)
     {
-        std::cout << "SAMPLE: " << i << "\n";
-        printFastMatrix(inputs[i]);
-        std::cout << "EXPECTED RESULT: " << "\n";
-        printFastMatrix(outputs[i]);
+        os << "SAMPLE: " << i;
+        os << td.inputs[i];
+        os << "EXPECTED RESULT: ";
+        os << td.outputs[i];
     }
+
+    return os;
 }

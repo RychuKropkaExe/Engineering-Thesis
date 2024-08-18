@@ -1,4 +1,5 @@
 #include "model.h"
+#include "logger.h"
 #include <cassert>
 #include <cmath>
 #include <fstream>
@@ -91,10 +92,6 @@ void Model::setEps(double val)
 double Model::costCrossEntropy()
 {
     double totalCost = 0;
-    // std::cout << "COST FUNCTION!!! " << "\n";
-    // std::cout << "NUMBER OF SAMPLES: " << "\n";
-    // std::cout << trainingData.numOfSamples << "\n";
-    // trainingData.printTrainingData();
     for (size_t i = 0; i < trainingData.numOfSamples; ++i)
     {
 
@@ -108,17 +105,14 @@ double Model::costCrossEntropy()
         }
     }
 
-    if (trainingData.numOfSamples == 0)
-    {
-        std::cout << "ERROR, NUMBER OF SAMPLES == 0" << "\n";
-    }
+    COND_LOG(trainingData.numOfSamples == 0, ERROR_LEVEL, "NUMBER OF SAMPLES == 0");
 
     return totalCost / (trainingData.numOfSamples);
 }
 
 double Model::costMeanSquare()
 {
-
+    LOG(INFO_LEVEL, "CALCULATING MEAN SQUARE COST");
     double totalCost = 0;
 
     for (size_t i = 0; i < trainingData.numOfSamples; ++i)
@@ -131,31 +125,25 @@ double Model::costMeanSquare()
         }
     }
 
-    if (trainingData.numOfSamples == 0)
-    {
-        std::cout << "ERROR, NUMBER OF SAMPLES == 0" << "\n";
-        return -1;
-    }
+    COND_LOG(trainingData.numOfSamples == 0, ERROR_LEVEL, "NUMBER OF SAMPLES == 0");
 
     return totalCost / (trainingData.numOfSamples);
 }
 
 void Model::learn(TrainingData &trainingDataIn, size_t iterations, bool clipGradient, uint32_t batchSize)
 {
-
-    // std::cout << "STARTED LEARNING" << "\n";
+    LOG(INFO_LEVEL, "STARTING LEARNING");
     this->trainingData = trainingDataIn;
-    std::cout << "NUMBER OF SAMPLES: " << this->trainingData.numOfSamples << "\n";
-    std::cout << "COST BEFORE LEARNING: " << costMeanSquare() << "\n";
-    // printModel();
+    LOG(INFO_LEVEL, "NUMBER OF SAMPLES: " << trainingData.numOfSamples);
+    LOG(INFO_LEVEL, "INITIAL MODEL: " << *this);
+    double costBeforeLearning = costMeanSquare();
+    LOG(INFO_LEVEL, "COST BEFORE LEARNING: " << costBeforeLearning);
     for (size_t i = 0; i < iterations; ++i)
     {
-
         backPropagation(clipGradient, batchSize);
     }
-
-    std::cout << "COST AFTER LEARNING: " << costMeanSquare() << "\n";
-    // printModel();
+    double costAfterLearing = costMeanSquare();
+    LOG(INFO_LEVEL, "COST AFTER LEARNING: " << costAfterLearing);
 }
 
 FastMatrix Model::run(FastMatrix input)
@@ -166,7 +154,6 @@ FastMatrix Model::run(FastMatrix input)
     {
         layers[i].forward(layers[i - 1].output);
     }
-    // printFastMatrix(this->layers[this->numberOfLayers - 1].output);
     return this->layers[this->numberOfLayers - 1].output;
 }
 
@@ -255,18 +242,8 @@ void Model::clipValues()
 
 void Model::backPropagation(bool clipGradient, uint32_t batchSize)
 {
-    // printModel();
-    // std::cout << "=================================================================" << "\n";
-    //  trainingData.printTrainingData();
-    //  printModel();
     size_t n = batchSize == 0 ? trainingData.numOfSamples : batchSize;
-    // std::cout << "NUMBER OF SAMPLES IN BACK PROPAGATION: " << n << "\n";
     Model gradient(arch, archSize, activationFunctions, archSize, false);
-
-    // std::cout << "ARCH SIZE: " << archSize << "\n";
-    // for(size_t i = 0; i < archSize; ++i){
-    //     std::cout << "ARCH: " << i << " " << arch[i] << "\n";
-    // }
 
     for (size_t i = 1; i < gradient.numberOfLayers; ++i)
     {
@@ -283,14 +260,8 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
     for (size_t i = 0; i < n; ++i)
     {
         size_t currentIndex = (size_t)rand() % trainingData.numOfSamples;
-        // std::cout << currentIndex << "\n";
-        // std::cout << "CURRENT INPUT: " << "\n";
-        // printFastMatrix(trainingData.inputs[currentIndex]);
-        // std::cout << "CURRENT OUTPUT: " << "\n";
         FastMatrix tmp{run(trainingData.inputs[currentIndex])};
-        // printFastMatrix(tmp);
 
-        // std::cout << "NUMBER OF LAYERS: " << numberOfLayers << "\n";
         for (size_t j = 0; j < numberOfLayers; ++j)
         {
             gradient.layers[j].output.set(0.0);
@@ -329,10 +300,6 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
         }
     }
 
-    // gradient.printModel();
-
-    // std::cout << "NUMBER WHICH DIVIDES: " << n << "\n";
-
     for (size_t i = 0; i < numberOfLayers; ++i)
     {
         for (size_t j = 0; j < gradient.layers[i].weights.rows; ++j)
@@ -351,10 +318,9 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
         }
     }
 
-    // std::cout << "APPLYING GRADIENT: " << numberOfLayers << "\n";
     if (clipGradient)
         gradient.clipValues();
-    // gradient.printModel();
+
     for (size_t i = 0; i < numberOfLayers; ++i)
     {
 
@@ -375,33 +341,30 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
             }
         }
     }
-    // trainingData.printTrainingData();
-    // printModel();
-
-    // std::cout << "BACK PROPAGATION APPLIED " << "\n";
 }
 
-void Model::printModel()
+std::ostream &operator<<(std::ostream &os, const Model &model)
 {
+    os << "MODEL PARAMETERS: " << "\n";
+    os << "LEARNING RATE: " << model.learningRate << "\n";
+    os << "EPS: " << model.eps << "\n";
+    os << "NUMBER OF LAYERS: " << model.numberOfLayers << "\n";
+    os << "ACTIVATION FUNCTIONS: " << model.activationFunctions[0] << "\n";
+    os << "LAYERS: " << "\n";
 
-    std::cout << "MODEL PARAMETERS: " << "\n";
-    std::cout << "LEARNING RATE: " << learningRate << "\n";
-    std::cout << "EPS: " << eps << "\n";
-    std::cout << "NUMBER OF LAYERS: " << numberOfLayers << "\n";
-    std::cout << "ACTIVATION FUNCTIONS: " << activationFunctions[0] << "\n";
-    std::cout << "LAYERS: " << "\n";
-
-    for (size_t i = 0; i < numberOfLayers; ++i)
+    for (size_t i = 0; i < model.numberOfLayers; ++i)
     {
-        std::cout << "LAYER NUMBER: " << i << "\n";
-        std::cout << "WEIGHTS: " << "\n";
-        printFastMatrix(layers[i].weights);
-        std::cout << "BIASES: " << "\n";
-        printFastMatrix(layers[i].biases);
-        std::cout << "INTERMIEDIATE: " << "\n";
-        printFastMatrix(layers[i].output);
-        std::cout << "ACTIVATION FUNCTION: " << layers[i].functionType << "\n";
+        os << "LAYER NUMBER: " << i;
+        os << "WEIGHTS: ";
+        os << model.layers[i].weights;
+        os << "BIASES: ";
+        os << model.layers[i].biases;
+        os << "INTERMIEDIATE: ";
+        os << model.layers[i].output;
+        os << "ACTIVATION FUNCTION: " << model.layers[i].functionType << "\n";
     }
+    os << std::flush;
+    return os;
 }
 
 inline uint32_t Model::random_u32(uint32_t prev)

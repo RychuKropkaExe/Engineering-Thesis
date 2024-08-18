@@ -7,6 +7,7 @@
 
 void findMinMaxTest()
 {
+  TEST_START;
   vector<vector<double>> trainingInputs = {
       {1, 2, 3, 4},
       {5, 6, 7, 8},
@@ -55,6 +56,7 @@ void findMinMaxTest()
 
 void findMeanTest()
 {
+  TEST_START;
   vector<vector<double>> trainingInputs = {
       {1, 2, 3, 4},
       {5, 6, 7, 8},
@@ -102,6 +104,7 @@ void findMeanTest()
 
 void findStandardDeviationTest()
 {
+  TEST_START;
   vector<vector<double>> trainingInputs = {
       {1, 2, 3, 4},
       {5, 6, 7, 8},
@@ -158,6 +161,7 @@ void findStandardDeviationTest()
 
 void minMaxNormalizationTest()
 {
+  TEST_START;
   vector<vector<double>> trainingInputs = {
       {1, 2, 3, 4},
       {5, 6, 7, 8},
@@ -214,6 +218,7 @@ void minMaxNormalizationTest()
 
 void minMaxDenormalizationTest()
 {
+  TEST_START;
   vector<vector<double>> trainingInputs = {
       {1, 2, 3, 4},
       {5, 6, 7, 8},
@@ -287,6 +292,7 @@ void minMaxDenormalizationTest()
 
 void normalizationTest()
 {
+  TEST_START;
   vector<vector<double>> trainingInputs = {
       {1, 2, 3, 4},
       {5, 6, 7, 8},
@@ -343,6 +349,7 @@ void normalizationTest()
 
 void denormalizationTest()
 {
+  TEST_START;
   vector<vector<double>> trainingInputs = {
       {1, 2, 3, 4},
       {5, 6, 7, 8},
@@ -416,6 +423,7 @@ void denormalizationTest()
 
 void standarizationTest()
 {
+  TEST_START;
   vector<vector<double>> trainingInputs = {
       {1, 2, 3, 4},
       {5, 6, 7, 8},
@@ -490,6 +498,7 @@ void standarizationTest()
 
 void destandarizationTest()
 {
+  TEST_START;
   vector<vector<double>> trainingInputs = {
       {1, 2, 3, 4},
       {5, 6, 7, 8},

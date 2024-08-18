@@ -41,13 +41,13 @@ public:
     void setEps(double val);
     void learn(TrainingData &trainingDataIn, size_t iterations, bool clipGradient, uint32_t batchSize);
 
-    void printModel();
-
     void printModelToFile(std::string filename);
 
     void clipValues();
 
     inline uint32_t random_u32(uint32_t prev);
+
+    friend std::ostream &operator<<(std::ostream &os, const Model &dt);
 };
 
 Model parseModelFromFile(std::string filename);

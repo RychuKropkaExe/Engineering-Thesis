@@ -1,9 +1,12 @@
+#include "logger.h"
 #include "matrixOperationsTest.h"
 #include "modelTest.h"
 #include "testFramework.h"
 #include "trainingDataTest.h"
 #include <iostream>
 #include <time.h>
+
+std::ofstream Logger::logFile = std::ofstream("logs.log");
 
 inline uint32_t random_u32(uint32_t prev)
 {
@@ -19,8 +22,6 @@ int main()
     matrixOperationTest();
     trainingDataTest();
     modelTests();
-    std::cout
-        << c_blue << "\nAsserts Summary: " << assertPassed << " out of " << (assertPassed + assertFailed) << " asserts passed" << c_reset << "\n";
-    std::cout
-        << c_blue << "\nTests Summary: " << passed << " out of " << (passed + failed) << " tests passed" << c_reset << "\n";
+    LOG(INFO_LEVEL, "Asserts Summary: " << assertPassed << " out of " << (assertPassed + assertFailed) << " asserts passed");
+    LOG(INFO_LEVEL, "Tests Summary: " << passed << " out of " << (passed + failed) << " tests passed");
 }

@@ -149,6 +149,25 @@ bool FastMatrix::operator==(FastMatrix const &obj)
     return true;
 }
 
+std::ostream &operator<<(std::ostream &os, const FastMatrix &matrix)
+{
+    os << "\n===========================================" << "\n";
+    // std::cout << "SIZE: " << mat.rows << " " << mat.cols << "\n";
+    for (size_t i = 0; i < matrix.rows; ++i)
+    {
+        os << "[ ";
+
+        for (size_t j = 0; j < matrix.cols; ++j)
+        {
+            os << MAT_ACCESS(matrix, i, j) << " ";
+        }
+
+        os << "]\n";
+    }
+    os << "===========================================" << "\n ";
+    return os;
+}
+
 //======================= MATRIX VALUE FUNCTIONS ==========================================
 
 double randomdouble()
@@ -192,24 +211,4 @@ void FastMatrix::set(double val)
             MAT_ACCESS((*this), i, j) = val;
         }
     }
-}
-
-//======================= UTILITIES ==========================================
-
-void printFastMatrix(FastMatrix &mat)
-{
-    std::cout << "----------" << "\n";
-    // std::cout << "SIZE: " << mat.rows << " " << mat.cols << "\n";
-    for (size_t i = 0; i < mat.rows; ++i)
-    {
-        cout << "[ ";
-
-        for (size_t j = 0; j < mat.cols; ++j)
-        {
-            cout << MAT_ACCESS(mat, i, j) << " ";
-        }
-
-        cout << "]\n";
-    }
-    std::cout << "----------" << "\n";
 }

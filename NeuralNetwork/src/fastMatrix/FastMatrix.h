@@ -30,13 +30,12 @@ public:
     FastMatrix operator+(FastMatrix const &obj);
     FastMatrix operator*(FastMatrix const &obj);
     bool operator==(FastMatrix const &obj);
+    friend std::ostream &operator<<(std::ostream &os, const FastMatrix &matrix);
 
     void randomize(double low, double high);
     void randomize();
     void set(double val);
 };
-
-void printFastMatrix(FastMatrix &mat);
 double randomdouble();
 double randomdouble(double low, double high);
 

@@ -79,7 +79,7 @@ public:
 
     void normalizeData(NormalizationTypeE normType);
     void denomralizeOutput(NormalizationTypeE normType, FastMatrix &output);
-    void printTrainingData();
+    friend std::ostream &operator<<(std::ostream &os, const TrainingData &td);
 };
 
 #endif

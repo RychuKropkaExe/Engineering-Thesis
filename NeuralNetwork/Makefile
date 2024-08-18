@@ -5,16 +5,18 @@ FAST_MATRIX_DIR := ./src/FastMatrix
 LAYER_DIR := ./src/Layer
 MODEL_DIR := ./src/Model
 TRAINING_DATA_DIR := ./src/TrainingData
+LOGGER_DIR := ./src/Logger
 
-HDRS_DIR := $(FAST_MATRIX_DIR) $(LAYER_DIR) $(MODEL_DIR) $(TRAINING_DATA_DIR)
+HDRS_DIR := $(FAST_MATRIX_DIR) $(LAYER_DIR) $(MODEL_DIR) $(TRAINING_DATA_DIR) $(LOGGER_DIR)
 
-#KTÓRY 
+#KTÓRY
 MODE := app #Albo app albo test
 
 #PROJECT FILES
 SRC := $(wildcard $(FAST_MATRIX_DIR)/*.cpp) $(wildcard $(LAYER_DIR)/*.cpp) $(wildcard $(MODEL_DIR)/*.cpp) $(wildcard $(TRAINING_DATA_DIR)/*.cpp)
 
 HDRS := $(wildcard $(FAST_MATRIX_DIR)/*.h) $(wildcard $(LAYER_DIR)/*.h) $(wildcard $(MODEL_DIR)/*.h) $(wildcard $(TRAINING_DATA_DIR)/*.h)
+HDRS := $(HDRS) + $(wildcard $(LOGGER_DIR)/*.h)
 
 SRC := $(SRC) $(wildcard $(TESTS_DIR)/*.cpp)
 HDRS := $(HDRS) $(wildcard $(TESTS_DIR)/*.h)
@@ -25,7 +27,7 @@ OBJ := $(SRC:%.cpp=%.obj)
 DEPS := $(OBJ:%.obj=%.d)
 
 CC := g++
-C_FLAGS := -Wall -Wextra -Werror -O3
+C_FLAGS := -Wall -Wextra -Werror -O3 -DLOGGING_ACTIVATED
 DEP_FLAGS := -MMD -MP
 
 LIB := pthread
@@ -34,7 +36,7 @@ L_INC := $(foreach l, $(LIB), -l$l)
 
 
 ifeq ($(CC), clang)
-	C_FLAGS += -Weverything -Wno-vla -Wno-float-equal -Wno-disabled-macro-expansion
+	C_FLAGS += -Weverything -Wno-vla -Wno-float-equal -Wno-disabled-macro-expansion -DLOGGING_ACTIVATED
 endif
 
 GFLAG := no
@@ -63,7 +65,7 @@ clean:
 	@echo "[CLEANING DEPENDECIES]"
 	rm -rf $(DEPS)
 
-#DEPS 
+#DEPS
 $(DEPS):
 
 include $(wildcard $(DEPS))
