@@ -43,21 +43,26 @@ TrainingData::TrainingData()
 
 TrainingData::TrainingData(std::string filename)
 {
-    LOG(INFO_LEVEL, "TRAINING DATA INITIALIZED FROM FILE");
+    LOG(INFO_LEVEL, "TRAINING DATA INITIALIZING FROM FILE");
     std::ifstream f(filename);
     std::string buffer;
+    LOG(INFO_LEVEL, "FILE OPENED SUCCESSFULLY");
 
     getline(f, buffer);
+    LOG(INFO_LEVEL, "GIVEN NUMBER OF SAMPLES: " << buffer);
     numOfSamples = (size_t)stoi(buffer);
+    LOG(INFO_LEVEL, "PRASED NUMBER OF SAMPLES");
 
     getline(f, buffer);
     inputSize = (size_t)stoi(buffer);
+    LOG(INFO_LEVEL, "PRASED INPUT SIZE");
 
     getline(f, buffer);
     outputSize = (size_t)stoi(buffer);
 
     inputs.resize(numOfSamples);
     outputs.resize(numOfSamples);
+    LOG(INFO_LEVEL, "PARSED OUTPUT SIZE");
 
     for (size_t i = 0; i < numOfSamples; ++i)
     {
@@ -80,6 +85,8 @@ TrainingData::TrainingData(std::string filename)
         inputs[i] = FastMatrix(sampleInput, inputSize, ROW_VECTOR);
     }
 
+    LOG(INFO_LEVEL, "PARSED INPUT SAMPLES");
+
     for (size_t i = 0; i < numOfSamples; ++i)
     {
 
@@ -100,6 +107,7 @@ TrainingData::TrainingData(std::string filename)
 
         outputs[i] = FastMatrix(sampleOutput, outputSize, ROW_VECTOR);
     }
+    LOG(INFO_LEVEL, "PARSED OUTPUT SAMPLES");
     LOG(INFO_LEVEL, "INITIALIZATION FINISHED, RESULTING TRAINING DATA: " << *this);
 }
 

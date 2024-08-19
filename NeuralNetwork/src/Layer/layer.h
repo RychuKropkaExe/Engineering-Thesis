@@ -52,7 +52,10 @@ public:
     FastMatrix forward(FastMatrix input);
 
     void activate();
-
+    // if (activationFunctions[l] == SOFTMAX)
+    // {
+    //     actFuncDerivative = a * ((j == k) - w);
+    // }
     static double activationFunctionDerivative(float y, ActivationFunctionE act)
     {
         switch (act)

@@ -126,6 +126,44 @@ void hammingLengthTest()
     TEST_RESULT();
 }
 
+void digitRecognitionTest()
+{
+    TEST_START;
+    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/pendigits.tra"));
+    td.normalizeData(MIN_MAX_NORMALIZATION);
+    vector<size_t> arch = {16, 10, 10, 1};
+    size_t archSize = 4;
+    vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU};
+
+    Model model(arch, archSize, actFunc, archSize, true);
+    model.modelXavierInitialize();
+
+    double learningRate = 1e-3;
+
+    model.setLearningRate(learningRate);
+
+    model.learn(td, 100000, true, 128);
+
+    td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/pendigits.tes"));
+    td.normalizeData(MIN_MAX_NORMALIZATION);
+    model.trainingData = td;
+    double cost = model.costMeanSquare();
+    for (size_t i = 0; i < td.numOfSamples; i++)
+    {
+        LOG(INFO_LEVEL, "PREDICTION FOR SAMPLE: " << td.inputs[i]);
+        FastMatrix prediction = model.run(td.inputs[i]);
+        td.denomralizeOutput(MIN_MAX_NORMALIZATION, prediction);
+        LOG(INFO_LEVEL, "PREDICTION RESULT: " << prediction);
+    }
+
+    LOG(INFO_LEVEL, "CURRENT MODEL: " << model);
+
+    LOG(INFO_LEVEL, "COST VALUE: " << cost);
+
+    MY_TEST_ASSERT(cost < 0.10f, cost);
+    TEST_RESULT();
+}
+
 void modelTests()
 {
     TEST_SET;
@@ -133,6 +171,7 @@ void modelTests()
     parityModelTest();
     hammingLengthTest();
     paraboleModelTest();
+    digitRecognitionTest();
 }
 
 #endif
