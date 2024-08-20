@@ -230,6 +230,7 @@
             "strings": "#98C379",
             "types": "#E5C07B",
             "variables": "#43b6b9",
+            "comments": "#2fc9d4",
             "textMateRules": [
                 {
                     "scope": [

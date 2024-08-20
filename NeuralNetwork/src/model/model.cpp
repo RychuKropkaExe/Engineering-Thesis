@@ -6,15 +6,30 @@
 #include <iostream>
 #include <sstream>
 
-//======================= CONSTRUCTORS ==========================================
+/******************************************************************************
+ * CONSTRUCTORS
+ ******************************************************************************/
 
+/******************************************************************************
+ * @brief Creates model of given architecture, and with given properties
+ *
+ * @param arch              Vector describing architecture of model. Contains sizes
+ *                          of each layer
+ * @param archSize          Size of @arch vector
+ * @param actFunctions      Which activation function each layer should use
+ * @param actFunctionsSize  Size of @actFunctions vector
+ * @param randomize         Tells if each layer should randomize its weights
+ *                          and biases
+ *
+ * @return Fully functional Model
+ ******************************************************************************/
 Model::Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> actFunctions, size_t actFunctionsSize, bool randomize)
 {
     assert(archSize == actFunctionsSize);
     this->activationFunctions.resize(actFunctionsSize);
-    for (size_t i = 0; i < actFunctionsSize; ++i)
+    for (size_t i = 1; i < archSize; ++i)
     {
-        this->activationFunctions[i] = actFunctions[i];
+        this->activationFunctions[i] = actFunctions[i - 1];
     }
 
     this->layers.resize(archSize);
@@ -56,14 +71,55 @@ Model::Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> a
     this->archSize = archSize;
 }
 
+/******************************************************************************
+ * @brief Default constructor for Model. Used only when Model is part of another
+ *        object and is not yet fully initialized.
+ *
+ * @return Empty Model
+ ******************************************************************************/
 Model::Model()
 {
     this->layers.resize(1);
     this->activationFunctions.resize(1);
 }
 
-//======================= INITIALIZATION ==========================================
+/******************************************************************************
+ * OPERATORS
+ ******************************************************************************/
 
+std::ostream &operator<<(std::ostream &os, const Model &model)
+{
+    os << "MODEL PARAMETERS: " << "\n";
+    os << "LEARNING RATE: " << model.learningRate << "\n";
+    os << "EPS: " << model.eps << "\n";
+    os << "NUMBER OF LAYERS: " << model.numberOfLayers << "\n";
+    os << "ACTIVATION FUNCTIONS: " << model.activationFunctions[0] << "\n";
+    os << "LAYERS: " << "\n";
+
+    for (size_t i = 0; i < model.numberOfLayers; ++i)
+    {
+        os << "LAYER NUMBER: " << i;
+        os << "WEIGHTS: ";
+        os << model.layers[i].weights;
+        os << "BIASES: ";
+        os << model.layers[i].biases;
+        os << "INTERMIEDIATE: ";
+        os << model.layers[i].output;
+        os << "ACTIVATION FUNCTION: " << model.layers[i].functionType << "\n";
+    }
+    os << std::flush;
+    return os;
+}
+
+/******************************************************************************
+ * UTILITIES
+ ******************************************************************************/
+
+/******************************************************************************
+ * @brief Initilizes model layers using Xavier method
+ *
+ * @return Nothing
+ ******************************************************************************/
 void Model::modelXavierInitialize()
 {
 
@@ -75,20 +131,35 @@ void Model::modelXavierInitialize()
     }
 }
 
-//======================= HYPERPARAMETERS SETTINGS ==========================================
-
+/******************************************************************************
+ * @brief Setter for learning rate
+ *
+ * @param val Value of learining rate
+ *
+ * @return Nothing
+ ******************************************************************************/
 void Model::setLearningRate(double val)
 {
     this->learningRate = val;
 }
 
+/******************************************************************************
+ * @brief Setter for epsilon
+ *
+ * @param val Value of epsilon
+ *
+ * @return Nothing
+ ******************************************************************************/
 void Model::setEps(double val)
 {
     this->eps = val;
 }
 
-//======================= COST FUNCTIONS ==========================================
-
+/******************************************************************************
+ * @brief Calculates current cost using cross entropy method
+ *
+ * @return Model cost
+ ******************************************************************************/
 double Model::costCrossEntropy()
 {
     double totalCost = 0;
@@ -110,6 +181,11 @@ double Model::costCrossEntropy()
     return totalCost / (trainingData.numOfSamples);
 }
 
+/******************************************************************************
+ * @brief Calculates current cost using mean squared error method
+ *
+ * @return Model cost
+ ******************************************************************************/
 double Model::costMeanSquare()
 {
     LOG(INFO_LEVEL, "CALCULATING MEAN SQUARE COST");
@@ -130,6 +206,17 @@ double Model::costMeanSquare()
     return totalCost / (trainingData.numOfSamples);
 }
 
+/******************************************************************************
+ * @brief Learning process for a model. Runs back propagation
+ *        algorithm @iterations number of times
+ *
+ * @param trainingDataIn    Data on which the training should be performed
+ * @param iterations        How many iterations of training
+ * @param clipGradient      Tells if gradient clipping should be used
+ * @param batchSize         Size of single training batch
+ *
+ * @return Nohing
+ ******************************************************************************/
 void Model::learn(TrainingData &trainingDataIn, size_t iterations, bool clipGradient, uint32_t batchSize)
 {
     LOG(INFO_LEVEL, "STARTING LEARNING");
@@ -146,6 +233,13 @@ void Model::learn(TrainingData &trainingDataIn, size_t iterations, bool clipGrad
     LOG(INFO_LEVEL, "COST AFTER LEARNING: " << costAfterLearing);
 }
 
+/******************************************************************************
+ * @brief Forward feed model with given input
+ *
+ * @param input Input for the model
+ *
+ * @return Model output
+ ******************************************************************************/
 FastMatrix Model::run(FastMatrix input)
 {
 
@@ -157,6 +251,13 @@ FastMatrix Model::run(FastMatrix input)
     return this->layers[this->numberOfLayers - 1].output;
 }
 
+/******************************************************************************
+ * @brief Learning method using finite differnce algorithm. Calculates rough
+ *        derivative of each weight/bias using formula:
+ *        derivative = (f(x + eps) - f(x)) / eps
+ *
+ * @return Model output
+ ******************************************************************************/
 void Model::finiteDifference()
 {
 
@@ -212,7 +313,13 @@ void Model::finiteDifference()
         }
     }
 }
-
+/******************************************************************************
+ * @brief Gradient clipping. If gradient for given weight/bias is greater than
+ *        @maxThreshold or lesser than @minThreshold then this gradient becomes
+ *        one of those values accordingly. Used to fight exploding gradient
+ *
+ * @return Nothing
+ ******************************************************************************/
 void Model::clipValues()
 {
     for (size_t i = 0; i < numberOfLayers; ++i)
@@ -240,6 +347,15 @@ void Model::clipValues()
     }
 }
 
+/******************************************************************************
+ * @brief Implementation of back propagation algorithm for mean squared error
+ *        cost function.
+ *
+ * @param clipGradient Tells if gradient clipping should be used
+ * @param batchSize    Size of one batch. If 0 then all samples are taken
+ *
+ * @return Nothing
+ ******************************************************************************/
 void Model::backPropagation(bool clipGradient, uint32_t batchSize)
 {
     size_t n = batchSize == 0 ? trainingData.numOfSamples : batchSize;
@@ -293,6 +409,11 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
                     // k - weight matrix row
                     double pa = MAT_ACCESS(layers[l - 1].output, 0, k);
                     double w = MAT_ACCESS(layers[l].weights, k, j);
+
+                    if (activationFunctions[l] == SOFTMAX)
+                    {
+                        actFuncDerivative = a * ((j == k) - pa);
+                    }
                     MAT_ACCESS(gradient.layers[l].weights, k, j) += da * actFuncDerivative * pa;
                     MAT_ACCESS(gradient.layers[l - 1].output, 0, k) += da * actFuncDerivative * w;
                 }
@@ -341,156 +462,4 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
             }
         }
     }
-}
-
-std::ostream &operator<<(std::ostream &os, const Model &model)
-{
-    os << "MODEL PARAMETERS: " << "\n";
-    os << "LEARNING RATE: " << model.learningRate << "\n";
-    os << "EPS: " << model.eps << "\n";
-    os << "NUMBER OF LAYERS: " << model.numberOfLayers << "\n";
-    os << "ACTIVATION FUNCTIONS: " << model.activationFunctions[0] << "\n";
-    os << "LAYERS: " << "\n";
-
-    for (size_t i = 0; i < model.numberOfLayers; ++i)
-    {
-        os << "LAYER NUMBER: " << i;
-        os << "WEIGHTS: ";
-        os << model.layers[i].weights;
-        os << "BIASES: ";
-        os << model.layers[i].biases;
-        os << "INTERMIEDIATE: ";
-        os << model.layers[i].output;
-        os << "ACTIVATION FUNCTION: " << model.layers[i].functionType << "\n";
-    }
-    os << std::flush;
-    return os;
-}
-
-inline uint32_t Model::random_u32(uint32_t prev)
-{
-    return prev * 1664525U + 1013904223U; // assuming complement-2 integers and non-signaling overflow
-}
-
-void Model::printModelToFile(std::string filename)
-{
-    std::ofstream f(filename);
-
-    // Write to the file
-    f << numberOfLayers << "\n";
-    f << learningRate << "\n";
-    f << eps << "\n";
-    for (size_t i = 0; i < numberOfLayers; ++i)
-    {
-
-        f << layers[i].functionType << "\n";
-        f << layers[i].weights.rows << "\n";
-        f << layers[i].weights.cols << "\n";
-        for (size_t j = 0; j < layers[i].weights.rows * layers[i].weights.cols; ++j)
-        {
-            f << layers[i].weights.mat[j] << " ";
-        }
-        f << "\n";
-        f << layers[i].biases.rows << "\n";
-        f << layers[i].biases.cols << "\n";
-        for (size_t j = 0; j < layers[i].biases.rows * layers[i].biases.cols; ++j)
-        {
-            f << layers[i].biases.mat[j] << " ";
-        }
-        f << "\n";
-    }
-
-    // Close the file
-    f.close();
-}
-
-Model parseModelFromFile(std::string filename)
-{
-    std::ifstream f(filename);
-    std::string buffer;
-
-    getline(f, buffer);
-    size_t numberOfLayers = (size_t)stoi(buffer);
-
-    getline(f, buffer);
-    double learningRate = (double)stof(buffer);
-
-    getline(f, buffer);
-    double eps = (double)stof(buffer);
-
-    vector<Layer> layers;
-    layers.resize(numberOfLayers);
-    for (size_t i = 0; i < numberOfLayers; ++i)
-    {
-
-        getline(f, buffer);
-        ActivationFunctionE funcType = (ActivationFunctionE)stoi(buffer);
-        getline(f, buffer);
-        size_t weightsRows = (size_t)stoi(buffer);
-        getline(f, buffer);
-        size_t weightsCols = (size_t)stoi(buffer);
-        vector<double> wieghtsMat;
-        wieghtsMat.resize(weightsRows * weightsCols);
-        getline(f, buffer);
-        std::stringstream check(buffer);
-
-        size_t counter = 0;
-
-        while (getline(check, buffer, ' '))
-        {
-            wieghtsMat[counter] = stof(buffer);
-            counter++;
-        }
-
-        getline(f, buffer);
-        size_t biasesRows = (size_t)stoi(buffer);
-        getline(f, buffer);
-        size_t biasesCols = (size_t)stoi(buffer);
-        vector<double> biasesMat;
-        biasesMat.resize(biasesCols * biasesRows);
-
-        counter = 0;
-        getline(f, buffer);
-        std::cout << buffer << "\n";
-
-        std::stringstream check2(buffer);
-        while (getline(check2, buffer, ' '))
-        {
-            std::cout << buffer << "\n";
-            biasesMat[counter] = stof(buffer);
-            counter++;
-        }
-
-        FastMatrix weights;
-        FastMatrix biases;
-        FastMatrix output;
-        weights.cols = weightsCols;
-        weights.rows = weightsRows;
-        weights.mat = wieghtsMat;
-        biases.cols = biasesCols;
-        biases.rows = biasesRows;
-        biases.mat = biasesMat;
-        output.cols = biasesCols;
-        output.rows = biasesRows;
-        output.mat = biasesMat;
-
-        Layer l;
-
-        l.weights = weights;
-        l.biases = biases;
-        l.output = output;
-        l.functionType = funcType;
-
-        layers[i] = l;
-    }
-
-    Model model;
-
-    model.layers = layers;
-    model.numberOfLayers = numberOfLayers;
-    model.archSize = numberOfLayers;
-    model.learningRate = learningRate;
-    model.eps = eps;
-
-    return model;
 }

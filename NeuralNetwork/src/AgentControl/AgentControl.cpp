@@ -20,11 +20,6 @@ void createMainModel(vector<size_t> arch, size_t archSize, vector<ActivationFunc
     agent.mainModel.modelXavierInitialize();
 }
 
-void loadMainModel(std::string filename)
-{
-    agent.mainModel = parseModelFromFile(filename);
-}
-
 void createTargetModel()
 {
     agent.targetModel = Model(agent.mainModel.arch, agent.mainModel.archSize, agent.mainModel.activationFunctions, agent.mainModel.activationFunctions.size(), false);
@@ -161,11 +156,6 @@ void printModels()
     agent.targetModel.printModel();
 }
 
-void dumpModel(std::string filename)
-{
-    agent.mainModel.printModelToFile(filename);
-}
-
 void xorModelTest()
 {
 
@@ -186,8 +176,6 @@ void xorModelTest()
     model.setLearningRate(learningRate);
 
     model.learn(td, 100000, true);
-
-    // model.printModelToFile("/home/rychu/Engineering-Thesis/NeuralNetwork/printedModel.log");
 
     assert(model.costMeanSquare() < 0.05f);
 }

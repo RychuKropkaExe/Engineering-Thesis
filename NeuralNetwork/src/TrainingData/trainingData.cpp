@@ -9,6 +9,23 @@
 #include <numeric>
 #include <sstream>
 
+/******************************************************************************
+ * CONSTRUCTORS
+ ******************************************************************************/
+
+/******************************************************************************
+ * @brief Creates training data from vecotrs of inputs and outputs. Used mainly
+ *        For tests
+ *
+ * @param trainingInputs    Vector of training input vectors
+ * @param inputSize         Size of single input vector
+ * @param inputCount        Number of input vectors
+ * @param trainingOutputs   Vector of training output vectors
+ * @param outputSize        Size of single output vector
+ * @param outputCount       Number of output vectors
+ *
+ * @return TrainingData
+ ******************************************************************************/
 TrainingData::TrainingData(vector<vector<double>> trainingInputs, size_t inputSize, size_t inputCount,
                            vector<vector<double>> trainingOutputs, size_t outputSize, size_t outputCount)
 {
@@ -34,6 +51,12 @@ TrainingData::TrainingData(vector<vector<double>> trainingInputs, size_t inputSi
     LOG(INFO_LEVEL, "INITIALIZATION FINISHED, RESULTING TRAINING DATA: " << *this);
 }
 
+/******************************************************************************
+ * @brief Default constructor. Used only when TrainingData is a member of another
+ *        class.
+ *
+ * @return TrainingData
+ ******************************************************************************/
 TrainingData::TrainingData()
 {
     this->numOfSamples = 0;
@@ -41,6 +64,24 @@ TrainingData::TrainingData()
     this->outputs.resize(1);
 }
 
+/******************************************************************************
+ * @brief Parses TrainingData from file. The file format does not matter.
+ *        Structure of file must be as follows:
+ *
+ *        <number of sample>
+ *        <input size>
+ *        <output size>
+ *        <input vector nr 1>
+ *        <input vector nr 2>
+ *        <input vector nr n>
+ *        <output vector nr 1>
+ *        <output vector nr 2>
+ *        <output vector nr n>
+ *
+ * @param filename  Path to file from which the training data is parsed
+ *
+ * @return TrainingData
+ ******************************************************************************/
 TrainingData::TrainingData(std::string filename)
 {
     LOG(INFO_LEVEL, "TRAINING DATA INITIALIZING FROM FILE");
@@ -111,8 +152,33 @@ TrainingData::TrainingData(std::string filename)
     LOG(INFO_LEVEL, "INITIALIZATION FINISHED, RESULTING TRAINING DATA: " << *this);
 }
 
-//====================================== DATA NORMALIZATION ============================================
+/******************************************************************************
+ * OPERATORS
+ ******************************************************************************/
 
+std::ostream &operator<<(std::ostream &os, const TrainingData &td)
+{
+
+    for (size_t i = 0; i < td.numOfSamples; ++i)
+    {
+        os << "SAMPLE: " << i;
+        os << td.inputs[i];
+        os << "EXPECTED RESULT: ";
+        os << td.outputs[i];
+    }
+
+    return os;
+}
+
+/******************************************************************************
+ * UTILITIES
+ ******************************************************************************/
+
+/******************************************************************************
+ * @brief Finds minimal value from training input samples
+ *
+ * @return min value from input samples
+ ******************************************************************************/
 double TrainingData::findMinInput()
 {
     double curMin = std::numeric_limits<double>::infinity();
@@ -125,6 +191,11 @@ double TrainingData::findMinInput()
     return curMin;
 }
 
+/******************************************************************************
+ * @brief Finds maximal value from training input samples
+ *
+ * @return max value from input samples
+ ******************************************************************************/
 double TrainingData::findMaxInput()
 {
     double curMax = -std::numeric_limits<double>::infinity();
@@ -137,6 +208,11 @@ double TrainingData::findMaxInput()
     return curMax;
 }
 
+/******************************************************************************
+ * @brief Finds minimal value from training otput samples
+ *
+ * @return min value from output samples
+ ******************************************************************************/
 double TrainingData::findMinOutput()
 {
     double curMin = std::numeric_limits<double>::infinity();
@@ -149,6 +225,11 @@ double TrainingData::findMinOutput()
     return curMin;
 }
 
+/******************************************************************************
+ * @brief Finds maximal value from training output samples
+ *
+ * @return max value from output samples
+ ******************************************************************************/
 double TrainingData::findMaxOutput()
 {
     double curMax = -std::numeric_limits<double>::infinity();
@@ -161,6 +242,11 @@ double TrainingData::findMaxOutput()
     return curMax;
 }
 
+/******************************************************************************
+ * @brief Finds mean value of training output samples
+ *
+ * @return mean value of output samples
+ ******************************************************************************/
 double TrainingData::findMeanOutput()
 {
     double meanValue = 0.f;
@@ -173,6 +259,11 @@ double TrainingData::findMeanOutput()
     return meanValue / numOfSamples;
 }
 
+/******************************************************************************
+ * @brief Finds mean value of training input samples
+ *
+ * @return mean value of input samples
+ ******************************************************************************/
 double TrainingData::findMeanInput()
 {
     double meanValue = 0.f;
@@ -185,6 +276,11 @@ double TrainingData::findMeanInput()
     return meanValue / (numOfSamples * inputSize);
 }
 
+/******************************************************************************
+ * @brief Finds standard deviation of training input samples
+ *
+ * @return standard deviation of input samples
+ ******************************************************************************/
 double TrainingData::findInputStandardDeviation()
 {
     double meanInput = findMeanInput();
@@ -205,6 +301,11 @@ double TrainingData::findInputStandardDeviation()
     return result;
 }
 
+/******************************************************************************
+ * @brief Finds standard deviation of training output samples
+ *
+ * @return standard deviation of output samples
+ ******************************************************************************/
 double TrainingData::findOutputStandardDeviation()
 {
     double meanOutput = findMeanOutput();
@@ -225,6 +326,13 @@ double TrainingData::findOutputStandardDeviation()
     return result;
 }
 
+/******************************************************************************
+ * @brief Normalizes training input and output sample using chosen method
+ *
+ * @param normType Which normalization method to use
+ *
+ * @return Nothing
+ ******************************************************************************/
 void TrainingData::normalizeData(NormalizationTypeE normType)
 {
 
@@ -324,6 +432,15 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
     }
 }
 
+/******************************************************************************
+ * @brief Denormalizes given output of the model.
+ *
+ * @param normType      Which normalization method to use
+ * @param output[out]   Model output to denormalize. The result
+ *                      is stored in this FastMatrix
+ *
+ * @return Nothing
+ ******************************************************************************/
 void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &output)
 {
     LOG(INFO_LEVEL, "DENORMALIZING USING NORM TYPE: " << normType << " VALUES: " << output);
@@ -369,18 +486,4 @@ void TrainingData::denomralizeOutput(NormalizationTypeE normType, FastMatrix &ou
         return;
     }
     }
-}
-
-std::ostream &operator<<(std::ostream &os, const TrainingData &td)
-{
-
-    for (size_t i = 0; i < td.numOfSamples; ++i)
-    {
-        os << "SAMPLE: " << i;
-        os << td.inputs[i];
-        os << "EXPECTED RESULT: ";
-        os << td.outputs[i];
-    }
-
-    return os;
 }

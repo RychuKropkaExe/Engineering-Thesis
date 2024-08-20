@@ -8,11 +8,6 @@
 
 std::ofstream Logger::logFile = std::ofstream("logs.log");
 
-inline uint32_t random_u32(uint32_t prev)
-{
-    return prev * 1664525U + 1013904223U; // assuming complement-2 integers and non-signaling overflow
-}
-
 #define BATCH_SIZE 64
 
 int main()

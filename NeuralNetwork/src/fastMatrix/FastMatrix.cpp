@@ -15,6 +15,16 @@ using std::to_string;
 #define M_Assert(Expr, Msg) ;
 #endif
 
+/******************************************************************************
+ * @brief Matrix assert used for debugging
+ *
+ * @param expr Tested expresion
+ * @param file File name from which the assert was called
+ * @param line Line number from which the assert was called
+ * @param msg Message to display if the assert is false
+ *
+ * @return The sum of the two numbers.
+ ******************************************************************************/
 void MAT_Assert(bool expr, const char *file, int line, std::string msg)
 {
     if (!expr)
@@ -24,8 +34,16 @@ void MAT_Assert(bool expr, const char *file, int line, std::string msg)
     }
 }
 
-//======================= CONSTRUCTORS ==========================================
+/******************************************************************************
+ * CONSTRUCTORS
+ ******************************************************************************/
 
+/******************************************************************************
+ * @brief Default constructor for FastMatrix, used only to initialize
+ *        it as a member of another object
+ *
+ * @return Default instance of FastMatrix
+ ******************************************************************************/
 FastMatrix::FastMatrix()
 {
     this->rows = 1;
@@ -33,6 +51,14 @@ FastMatrix::FastMatrix()
     this->mat.resize(1);
 }
 
+/******************************************************************************
+ * @brief Allocates FastMatrix with given number of rows and columns
+ *
+ * @param rows Tells how many rows are in constructed matrix
+ * @param cols Tells how many columns are in constructed matrix
+ *
+ * @return FastMatrix instance
+ ******************************************************************************/
 FastMatrix::FastMatrix(size_t rows, size_t cols)
 {
     this->rows = rows;
@@ -40,6 +66,16 @@ FastMatrix::FastMatrix(size_t rows, size_t cols)
     this->mat.resize(rows * cols);
 }
 
+/******************************************************************************
+ * @brief Allocates FastMatrix with given number of rows and columns and
+ *        sets all values in constructed matrix to @val
+ *
+ * @param rows Tells how many rows are in constructed matrix
+ * @param cols Tells how many columns are in constructed matrix
+ * @param val  Value to which whole matrix is set
+ *
+ * @return FastMatrix instance
+ ******************************************************************************/
 FastMatrix::FastMatrix(size_t rows, size_t cols, double val)
 {
     this->rows = rows;
@@ -54,6 +90,15 @@ FastMatrix::FastMatrix(size_t rows, size_t cols, double val)
     }
 }
 
+/******************************************************************************
+ * @brief Creates FastMatrix that acts as either row or column vector
+ *
+ * @param vec Vector from which the matrix is initialized
+ * @param vectorSize  Number of elements in @vec
+ * @param vtype  Type of vector that is constructed
+ *
+ * @return FastMatrix instance
+ ******************************************************************************/
 FastMatrix::FastMatrix(vector<double> &vec, size_t vectorSize, Vector_Type vtype)
 {
     if (vtype == COLUMN_VECTOR)
@@ -78,6 +123,15 @@ FastMatrix::FastMatrix(vector<double> &vec, size_t vectorSize, Vector_Type vtype
     }
 }
 
+/******************************************************************************
+ * @brief Constructs FastMatrix from vector of vectors
+ *
+ * @param rows Tells how many rows are in constructed matrix
+ * @param cols Tells how many columns are in constructed matrix
+ * @param arr  Vector of vectors from which the values are copied to FastMatrix
+ *
+ * @return FastMatrix instance
+ ******************************************************************************/
 FastMatrix::FastMatrix(size_t rows, size_t cols, vector<vector<double>> &arr)
 {
     this->rows = rows;
@@ -92,7 +146,9 @@ FastMatrix::FastMatrix(size_t rows, size_t cols, vector<vector<double>> &arr)
     }
 }
 
-//======================= OPERATORS OVERLOAD ==========================================
+/******************************************************************************
+ * OPERATORS
+ ******************************************************************************/
 
 FastMatrix FastMatrix::operator+(FastMatrix const &obj)
 {
@@ -168,18 +224,38 @@ std::ostream &operator<<(std::ostream &os, const FastMatrix &matrix)
     return os;
 }
 
-//======================= MATRIX VALUE FUNCTIONS ==========================================
+/******************************************************************************
+ * UTILITIES
+ ******************************************************************************/
 
+/******************************************************************************
+ * @brief Returns random double
+ *
+ * @return random double
+ ******************************************************************************/
 double randomdouble()
 {
     return (double)(rand()) / (double)(RAND_MAX);
 }
 
+/******************************************************************************
+ * @brief Returns random double in range (@low, @high)
+ *
+ * @param low Lower boundry
+ * @param high Upper boundry
+ *
+ * @return random double in range
+ ******************************************************************************/
 double randomdouble(double low, double high)
 {
     return low + randomdouble() * (high - low);
 }
 
+/******************************************************************************
+ * @brief Fills FastMatrix with random numbers
+ *
+ * @return Nothing
+ ******************************************************************************/
 void FastMatrix::randomize()
 {
     for (size_t i = 0; i < rows; ++i)
@@ -191,6 +267,14 @@ void FastMatrix::randomize()
     }
 }
 
+/******************************************************************************
+ * @brief Fills FastMatrix with random doubles in range (@low, @high)
+ *
+ * @param low Lower boundry
+ * @param high Upper boundry
+ *
+ * @return Nothing
+ ******************************************************************************/
 void FastMatrix::randomize(double low, double high)
 {
     for (size_t i = 0; i < rows; ++i)
@@ -202,6 +286,13 @@ void FastMatrix::randomize(double low, double high)
     }
 }
 
+/******************************************************************************
+ * @brief Sets all values in FastMatrix to @val
+ *
+ * @param val Value to which FastMatrix is set
+ *
+ * @return Nothing
+ ******************************************************************************/
 void FastMatrix::set(double val)
 {
     for (size_t i = 0; i < rows; ++i)

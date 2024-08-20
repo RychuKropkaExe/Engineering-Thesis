@@ -8,6 +8,14 @@
 #define INFO_LEVEL "[INFO]"
 #define ERROR_LEVEL "[ERROR]"
 
+/******************************************************************************
+ * @class Logger
+ *
+ * @brief Wrapper for log file used for easier managing of access to it
+ *
+ * @public @param logFile  File to which logs are saved
+ *
+ ******************************************************************************/
 class Logger
 {
 public:

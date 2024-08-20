@@ -7,6 +7,9 @@
 #include <vector>
 using std::vector;
 
+/******************************************************************************
+ * @brief Tests if NeuralNetwork is able to model XOR logic gate
+ ******************************************************************************/
 void xorModelTest()
 {
     TEST_START;
@@ -30,6 +33,9 @@ void xorModelTest()
     TEST_RESULT();
 }
 
+/******************************************************************************
+ * @brief Tests if NeuralNetwork is able to model parabole on numbers in (-20, 20)
+ ******************************************************************************/
 void paraboleModelTest()
 {
     TEST_START;
@@ -81,6 +87,10 @@ void paraboleModelTest()
     TEST_RESULT();
 }
 
+/******************************************************************************
+ * @brief Tests if NeuralNetwork is able to predict if given 8-bit number is
+ *        even or odd
+ ******************************************************************************/
 void parityModelTest()
 {
     TEST_START;
@@ -105,6 +115,9 @@ void parityModelTest()
     TEST_RESULT();
 }
 
+/******************************************************************************
+ * @brief Tests if NeuralNetwork is able to calculate hamming length of 7-bit number
+ ******************************************************************************/
 void hammingLengthTest()
 {
     TEST_START;
@@ -126,6 +139,10 @@ void hammingLengthTest()
     TEST_RESULT();
 }
 
+/******************************************************************************
+ * @brief Tests if NeuralNetwork is able to recognize digits given their
+ *        features
+ ******************************************************************************/
 void digitRecognitionTest()
 {
     TEST_START;
