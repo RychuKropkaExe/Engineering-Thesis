@@ -23,7 +23,7 @@ using std::to_string;
  * @param line Line number from which the assert was called
  * @param msg Message to display if the assert is false
  *
- * @return The sum of the two numbers.
+ * @return Nothing.
  ******************************************************************************/
 void MAT_Assert(bool expr, const char *file, int line, std::string msg)
 {

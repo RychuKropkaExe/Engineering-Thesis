@@ -68,7 +68,7 @@ TrainingData::TrainingData()
  * @brief Parses TrainingData from file. The file format does not matter.
  *        Structure of file must be as follows:
  *
- *        <number of sample>
+ *        <number of samples>
  *        <input size>
  *        <output size>
  *        <input vector nr 1>

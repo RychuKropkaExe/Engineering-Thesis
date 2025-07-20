@@ -1,5 +1,6 @@
 #include "agentControl.h"
 #include "FastMatrix.h"
+#include "logger.h"
 #include "model.h"
 #include "trainingData.h"
 #include <algorithm>

@@ -32,6 +32,9 @@ enum NormalizationTypeE
 class MinMaxNormalizationData
 {
 public:
+    /******************************************************************************
+     * CLASS MEMBERS
+     ******************************************************************************/
     double minInputValue{0.f};
     double maxInputValue{0.f};
 
@@ -55,6 +58,9 @@ public:
 class NormalizationData
 {
 public:
+    /******************************************************************************
+     * CLASS MEMBERS
+     ******************************************************************************/
     double minInputValue{0.f};
     double maxInputValue{0.f};
     double meanInput{0.f};
@@ -78,6 +84,9 @@ public:
 class StandarizationData
 {
 public:
+    /******************************************************************************
+     * CLASS MEMBERS
+     ******************************************************************************/
     double meanInput{0.f};
     double inputStandardDeviation{0.f};
 
