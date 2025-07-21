@@ -160,7 +160,7 @@ public:
     double findOutputStandardDeviation();
 
     void normalizeData(NormalizationTypeE normType);
-    void denomralizeOutput(NormalizationTypeE normType, FastMatrix &output);
+    void denormalizeOutput(NormalizationTypeE normType, FastMatrix &output);
 };
 
 #endif

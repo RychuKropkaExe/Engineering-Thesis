@@ -80,10 +80,13 @@ void paraboleModelTest()
     model.setEps(eps);
     model.setLearningRate(learningRate);
 
-    model.learn(td, 1000000, true, 32);
+    td.normalizeData(MIN_MAX_NORMALIZATION);
+
+    model.learn(td, 100000, true, 32);
+
     double cost = model.costMeanSquare();
 
-    MY_TEST_ASSERT(cost < 100.f, cost);
+    MY_TEST_ASSERT(cost < 0.5f, cost);
     TEST_RESULT();
 }
 
@@ -167,15 +170,15 @@ void digitRecognitionTest()
     double cost = model.costMeanSquare();
     for (size_t i = 0; i < td.numOfSamples; i++)
     {
-        LOG(INFO_LEVEL, "PREDICTION FOR SAMPLE: " << td.inputs[i]);
+        LOG(NORMAL_LOGS, INFO_TYPE, "PREDICTION FOR SAMPLE: " << td.inputs[i]);
         FastMatrix prediction = model.run(td.inputs[i]);
-        td.denomralizeOutput(MIN_MAX_NORMALIZATION, prediction);
-        LOG(INFO_LEVEL, "PREDICTION RESULT: " << prediction);
+        td.denormalizeOutput(MIN_MAX_NORMALIZATION, prediction);
+        LOG(NORMAL_LOGS, INFO_TYPE, "PREDICTION RESULT: " << prediction);
     }
 
-    LOG(INFO_LEVEL, "CURRENT MODEL: " << model);
+    LOG(HEAVY_LOGS, INFO_TYPE, "CURRENT MODEL: " << model);
 
-    LOG(INFO_LEVEL, "COST VALUE: " << cost);
+    LOG(ESSENTIAL_LOGS, INFO_TYPE, "COST VALUE: " << cost);
 
     MY_TEST_ASSERT(cost < 0.10f, cost);
     TEST_RESULT();

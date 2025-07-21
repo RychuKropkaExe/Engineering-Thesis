@@ -176,7 +176,7 @@ double Model::costCrossEntropy()
         }
     }
 
-    COND_LOG(trainingData.numOfSamples == 0, ERROR_LEVEL, "NUMBER OF SAMPLES == 0");
+    COND_LOG(trainingData.numOfSamples == 0, ERROR_TYPE, "NUMBER OF SAMPLES == 0");
 
     return totalCost / (trainingData.numOfSamples);
 }
@@ -188,7 +188,7 @@ double Model::costCrossEntropy()
  ******************************************************************************/
 double Model::costMeanSquare()
 {
-    LOG(INFO_LEVEL, "CALCULATING MEAN SQUARE COST");
+    LOG(NORMAL_LOGS, INFO_TYPE, "CALCULATING MEAN SQUARE COST");
     double totalCost = 0;
 
     for (size_t i = 0; i < trainingData.numOfSamples; ++i)
@@ -201,7 +201,7 @@ double Model::costMeanSquare()
         }
     }
 
-    COND_LOG(trainingData.numOfSamples == 0, ERROR_LEVEL, "NUMBER OF SAMPLES == 0");
+    COND_LOG(trainingData.numOfSamples == 0, ERROR_TYPE, "NUMBER OF SAMPLES == 0");
 
     return totalCost / (trainingData.numOfSamples);
 }
@@ -219,18 +219,18 @@ double Model::costMeanSquare()
  ******************************************************************************/
 void Model::learn(TrainingData &trainingDataIn, size_t iterations, bool clipGradient, uint32_t batchSize)
 {
-    LOG(INFO_LEVEL, "STARTING LEARNING");
+    LOG(ESSENTIAL_LOGS, INFO_TYPE, "STARTING LEARNING");
     this->trainingData = trainingDataIn;
-    LOG(INFO_LEVEL, "NUMBER OF SAMPLES: " << trainingData.numOfSamples);
-    LOG(INFO_LEVEL, "INITIAL MODEL: " << *this);
+    LOG(ESSENTIAL_LOGS, INFO_TYPE, "NUMBER OF SAMPLES: " << trainingData.numOfSamples);
+    LOG(ESSENTIAL_LOGS, INFO_TYPE, "INITIAL MODEL: " << *this);
     double costBeforeLearning = costMeanSquare();
-    LOG(INFO_LEVEL, "COST BEFORE LEARNING: " << costBeforeLearning);
+    LOG(ESSENTIAL_LOGS, INFO_TYPE, "COST BEFORE LEARNING: " << costBeforeLearning);
     for (size_t i = 0; i < iterations; ++i)
     {
         backPropagation(clipGradient, batchSize);
     }
     double costAfterLearing = costMeanSquare();
-    LOG(INFO_LEVEL, "COST AFTER LEARNING: " << costAfterLearing);
+    LOG(ESSENTIAL_LOGS, INFO_TYPE, "COST AFTER LEARNING: " << costAfterLearing);
 }
 
 /******************************************************************************

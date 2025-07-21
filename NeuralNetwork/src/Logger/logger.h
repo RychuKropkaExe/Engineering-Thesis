@@ -5,8 +5,16 @@
 #include <iostream>
 #include <string>
 
-#define INFO_LEVEL "[INFO]"
-#define ERROR_LEVEL "[ERROR]"
+#define INFO_TYPE "[INFO]"
+#define ERROR_TYPE "[ERROR]"
+
+#define ESSENTIAL_LOGS 1
+#define NORMAL_LOGS 2
+#define HEAVY_LOGS 3
+
+#ifndef DEBUG_PRIO
+#define DEBUG_PRIO ESSENTIAL_LOGS
+#endif
 
 /******************************************************************************
  * @class Logger
@@ -24,15 +32,18 @@ public:
 
 #ifdef LOGGING_ACTIVATED
 
-#define LOG(DEBUG_LEVEL, EXPR)                            \
-  (Logger::logFile << DEBUG_LEVEL << ": " << EXPR << "\n" \
-                   << std::flush)
+#define LOG(PRIO_TYPE, DEBUG_TYPE, EXPR)                                            \
+  (PRIO_TYPE <= DEBUG_PRIO ? (Logger::logFile << DEBUG_TYPE << ": " << EXPR << "\n" \
+                                              << std::flush)                        \
+                           : FLUSH_LOG())
 
 #define FLUSH_LOG() \
   (Logger::logFile << std::flush)
 
-#define COND_LOG(COND, DEBUG_LEVEL, EXPR) \
-  (COND ? LOG(DEBUG_LEVEL, EXPR) : FLUSH_LOG())
+// Conditional logs are always essential, by their nature they are only used
+// if some condition is satisfied so its important to log it
+#define COND_LOG(COND, DEBUG_TYPE, EXPR) \
+  (COND ? LOG(ESSENTIAL_LOGS, DEBUG_TYPE, EXPR) : FLUSH_LOG())
 
 #else
 #define LOG(...)

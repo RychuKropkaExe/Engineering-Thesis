@@ -17,6 +17,6 @@ int main()
     matrixOperationTest();
     trainingDataTest();
     modelTests();
-    LOG(INFO_LEVEL, "Asserts Summary: " << assertPassed << " out of " << (assertPassed + assertFailed) << " asserts passed");
-    LOG(INFO_LEVEL, "Tests Summary: " << passed << " out of " << (passed + failed) << " tests passed");
+    LOG(ESSENTIAL_LOGS, INFO_TYPE, "Asserts Summary: " << assertPassed << " out of " << (assertPassed + assertFailed) << " asserts passed");
+    LOG(ESSENTIAL_LOGS, INFO_TYPE, "Tests Summary: " << passed << " out of " << (passed + failed) << " tests passed");
 }

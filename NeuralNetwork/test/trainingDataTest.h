@@ -249,7 +249,7 @@ void minMaxDenormalizationTest()
   {
     for (size_t j = 0; j < outputSize; j++)
     {
-      td.denomralizeOutput(MIN_MAX_NORMALIZATION, td.outputs[i]);
+      td.denormalizeOutput(MIN_MAX_NORMALIZATION, td.outputs[i]);
       MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
                          MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
                      MAT_ACCESS(td.outputs[i], 0, j));
@@ -281,7 +281,7 @@ void minMaxDenormalizationTest()
   {
     for (size_t j = 0; j < outputSize; j++)
     {
-      td.denomralizeOutput(MIN_MAX_NORMALIZATION, td.outputs[i]);
+      td.denormalizeOutput(MIN_MAX_NORMALIZATION, td.outputs[i]);
       MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
                          MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
                      MAT_ACCESS(td.outputs[i], 0, j));
@@ -380,7 +380,7 @@ void denormalizationTest()
   {
     for (size_t j = 0; j < outputSize; j++)
     {
-      td.denomralizeOutput(NORMALIZATION, td.outputs[i]);
+      td.denormalizeOutput(NORMALIZATION, td.outputs[i]);
       MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
                          MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
                      MAT_ACCESS(td.outputs[i], 0, j));
@@ -412,7 +412,7 @@ void denormalizationTest()
   {
     for (size_t j = 0; j < outputSize; j++)
     {
-      td.denomralizeOutput(NORMALIZATION, td.outputs[i]);
+      td.denormalizeOutput(NORMALIZATION, td.outputs[i]);
       MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
                          MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
                      MAT_ACCESS(td.outputs[i], 0, j));
@@ -529,7 +529,7 @@ void destandarizationTest()
   {
     for (size_t j = 0; j < outputSize; j++)
     {
-      td.denomralizeOutput(STANDARIZATION, td.outputs[i]);
+      td.denormalizeOutput(STANDARIZATION, td.outputs[i]);
       MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
                          MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
                      MAT_ACCESS(td.outputs[i], 0, j));
@@ -561,7 +561,7 @@ void destandarizationTest()
   {
     for (size_t j = 0; j < outputSize; j++)
     {
-      td.denomralizeOutput(STANDARIZATION, td.outputs[i]);
+      td.denormalizeOutput(STANDARIZATION, td.outputs[i]);
       MY_TEST_ASSERT(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
                          MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps,
                      MAT_ACCESS(td.outputs[i], 0, j));
