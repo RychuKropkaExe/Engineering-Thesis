@@ -2,6 +2,7 @@
 #define MODEL_TEST_H
 #include "model.h"
 #include "testFramework.h"
+#include "testUtils.h"
 #include "trainingData.h"
 #include <string>
 #include <vector>
@@ -13,7 +14,7 @@ using std::vector;
 void xorModelTest()
 {
     TEST_START;
-    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/xorData.txt"));
+    TrainingData td = TrainingData(getTestDataPath(std::string("xorData.txt")));
     vector<size_t> arch = {2, 2, 4, 1};
     size_t archSize = 4;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
@@ -97,7 +98,7 @@ void paraboleModelTest()
 void parityModelTest()
 {
     TEST_START;
-    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/parityTestData.txt"));
+    TrainingData td = TrainingData(getTestDataPath(std::string("parityTestData.txt")));
     vector<size_t> arch = {8, 8, 1};
     size_t archSize = 3;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID, SIGMOID};
@@ -124,7 +125,7 @@ void parityModelTest()
 void hammingLengthTest()
 {
     TEST_START;
-    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/hammingLengthTest.txt"));
+    TrainingData td = TrainingData(getTestDataPath(std::string("hammingLengthTest.txt")));
     vector<size_t> arch = {7, 10, 10, 3};
     size_t archSize = 4;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
@@ -149,7 +150,7 @@ void hammingLengthTest()
 void digitRecognitionTest()
 {
     TEST_START;
-    TrainingData td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/pendigits.tra"));
+    TrainingData td = TrainingData(getTestDataPath(std::string("pendigits.tra")));
     td.normalizeData(MIN_MAX_NORMALIZATION);
     vector<size_t> arch = {16, 10, 10, 1};
     size_t archSize = 4;
@@ -164,7 +165,7 @@ void digitRecognitionTest()
 
     model.learn(td, 100000, true, 128);
 
-    td = TrainingData(std::string("C:/Users/Rychu/Desktop/Projekty/Trackmania/Engineering-Thesis/NeuralNetwork/test/TestData/pendigits.tes"));
+    td = TrainingData(getTestDataPath(std::string("pendigits.tes")));
     td.normalizeData(MIN_MAX_NORMALIZATION);
     model.trainingData = td;
     double cost = model.costMeanSquare();
