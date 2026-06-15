@@ -1,5 +1,5 @@
 #include "testUtils.h"
-
+#include <iostream>
 /******************************************************************************
  * HELPER FUNCTIONS
  ******************************************************************************/
@@ -15,6 +15,11 @@
 std::string getTestDataPath(const std::string &fileName)
 {
   // Get the path to the test data directory
-  std::string testDataDir = std::getenv("GIT_REPOSITORY_NEURAL_NETWORK_PATH") + std::string("/test/TestData/");
+  char *env_p = std::getenv("GIT_REPOSITORY_NEURAL_NETWORK_PATH");
+  if (env_p == nullptr)
+  {
+    throw std::runtime_error("Environment variable GIT_REPOSITORY_NEURAL_NETWORK_PATH is not set.");
+  }
+  std::string testDataDir = std::string(env_p) + std::string("/test/TestData/");
   return testDataDir + fileName;
 }

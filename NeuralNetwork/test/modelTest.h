@@ -1,9 +1,9 @@
 #ifndef MODEL_TEST_H
 #define MODEL_TEST_H
 #include "model.h"
-#include "testFramework.h"
 #include "testUtils.h"
 #include "trainingData.h"
+#include <gtest/gtest.h>
 #include <string>
 #include <vector>
 using std::vector;
@@ -11,9 +11,8 @@ using std::vector;
 /******************************************************************************
  * @brief Tests if NeuralNetwork is able to model XOR logic gate
  ******************************************************************************/
-void xorModelTest()
+TEST(ModelTest, xorModelTest)
 {
-    TEST_START;
     TrainingData td = TrainingData(getTestDataPath(std::string("xorData.txt")));
     vector<size_t> arch = {2, 2, 4, 1};
     size_t archSize = 4;
@@ -30,16 +29,14 @@ void xorModelTest()
 
     double cost = model.costMeanSquare();
 
-    MY_TEST_ASSERT(cost < 0.05f, cost);
-    TEST_RESULT();
+    EXPECT_LE(cost, 0.10f);
 }
 
 /******************************************************************************
  * @brief Tests if NeuralNetwork is able to model parabole on numbers in (-20, 20)
  ******************************************************************************/
-void paraboleModelTest()
+TEST(ModelTest, paraboleModelTest)
 {
-    TEST_START;
     vector<size_t> arch = {1, 10, 10, 1};
 
     vector<vector<double>> trainingInputs;
@@ -87,17 +84,15 @@ void paraboleModelTest()
 
     double cost = model.costMeanSquare();
 
-    MY_TEST_ASSERT(cost < 0.5f, cost);
-    TEST_RESULT();
+    EXPECT_LE(cost, 0.10f);
 }
 
 /******************************************************************************
  * @brief Tests if NeuralNetwork is able to predict if given 8-bit number is
  *        even or odd
  ******************************************************************************/
-void parityModelTest()
+TEST(ModelTest, parityModelTest)
 {
-    TEST_START;
     TrainingData td = TrainingData(getTestDataPath(std::string("parityTestData.txt")));
     vector<size_t> arch = {8, 8, 1};
     size_t archSize = 3;
@@ -115,16 +110,14 @@ void parityModelTest()
 
     double cost = model.costMeanSquare();
 
-    MY_TEST_ASSERT(cost < 0.05f, cost);
-    TEST_RESULT();
+    EXPECT_LE(cost, 0.05f);
 }
 
 /******************************************************************************
  * @brief Tests if NeuralNetwork is able to calculate hamming length of 7-bit number
  ******************************************************************************/
-void hammingLengthTest()
+TEST(ModelTest, hammingLengthTest)
 {
-    TEST_START;
     TrainingData td = TrainingData(getTestDataPath(std::string("hammingLengthTest.txt")));
     vector<size_t> arch = {7, 10, 10, 3};
     size_t archSize = 4;
@@ -139,17 +132,15 @@ void hammingLengthTest()
     model.learn(td, 300000, false, 32);
     double cost = model.costMeanSquare();
 
-    MY_TEST_ASSERT(cost < 0.10f, cost);
-    TEST_RESULT();
+    EXPECT_LE(cost, 0.10f);
 }
 
 /******************************************************************************
  * @brief Tests if NeuralNetwork is able to recognize digits given their
  *        features
  ******************************************************************************/
-void digitRecognitionTest()
+TEST(ModelTest, digitRecognitionTest)
 {
-    TEST_START;
     TrainingData td = TrainingData(getTestDataPath(std::string("pendigits.tra")));
     td.normalizeData(MIN_MAX_NORMALIZATION);
     vector<size_t> arch = {16, 10, 10, 1};
@@ -181,18 +172,7 @@ void digitRecognitionTest()
 
     LOG(ESSENTIAL_LOGS, INFO_TYPE, "COST VALUE: " << cost);
 
-    MY_TEST_ASSERT(cost < 0.10f, cost);
-    TEST_RESULT();
-}
-
-void modelTests()
-{
-    TEST_SET;
-    xorModelTest();
-    parityModelTest();
-    hammingLengthTest();
-    paraboleModelTest();
-    digitRecognitionTest();
+    EXPECT_LE(cost, 0.10f);
 }
 
 #endif

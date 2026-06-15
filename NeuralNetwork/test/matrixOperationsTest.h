@@ -2,23 +2,20 @@
 #define MATRIX_OPERATION_TEST_H
 
 #include "FastMatrix.h"
-#include "testFramework.h"
 #include <cassert>
+#include <gtest/gtest.h>
 #include <iostream>
-void testMatrixAddition();
-void testMatrixMultiplication();
 
-void addTest1()
+TEST(FastMatrixSuite, addTest1)
 {
     FastMatrix expectedResult(4, 4, 4.0f);
     FastMatrix m1(4, 4, 2.0f);
     FastMatrix m2(4, 4, 2.0f);
     FastMatrix result = m1 + m2;
-    MY_TEST_ASSERT(result == expectedResult, "Not a number");
-    TEST_RESULT();
+    EXPECT_EQ(result, expectedResult);
 }
 
-void addTest2()
+TEST(FastMatrixSuite, addTest2)
 {
     vector<vector<double>> expResult = {
         {1, 2, 3, 4},
@@ -29,38 +26,28 @@ void addTest2()
     FastMatrix m1(4, 4, 0.0f);
     FastMatrix m2(4, 4, expResult);
     FastMatrix result = m1 + m2;
-    MY_TEST_ASSERT(result == expectedResult, "Not a number");
-    TEST_RESULT();
+    EXPECT_EQ(result, expectedResult);
 }
 
-void testMatrixAddition()
-{
-    TEST_SET;
-    addTest1();
-    addTest2();
-}
-
-void mulTest1()
+TEST(FastMatrixSuite, mulTest1)
 {
     FastMatrix expectedResult(4, 4, 16.0f);
     FastMatrix m1(4, 4, 2.0f);
     FastMatrix m2(4, 4, 2.0f);
     FastMatrix result = m1 * m2;
-    MY_TEST_ASSERT(result == expectedResult, "Not a number");
-    TEST_RESULT();
+    EXPECT_EQ(result, expectedResult);
 }
 
-void mulTest2()
+TEST(FastMatrixSuite, mulTest2)
 {
     FastMatrix expectedResult(4, 2, 16.0f);
     FastMatrix m1(4, 4, 2.0f);
     FastMatrix m2(4, 2, 2.0f);
     FastMatrix result = m1 * m2;
-    MY_TEST_ASSERT(result == expectedResult, "Not a number");
-    TEST_RESULT();
+    EXPECT_EQ(result, expectedResult);
 }
 
-void mulTest3()
+TEST(FastMatrixSuite, mulTest3)
 {
     vector<vector<double>> expResult = {
         {30, 24, 18},
@@ -78,11 +65,10 @@ void mulTest3()
     FastMatrix m1(3, 3, m1Mat);
     FastMatrix m2(3, 3, m2Mat);
     FastMatrix result = m1 * m2;
-    MY_TEST_ASSERT(result == expectedResult, "Not a number");
-    TEST_RESULT();
+    EXPECT_EQ(result, expectedResult);
 }
 
-void mulTest4()
+TEST(FastMatrixSuite, mulTest4)
 {
     vector<vector<double>> m1Mat = {
         {1, 5, 9, 13},
@@ -103,23 +89,7 @@ void mulTest4()
     FastMatrix m1(4, 4, m1Mat);
     FastMatrix m2(4, 1, m2Mat);
     FastMatrix result = m1 * m2;
-    MY_TEST_ASSERT(result == expectedResult, "Not a number");
-    TEST_RESULT();
-}
-
-void testMatrixMultiplication()
-{
-    TEST_SET;
-    mulTest1();
-    mulTest2();
-    mulTest3();
-    mulTest4();
-}
-
-void matrixOperationTest()
-{
-    testMatrixMultiplication();
-    testMatrixAddition();
+    EXPECT_EQ(result, expectedResult);
 }
 
 #endif
