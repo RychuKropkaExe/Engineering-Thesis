@@ -1,0 +1,5 @@
+add_subdirectory(FastMatrix)
+add_subdirectory(Layer)
+add_subdirectory(Logger)
+add_subdirectory(Model)
+add_subdirectory(TrainingData)

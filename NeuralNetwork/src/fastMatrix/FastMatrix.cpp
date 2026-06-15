@@ -186,7 +186,7 @@ FastMatrix FastMatrix::operator*(FastMatrix const &obj)
     return result;
 }
 
-bool FastMatrix::operator==(FastMatrix const &obj)
+bool FastMatrix::operator==(FastMatrix const &obj) const
 {
     if (rows != obj.rows)
         return false;

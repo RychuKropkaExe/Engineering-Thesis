@@ -65,7 +65,7 @@ public:
 
     FastMatrix operator+(FastMatrix const &obj);
     FastMatrix operator*(FastMatrix const &obj);
-    bool operator==(FastMatrix const &obj);
+    bool operator==(FastMatrix const &obj) const;
     friend std::ostream &operator<<(std::ostream &os, const FastMatrix &matrix);
 
     /******************************************************************************
