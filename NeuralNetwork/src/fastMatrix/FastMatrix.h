@@ -72,6 +72,32 @@ public:
      * UTILITIES
      ******************************************************************************/
 
+    /******************************************************************************
+     * @brief Returns element from given row and column
+     *
+     * @param row   Row from which element should be taken
+     * @param col   Column from which element should be taken
+     *
+     * @return double
+     ******************************************************************************/
+    double getElement(size_t row, size_t col) const
+    {
+        return mat[row * cols + col];
+    }
+
+    /******************************************************************************
+     * @brief Sets element at given row and column
+     *
+     * @param row   Row at which element should be set
+     * @param col   Column at which element should be set
+     *
+     * @return void
+     ******************************************************************************/
+    void setElement(size_t row, size_t col, double val)
+    {
+        mat[row * cols + col] = val;
+    }
+
     void randomize(double low, double high);
     void randomize();
     void set(double val);

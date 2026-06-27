@@ -1,5 +1,4 @@
-#ifndef PYTHON_API_H
-#define PYTHON_API_H
+#pragma once
 #include "FastMatrix.h"
 #include "model.h"
 #include "trainingData.h"
@@ -73,5 +72,3 @@ public:
 
     size_t maxBufferSize{};
 };
-
-#endif

@@ -1,19 +1,20 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#pragma once
 
 #include <fstream>
 #include <iostream>
 #include <string>
 
-#define INFO_TYPE "[INFO]"
-#define ERROR_TYPE "[ERROR]"
+constexpr std::string INFO_TYPE{"[INFO]"};
+constexpr std::string ERROR_TYPE{"[ERROR]"};
 
-#define ESSENTIAL_LOGS 1
-#define NORMAL_LOGS 2
-#define HEAVY_LOGS 3
+constexpr int ESSENTIAL_LOGS{1};
+constexpr int NORMAL_LOGS{2};
+constexpr int HEAVY_LOGS{3};
 
 #ifndef DEBUG_PRIO
-#define DEBUG_PRIO ESSENTIAL_LOGS
+constexpr int MAX_DEBUG_PRIO{ESSENTIAL_LOGS};
+#else
+constexpr int MAX_DEBUG_PRIO{DEBUG_PRIO};
 #endif
 
 /******************************************************************************
@@ -32,10 +33,10 @@ public:
 
 #ifdef LOGGING_ACTIVATED
 
-#define LOG(PRIO_TYPE, DEBUG_TYPE, EXPR)                                            \
-  (PRIO_TYPE <= DEBUG_PRIO ? (Logger::logFile << DEBUG_TYPE << ": " << EXPR << "\n" \
-                                              << std::flush)                        \
-                           : FLUSH_LOG())
+#define LOG(PRIO_TYPE, DEBUG_TYPE, EXPR)                                                \
+  (PRIO_TYPE <= MAX_DEBUG_PRIO ? (Logger::logFile << DEBUG_TYPE << ": " << EXPR << "\n" \
+                                                  << std::flush)                        \
+                               : FLUSH_LOG())
 
 #define FLUSH_LOG() \
   (Logger::logFile << std::flush)
@@ -48,6 +49,4 @@ public:
 #else
 #define LOG(...)
 #define COND_LOG(...)
-#endif
-
 #endif

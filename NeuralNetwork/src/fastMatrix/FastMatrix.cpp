@@ -85,7 +85,7 @@ FastMatrix::FastMatrix(size_t rows, size_t cols, double val)
     {
         for (size_t j = 0; j < cols; ++j)
         {
-            MAT_ACCESS((*this), i, j) = val;
+            setElement(i, j, val);
         }
     }
 }
@@ -108,7 +108,7 @@ FastMatrix::FastMatrix(vector<double> &vec, size_t vectorSize, Vector_Type vtype
         this->mat.resize(rows * cols);
         for (size_t i = 0; i < vectorSize; ++i)
         {
-            MAT_ACCESS((*this), i, 0) = vec[i];
+            setElement(i, 0, vec[i]);
         }
     }
     else
@@ -118,7 +118,7 @@ FastMatrix::FastMatrix(vector<double> &vec, size_t vectorSize, Vector_Type vtype
         this->mat.resize(rows * cols);
         for (size_t i = 0; i < vectorSize; ++i)
         {
-            MAT_ACCESS((*this), 0, i) = vec[i];
+            setElement(0, i, vec[i]);
         }
     }
 }
@@ -141,7 +141,7 @@ FastMatrix::FastMatrix(size_t rows, size_t cols, vector<vector<double>> &arr)
     {
         for (size_t j = 0; j < cols; ++j)
         {
-            MAT_ACCESS((*this), i, j) = arr[i][j];
+            setElement(i, j, arr[i][j]);
         }
     }
 }
@@ -161,7 +161,7 @@ FastMatrix FastMatrix::operator+(FastMatrix const &obj)
     {
         for (size_t j = 0; j < cols; ++j)
         {
-            MAT_ACCESS(result, i, j) = MAT_ACCESS(*this, i, j) + MAT_ACCESS(obj, i, j);
+            result.setElement(i, j, getElement(i, j) + obj.getElement(i, j));
         }
     }
 
@@ -178,7 +178,8 @@ FastMatrix FastMatrix::operator*(FastMatrix const &obj)
         {
             for (size_t k = 0; k < obj.rows; ++k)
             {
-                MAT_ACCESS(result, i, j) += MAT_ACCESS(*this, i, k) * MAT_ACCESS(obj, k, j);
+                double newValue = result.getElement(i, j) + getElement(i, k) * obj.getElement(k, j);
+                result.setElement(i, j, newValue);
             }
         }
     }
@@ -197,7 +198,7 @@ bool FastMatrix::operator==(FastMatrix const &obj) const
     {
         for (size_t j = 0; j < cols; ++j)
         {
-            if (MAT_ACCESS(*this, i, j) != MAT_ACCESS(obj, i, j))
+            if (getElement(i, j) != obj.getElement(i, j))
                 return false;
         }
     }
@@ -262,7 +263,7 @@ void FastMatrix::randomize()
     {
         for (size_t j = 0; j < cols; ++j)
         {
-            MAT_ACCESS((*this), i, j) = randomdouble();
+            setElement(i, j, randomdouble());
         }
     }
 }
@@ -281,7 +282,7 @@ void FastMatrix::randomize(double low, double high)
     {
         for (size_t j = 0; j < cols; ++j)
         {
-            MAT_ACCESS((*this), i, j) = low + randomdouble() * (high - low);
+            setElement(i, j, low + randomdouble() * (high - low));
         }
     }
 }
@@ -299,7 +300,7 @@ void FastMatrix::set(double val)
     {
         for (size_t j = 0; j < cols; ++j)
         {
-            MAT_ACCESS((*this), i, j) = val;
+            setElement(i, j, val);
         }
     }
 }
