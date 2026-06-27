@@ -30,7 +30,7 @@ void createTargetModel()
         {
             for (size_t k = 0; k < agent.mainModel.layers[i].weights.cols; ++k)
             {
-                agent.targetModel.layers[i].weights.setElement(j, k, MAT_ACCESS(agent.mainModel.layers[i].weights, j, k));
+                agent.targetModel.layers[i].weights.setElement(j, k, agent.mainModel.layers[i].weights.getElement(j, k));
             }
         }
 
@@ -38,7 +38,7 @@ void createTargetModel()
         {
             for (size_t k = 0; k < agent.mainModel.layers[i].biases.cols; ++k)
             {
-                agent.targetModel.layers[i].biases.setElement(j, k, MAT_ACCESS(agent.mainModel.layers[i].biases, j, k));
+                agent.targetModel.layers[i].biases.setElement(j, k, agent.mainModel.layers[i].biases.getElement(j, k));
             }
         }
     }

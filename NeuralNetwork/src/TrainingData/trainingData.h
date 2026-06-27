@@ -1,5 +1,4 @@
-#ifndef TRAINING_DATA_H
-#define TRAINING_DATA_H
+#pragma once
 
 #include "FastMatrix.h"
 #include <string>
@@ -162,5 +161,3 @@ public:
     void normalizeData(NormalizationTypeE normType);
     void denormalizeOutput(NormalizationTypeE normType, FastMatrix &output);
 };
-
-#endif

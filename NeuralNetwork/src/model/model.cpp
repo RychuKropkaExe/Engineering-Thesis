@@ -171,7 +171,7 @@ double Model::costCrossEntropy()
         for (size_t j = 0; j < result.cols; ++j)
         {
 
-            double d = std::log(MAT_ACCESS(result, 0, j)) * (MAT_ACCESS(trainingData.outputs[i], 0, j));
+            double d = std::log(result.getElement(0, j)) * (trainingData.outputs[i].getElement(0, j));
             totalCost -= d;
         }
     }
@@ -196,7 +196,7 @@ double Model::costMeanSquare()
         FastMatrix result = run(trainingData.inputs[i]);
         for (size_t j = 0; j < result.cols; ++j)
         {
-            double d = MAT_ACCESS(result, 0, j) - MAT_ACCESS(trainingData.outputs[i], 0, j);
+            double d = result.getElement(0, j) - trainingData.outputs[i].getElement(0, j);
             totalCost += d * d;
         }
     }
@@ -273,7 +273,7 @@ void Model::finiteDifference()
         {
             for (size_t k = 0; k < layers[i].weights.cols; k++)
             {
-                saved = MAT_ACCESS(layers[i].weights, j, k);
+                saved = layers[i].weights.getElement(j, k);
                 layers[i].weights.setElement(j, k, saved + eps);
                 double newCost = costCrossEntropy();
                 fakeGradient.layers[i].weights.setElement(j, k, (newCost - curCost) / this->eps);
@@ -285,7 +285,7 @@ void Model::finiteDifference()
         {
             for (size_t k = 0; k < layers[i].biases.cols; k++)
             {
-                saved = MAT_ACCESS(layers[i].biases, j, k);
+                saved = layers[i].biases.getElement(j, k);
                 layers[i].biases.setElement(j, k, saved + this->eps);
                 double newCost = costCrossEntropy();
                 fakeGradient.layers[i].biases.setElement(j, k, (newCost - curCost) / this->eps);
@@ -330,9 +330,9 @@ void Model::clipValues()
         {
             for (size_t k = 0; k < layers[i].weights.cols; ++k)
             {
-                if (MAT_ACCESS(layers[i].weights, j, k) > maxThreshold)
+                if (layers[i].weights.getElement(j, k) > maxThreshold)
                     layers[i].weights.setElement(j, k, maxThreshold);
-                if (MAT_ACCESS(layers[i].weights, j, k) < minThreshold)
+                if (layers[i].weights.getElement(j, k) < minThreshold)
                     layers[i].weights.setElement(j, k, minThreshold);
             }
         }
@@ -340,9 +340,9 @@ void Model::clipValues()
         {
             for (size_t k = 0; k < layers[i].biases.cols; ++k)
             {
-                if (MAT_ACCESS(layers[i].biases, j, k) > maxThreshold)
+                if (layers[i].biases.getElement(j, k) > maxThreshold)
                     layers[i].biases.setElement(j, k, maxThreshold);
-                if (MAT_ACCESS(layers[i].biases, j, k) < minThreshold)
+                if (layers[i].biases.getElement(j, k) < minThreshold)
                     layers[i].biases.setElement(j, k, minThreshold);
             }
         }
@@ -396,8 +396,8 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
         {
             for (size_t j = 0; j < layers[l].output.cols; ++j)
             {
-                double a = MAT_ACCESS(layers[l].output, 0, j);
-                double da = MAT_ACCESS(gradient.layers[l].output, 0, j);
+                double a = layers[l].output.getElement(0, j);
+                double da = gradient.layers[l].output.getElement(0, j);
                 double actFuncDerivative = Layer::activationFunctionDerivative(a, layers[l].functionType);
                 double newBias = gradient.layers[l].biases.getElement(0, j) + da * actFuncDerivative;
                 gradient.layers[l].biases.setElement(0, j, newBias);
@@ -405,8 +405,8 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
                 {
                     // j - weight matrix col
                     // k - weight matrix row
-                    double pa = MAT_ACCESS(layers[l - 1].output, 0, k);
-                    double w = MAT_ACCESS(layers[l].weights, k, j);
+                    double pa = layers[l - 1].output.getElement(0, k);
+                    double w = layers[l].weights.getElement(k, j);
 
                     if (activationFunctions[l] == SOFTMAX)
                     {
@@ -427,14 +427,16 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
         {
             for (size_t k = 0; k < gradient.layers[i].weights.cols; ++k)
             {
-                MAT_ACCESS(gradient.layers[i].weights, j, k) /= n;
+                double newWeight = gradient.layers[i].weights.getElement(j, k) / n;
+                gradient.layers[i].weights.setElement(j, k, newWeight);
             }
         }
         for (size_t j = 0; j < gradient.layers[i].biases.rows; ++j)
         {
             for (size_t k = 0; k < gradient.layers[i].biases.cols; ++k)
             {
-                MAT_ACCESS(gradient.layers[i].biases, j, k) /= n;
+                double newBias = gradient.layers[i].biases.getElement(j, k) / n;
+                gradient.layers[i].biases.setElement(j, k, newBias);
             }
         }
     }

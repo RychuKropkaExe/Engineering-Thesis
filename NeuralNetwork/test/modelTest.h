@@ -1,5 +1,4 @@
-#ifndef MODEL_TEST_H
-#define MODEL_TEST_H
+#pragma once
 #include "model.h"
 #include "testUtils.h"
 #include "trainingData.h"
@@ -174,5 +173,3 @@ TEST(ModelTest, digitRecognitionTest)
 
     EXPECT_LE(cost, 0.10f);
 }
-
-#endif

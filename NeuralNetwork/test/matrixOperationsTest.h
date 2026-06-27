@@ -1,5 +1,4 @@
-#ifndef MATRIX_OPERATION_TEST_H
-#define MATRIX_OPERATION_TEST_H
+#pragma once
 
 #include "FastMatrix.h"
 #include <cassert>
@@ -91,5 +90,3 @@ TEST(FastMatrixSuite, mulTest4)
     FastMatrix result = m1 * m2;
     EXPECT_EQ(result, expectedResult);
 }
-
-#endif

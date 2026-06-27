@@ -1,5 +1,4 @@
-#ifndef TRAINING_DATA_TEST_H
-#define TRAINING_DATA_TEST_H
+#pragma once
 #include "trainingData.h"
 #include <cassert>
 #include <gtest/gtest.h>
@@ -170,11 +169,11 @@ TEST(TrainingDataTest, minMaxNormalizationTest)
     {
         for (size_t j = 0; j < inputSize; j++)
         {
-            EXPECT_TRUE(MAT_ACCESS(td.inputs[i], 0, j) >= 0 && MAT_ACCESS(td.inputs[i], 0, j) <= 1);
+            EXPECT_TRUE(td.inputs[i].getElement(0, j) >= 0 && td.inputs[i].getElement(0, j) <= 1);
         }
         for (size_t j = 0; j < outputSize; j++)
         {
-            EXPECT_TRUE(MAT_ACCESS(td.outputs[i], 0, j) >= 0 && MAT_ACCESS(td.outputs[i], 0, j) <= 1);
+            EXPECT_TRUE(td.outputs[i].getElement(0, j) >= 0 && td.outputs[i].getElement(0, j) <= 1);
         }
     }
 
@@ -196,7 +195,7 @@ TEST(TrainingDataTest, minMaxNormalizationTest)
     {
         for (size_t j = 0; j < inputSize; j++)
         {
-            EXPECT_TRUE(MAT_ACCESS(td.inputs[i], 0, j) >= 0 && MAT_ACCESS(td.inputs[i], 0, j) <= 1);
+            EXPECT_TRUE(td.inputs[i].getElement(0, j) >= 0 && td.inputs[i].getElement(0, j) <= 1);
         }
     }
 }
@@ -234,8 +233,8 @@ TEST(TrainingDataTest, minMaxDenormalizationTest)
         for (size_t j = 0; j < outputSize; j++)
         {
             td.denormalizeOutput(MIN_MAX_NORMALIZATION, td.outputs[i]);
-            EXPECT_TRUE(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
-                        MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps);
+            EXPECT_TRUE(td.outputs[i].getElement(0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                        td.outputs[i].getElement(0, j) >= expectedDenormalizedValues[i][j] - eps);
         }
     }
 
@@ -265,8 +264,8 @@ TEST(TrainingDataTest, minMaxDenormalizationTest)
         for (size_t j = 0; j < outputSize; j++)
         {
             td.denormalizeOutput(MIN_MAX_NORMALIZATION, td.outputs[i]);
-            EXPECT_TRUE(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
-                        MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps);
+            EXPECT_TRUE(td.outputs[i].getElement(0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                        td.outputs[i].getElement(0, j) >= expectedDenormalizedValues[i][j] - eps);
         }
     }
 }
@@ -295,11 +294,11 @@ TEST(TrainingDataTest, normalizationTest)
     {
         for (size_t j = 0; j < inputSize; j++)
         {
-            EXPECT_TRUE(MAT_ACCESS(td.inputs[i], 0, j) >= -1 && MAT_ACCESS(td.inputs[i], 0, j) <= 1);
+            EXPECT_TRUE(td.inputs[i].getElement(0, j) >= -1 && td.inputs[i].getElement(0, j) <= 1);
         }
         for (size_t j = 0; j < outputSize; j++)
         {
-            EXPECT_TRUE(MAT_ACCESS(td.outputs[i], 0, j) >= -1 && MAT_ACCESS(td.outputs[i], 0, j) <= 1);
+            EXPECT_TRUE(td.outputs[i].getElement(0, j) >= -1 && td.outputs[i].getElement(0, j) <= 1);
         }
     }
 
@@ -321,7 +320,7 @@ TEST(TrainingDataTest, normalizationTest)
     {
         for (size_t j = 0; j < inputSize; j++)
         {
-            EXPECT_TRUE(MAT_ACCESS(td.inputs[i], 0, j) >= -1 && MAT_ACCESS(td.inputs[i], 0, j) <= 1);
+            EXPECT_TRUE(td.inputs[i].getElement(0, j) >= -1 && td.inputs[i].getElement(0, j) <= 1);
         }
     }
 }
@@ -359,8 +358,8 @@ void denormalizationTest()
         for (size_t j = 0; j < outputSize; j++)
         {
             td.denormalizeOutput(NORMALIZATION, td.outputs[i]);
-            EXPECT_TRUE(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
-                        MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps);
+            EXPECT_TRUE(td.outputs[i].getElement(0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                        td.outputs[i].getElement(0, j) >= expectedDenormalizedValues[i][j] - eps);
         }
     }
 
@@ -390,8 +389,8 @@ void denormalizationTest()
         for (size_t j = 0; j < outputSize; j++)
         {
             td.denormalizeOutput(NORMALIZATION, td.outputs[i]);
-            EXPECT_TRUE(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
-                        MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps);
+            EXPECT_TRUE(td.outputs[i].getElement(0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                        td.outputs[i].getElement(0, j) >= expectedDenormalizedValues[i][j] - eps);
         }
     }
 }
@@ -493,8 +492,8 @@ TEST(TrainingDataTest, destandarizationTest)
         for (size_t j = 0; j < outputSize; j++)
         {
             td.denormalizeOutput(STANDARIZATION, td.outputs[i]);
-            EXPECT_TRUE(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
-                        MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps);
+            EXPECT_TRUE(td.outputs[i].getElement(0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                        td.outputs[i].getElement(0, j) >= expectedDenormalizedValues[i][j] - eps);
         }
     }
 
@@ -524,10 +523,8 @@ TEST(TrainingDataTest, destandarizationTest)
         for (size_t j = 0; j < outputSize; j++)
         {
             td.denormalizeOutput(STANDARIZATION, td.outputs[i]);
-            EXPECT_TRUE(MAT_ACCESS(td.outputs[i], 0, j) <= expectedDenormalizedValues[i][j] + eps &&
-                        MAT_ACCESS(td.outputs[i], 0, j) >= expectedDenormalizedValues[i][j] - eps);
+            EXPECT_TRUE(td.outputs[i].getElement(0, j) <= expectedDenormalizedValues[i][j] + eps &&
+                        td.outputs[i].getElement(0, j) >= expectedDenormalizedValues[i][j] - eps);
         }
     }
 }
-
-#endif // TRAINING_DATA_TEST_H

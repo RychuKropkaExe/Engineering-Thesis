@@ -1,14 +1,8 @@
-#ifndef FAST_MATRIX_H
-#define FAST_MATRIX_H
+#pragma once
 
 #include <memory>
 #include <vector>
 using std::vector;
-
-/******************************************************************************
- * @brief Macro to standardize access to matrix at row I and column J
- ******************************************************************************/
-#define MAT_ACCESS(FAST_MATRIX, I, J) (FAST_MATRIX).mat[(I) * (FAST_MATRIX).cols + (J)]
 
 /******************************************************************************
  * @enum Vector_Type
@@ -108,5 +102,3 @@ public:
  ******************************************************************************/
 double randomdouble();
 double randomdouble(double low, double high);
-
-#endif

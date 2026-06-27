@@ -216,7 +216,7 @@ std::ostream &operator<<(std::ostream &os, const FastMatrix &matrix)
 
         for (size_t j = 0; j < matrix.cols; ++j)
         {
-            os << MAT_ACCESS(matrix, i, j) << " ";
+            os << matrix.getElement(i, j) << " ";
         }
 
         os << "]\n";

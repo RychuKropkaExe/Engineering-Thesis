@@ -1,5 +1,4 @@
-#ifndef MODEL_H
-#define MODEL_H
+#pragma once
 
 #include "layer.h"
 #include "trainingData.h"
@@ -78,5 +77,3 @@ public:
 
     void clipValues();
 };
-
-#endif

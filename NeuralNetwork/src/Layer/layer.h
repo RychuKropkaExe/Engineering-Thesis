@@ -1,5 +1,4 @@
-#ifndef LAYER_H
-#define LAYER_H
+#pragma once
 
 #include "FastMatrix.h"
 #include <iostream>
@@ -110,5 +109,3 @@ public:
         return 0.0f;
     }
 };
-
-#endif
