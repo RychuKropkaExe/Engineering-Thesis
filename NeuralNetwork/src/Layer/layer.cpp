@@ -111,7 +111,7 @@ void Layer::activate()
         {
             for (size_t j = 0; j < output.cols; ++j)
             {
-                MAT_ACCESS(output, i, j) = sigmoidf(MAT_ACCESS(output, i, j));
+                output.setElement(i, j, sigmoidf(MAT_ACCESS(output, i, j)));
             }
         }
         break;
@@ -122,7 +122,7 @@ void Layer::activate()
         {
             for (size_t j = 0; j < output.cols; ++j)
             {
-                MAT_ACCESS(output, i, j) = std::max(0.0, MAT_ACCESS(output, i, j));
+                output.setElement(i, j, std::max(0.0, MAT_ACCESS(output, i, j)));
             }
         }
         break;
@@ -139,7 +139,7 @@ void Layer::activate()
         // double constant = maxValue + log(sum);
         for (size_t i = 0; i < output.cols; ++i)
         {
-            MAT_ACCESS(output, 0, i) = exp(MAT_ACCESS(output, 0, i) - maxValue) / sum;
+            output.setElement(0, i, exp(MAT_ACCESS(output, 0, i) - maxValue) / sum);
         }
     }
     case NO_ACTIVATION:

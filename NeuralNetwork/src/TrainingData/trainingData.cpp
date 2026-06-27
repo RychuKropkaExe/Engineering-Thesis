@@ -353,11 +353,11 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
         {
             for (size_t j = 0; j < inputSize; j++)
             {
-                MAT_ACCESS(inputs[i], 0, j) = (MAT_ACCESS(inputs[i], 0, j) - meanInput) / (maxInput - minInput);
+                inputs[i].setElement(0, j, (MAT_ACCESS(inputs[i], 0, j) - meanInput) / (maxInput - minInput));
             }
             for (size_t j = 0; j < outputSize; j++)
             {
-                MAT_ACCESS(outputs[i], 0, j) = (MAT_ACCESS(outputs[i], 0, j) - meanOutput) / (maxOutput - minOutput);
+                outputs[i].setElement(0, j, (MAT_ACCESS(outputs[i], 0, j) - meanOutput) / (maxOutput - minOutput));
             }
         }
         normalizationData.minInputValue = minInput;
@@ -382,11 +382,11 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
         {
             for (size_t j = 0; j < inputSize; j++)
             {
-                MAT_ACCESS(inputs[i], 0, j) = (MAT_ACCESS(inputs[i], 0, j) - minInput) / (maxInput - minInput);
+                inputs[i].setElement(0, j, (MAT_ACCESS(inputs[i], 0, j) - minInput) / (maxInput - minInput));
             }
             for (size_t j = 0; j < outputSize; j++)
             {
-                MAT_ACCESS(outputs[i], 0, j) = (MAT_ACCESS(outputs[i], 0, j) - minOutput) / (maxOutput - minOutput);
+                outputs[i].setElement(0, j, (MAT_ACCESS(outputs[i], 0, j) - minOutput) / (maxOutput - minOutput));
             }
         }
         minMaxNormalizationData.minInputValue = minInput;
@@ -408,11 +408,11 @@ void TrainingData::normalizeData(NormalizationTypeE normType)
         {
             for (size_t j = 0; j < inputSize; j++)
             {
-                MAT_ACCESS(inputs[i], 0, j) = (MAT_ACCESS(inputs[i], 0, j) - meanInput) / (inputStandardDeviation);
+                inputs[i].setElement(0, j, (MAT_ACCESS(inputs[i], 0, j) - meanInput) / (inputStandardDeviation));
             }
             for (size_t j = 0; j < outputSize; j++)
             {
-                MAT_ACCESS(outputs[i], 0, j) = (MAT_ACCESS(outputs[i], 0, j) - meanOutput) / (outputStandardDeviation);
+                outputs[i].setElement(0, j, (MAT_ACCESS(outputs[i], 0, j) - meanOutput) / (outputStandardDeviation));
             }
         }
 
@@ -454,7 +454,7 @@ void TrainingData::denormalizeOutput(NormalizationTypeE normType, FastMatrix &ou
         double meanOutput = normalizationData.meanOutput;
         for (size_t j = 0; j < outputSize; j++)
         {
-            MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (maxOutput - minOutput) + meanOutput;
+            output.setElement(0, j, MAT_ACCESS(output, 0, j) * (maxOutput - minOutput) + meanOutput);
         }
         LOG(HEAVY_LOGS, INFO_TYPE, "VALUES AFTER DENORMALIZATION: " << output);
         return;
@@ -465,7 +465,7 @@ void TrainingData::denormalizeOutput(NormalizationTypeE normType, FastMatrix &ou
         double maxOutput = minMaxNormalizationData.maxOutputValue;
         for (size_t j = 0; j < outputSize; j++)
         {
-            MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (maxOutput - minOutput) + minOutput;
+            output.setElement(0, j, MAT_ACCESS(output, 0, j) * (maxOutput - minOutput) + minOutput);
         }
         LOG(HEAVY_LOGS, INFO_TYPE, "VALUES AFTER DENORMALIZATION: " << output);
         return;
@@ -476,7 +476,7 @@ void TrainingData::denormalizeOutput(NormalizationTypeE normType, FastMatrix &ou
         double outputStandardDeviation = standarizationData.outputStandardDeviation;
         for (size_t j = 0; j < outputSize; j++)
         {
-            MAT_ACCESS(output, 0, j) = MAT_ACCESS(output, 0, j) * (outputStandardDeviation) + meanOutput;
+            output.setElement(0, j, MAT_ACCESS(output, 0, j) * (outputStandardDeviation) + meanOutput);
         }
         LOG(HEAVY_LOGS, INFO_TYPE, "VALUES AFTER DENORMALIZATION: " << output);
         return;
