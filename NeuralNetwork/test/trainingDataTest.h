@@ -325,7 +325,7 @@ TEST(TrainingDataTest, normalizationTest)
     }
 }
 
-void denormalizationTest()
+TEST(TrainingDataTest, denrmalizationTest)
 {
     vector<vector<double>> trainingInputs = {
         {1, 2, 3, 4},

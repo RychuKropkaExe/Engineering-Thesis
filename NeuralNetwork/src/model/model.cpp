@@ -63,8 +63,8 @@ Model::Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> a
         {
             type = OUTPUT_LAYER;
         }
-
-        this->layers[i] = Layer(outputDimensions, weightsDimensions, biasesDimensions, actFunctions[i - 1], randomize, type);
+        std::vector<ActivationFunctionE> activationFunctions(arch[i], actFunctions[i - 1]);
+        this->layers[i] = Layer(outputDimensions, weightsDimensions, biasesDimensions, activationFunctions, randomize, type);
     }
 
     this->arch = arch;
@@ -105,7 +105,10 @@ std::ostream &operator<<(std::ostream &os, const Model &model)
         os << model.layers[i].biases;
         os << "INTERMIEDIATE: ";
         os << model.layers[i].output;
-        os << "ACTIVATION FUNCTION: " << model.layers[i].functionType << "\n";
+        for (size_t j = 0; j < model.layers[i].functionTypes.size(); j++)
+        {
+            os << "ACTIVATION FUNCTION FOR NEURON " << j << " " << model.layers[i].functionTypes[j] << "\n";
+        }
     }
     os << std::flush;
     return os;
@@ -398,7 +401,7 @@ void Model::backPropagation(bool clipGradient, uint32_t batchSize)
             {
                 double a = layers[l].output.getElement(0, j);
                 double da = gradient.layers[l].output.getElement(0, j);
-                double actFuncDerivative = Layer::activationFunctionDerivative(a, layers[l].functionType);
+                double actFuncDerivative = Layer::activationFunctionDerivative(a, layers[l].functionTypes[j]);
                 double newBias = gradient.layers[l].biases.getElement(0, j) + da * actFuncDerivative;
                 gradient.layers[l].biases.setElement(0, j, newBias);
                 for (size_t k = 0; k < layers[l - 1].output.cols; ++k)

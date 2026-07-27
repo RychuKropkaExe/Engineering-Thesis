@@ -31,12 +31,6 @@ set(CMAKE_CXX_FLAGS "${COMPILE_FLAGS}")
 
 add_executable(MainBuild)
 
-target_include_directories(MainBuild PRIVATE "src/FastMatrix")
-target_include_directories(MainBuild PRIVATE "src/Layer")
-target_include_directories(MainBuild PRIVATE "src/Logger")
-target_include_directories(MainBuild PRIVATE "src/Model")
-target_include_directories(MainBuild PRIVATE "src/TrainingData")
-
 target_include_directories(MainBuild PRIVATE "test/testUtils")
 
 add_subdirectory(src)

@@ -55,7 +55,7 @@ enum LayerTypeE
  *                              of layer
  * @public @param output        FastMatrix representing output of layer
  * @public @param layerType     Tells what kind of layer this is
- * @public @param functionType  Tells which activation function to use
+ * @public @param functionTypes Tells which activation functions to use
  ******************************************************************************/
 class Layer
 {
@@ -70,14 +70,14 @@ public:
 
     LayerTypeE layerType;
 
-    ActivationFunctionE functionType;
+    std::vector<ActivationFunctionE> functionTypes;
 
     /******************************************************************************
      * CONSTRUCTORS
      ******************************************************************************/
 
     Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weightsDimensions,
-          pair<size_t, size_t> biasesDimensions, ActivationFunctionE f, bool randomize,
+          pair<size_t, size_t> biasesDimensions, std::vector<ActivationFunctionE> f, bool randomize,
           LayerTypeE type);
     Layer(pair<size_t, size_t> inputDimensions);
     Layer();

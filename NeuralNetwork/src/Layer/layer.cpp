@@ -1,4 +1,5 @@
 #include "layer.h"
+#include "logger.h"
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -24,7 +25,7 @@
  * @return Layer
  ******************************************************************************/
 Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weightsDimensions,
-             pair<size_t, size_t> biasesDimensions, ActivationFunctionE f, bool randomize,
+             pair<size_t, size_t> biasesDimensions, std::vector<ActivationFunctionE> f, bool randomize,
              LayerTypeE type)
 {
     this->output = FastMatrix(GET_ROWS_FROM_PAIR(outputDimensions), GET_COLS_FROM_PAIR(outputDimensions));
@@ -37,7 +38,7 @@ Layer::Layer(pair<size_t, size_t> outputDimensions, pair<size_t, size_t> weights
         this->biases.randomize(-1.0, 1.0);
     }
 
-    this->functionType = f;
+    this->functionTypes = f;
     this->layerType = type;
 }
 
@@ -103,49 +104,33 @@ inline double sigmoidf(double x)
  ******************************************************************************/
 void Layer::activate()
 {
-    switch (functionType)
+    for (size_t i = 0; i < output.cols; ++i)
     {
-    case SIGMOID:
-    {
-        for (size_t i = 0; i < output.rows; ++i)
+        switch (functionTypes[i])
         {
-            for (size_t j = 0; j < output.cols; ++j)
-            {
-                output.setElement(i, j, sigmoidf(output.getElement(i, j)));
-            }
+        case SIGMOID:
+        {
+            output.setElement(0, i, sigmoidf(output.getElement(0, i)));
+            break;
         }
-        break;
-    }
-    case RELU:
-    {
-        for (size_t i = 0; i < output.rows; ++i)
+        case RELU:
         {
-            for (size_t j = 0; j < output.cols; ++j)
-            {
-                output.setElement(i, j, std::max(0.0, output.getElement(i, j)));
-            }
+            output.setElement(0, i, std::max(0.0, output.getElement(0, i)));
+            break;
         }
-        break;
-    }
-    case SOFTMAX:
-    {
-        double maxValue = *max_element(std::begin(output.mat), std::end(output.mat));
-        double sum = 0.0;
-        for (size_t i = 0; i < output.cols; ++i)
+        case SOFTMAX:
         {
+            double maxValue = *max_element(std::begin(output.mat), std::end(output.mat));
+            double sum = 0.0;
             sum += exp(output.getElement(0, i) - maxValue);
-        }
-
-        // double constant = maxValue + log(sum);
-        for (size_t i = 0; i < output.cols; ++i)
-        {
             output.setElement(0, i, exp(output.getElement(0, i) - maxValue) / sum);
+            break;
         }
-    }
-    case NO_ACTIVATION:
-    {
-        break;
-    }
+        case NO_ACTIVATION:
+        {
+            break;
+        }
+        }
     }
 }
 
