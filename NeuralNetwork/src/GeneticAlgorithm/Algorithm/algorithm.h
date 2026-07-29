@@ -1,37 +1,30 @@
 #pragma once
 
+#include "individual.h"
 #include "model.h"
 
 /******************************************************************************
- * @class Individual
+ * @class GeneticAlgorithm
  *
- * @brief Represents individual in genetic algorithm
+ * @brief Handling of all data and processing regarding genetic algortihm
  *
- * @public @param genotype    Individual genotype represented as a neural network
- * @public @param id          Individual id
- * @public @param generation  Expresses from which generation in genethic algorithm
- *                            individual comes from
- * @public @param fitness     Fitness of given individual
+ * @public @param population  Container for population
  ******************************************************************************/
-class Individual
+class GeneticAlgorithm
 {
 public:
   /******************************************************************************
    * CLASS MEMBERS
    ******************************************************************************/
-  Model genotype;
-  int id{};
-  int generation{};
-  double fitness{};
+  std::vector<Individual> population;
 
   /******************************************************************************
    * CONSTRUCTORS
    ******************************************************************************/
-  Individual() = default;
-  Individual(Model model);
+  GeneticAlgorithm(size_t populationSize, Model limit);
 
   /******************************************************************************
    * OPERATORS
    ******************************************************************************/
-  friend std::ostream &operator<<(std::ostream &os, const Individual &dt);
+  friend std::ostream &operator<<(std::ostream &os, const GeneticAlgorithm &dt);
 };
