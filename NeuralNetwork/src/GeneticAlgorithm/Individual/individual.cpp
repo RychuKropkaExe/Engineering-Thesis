@@ -5,9 +5,10 @@
  * CONSTRUCTORS
  ******************************************************************************/
 
-Individual::Individual(Model model)
+Individual::Individual(Model model, size_t gracePeriodLength)
 {
   genotype = model;
+  this->gracePeriodLength = gracePeriodLength;
 }
 
 /******************************************************************************
@@ -21,4 +22,14 @@ std::ostream &operator<<(std::ostream &os, const Individual &dt)
   os << std::flush;
 
   return os;
+}
+
+bool Individual::operator<(const Individual &obj)
+{
+  return fitness < obj.fitness;
+}
+
+bool Individual::operator>(const Individual &obj) const
+{
+  return fitness > obj.fitness;
 }
