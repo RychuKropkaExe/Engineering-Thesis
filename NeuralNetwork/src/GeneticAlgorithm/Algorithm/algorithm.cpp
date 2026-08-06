@@ -41,7 +41,7 @@ GeneticAlgorithm::GeneticAlgorithm(size_t populationSize, Model limit)
       actFunctions[layerIndex] = SIGMOID;
     }
 
-    population[index] = Individual(Model(arch, archSize, actFunctions, archSize, true));
+    population[index] = Individual(Model(arch, actFunctions, true));
   }
 }
 

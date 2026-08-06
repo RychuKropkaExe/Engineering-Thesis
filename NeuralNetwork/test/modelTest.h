@@ -14,10 +14,9 @@ TEST(ModelTest, xorModelTest)
 {
     TrainingData td = TrainingData(getTestDataPath(std::string("xorData.txt")));
     vector<size_t> arch = {2, 2, 4, 1};
-    size_t archSize = 4;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
 
-    Model model(arch, archSize, actFunc, archSize, true);
+    Model model(arch, actFunc, true);
 
     double eps = 1e-3;
     double learningRate = 1e-1f;
@@ -64,10 +63,9 @@ TEST(ModelTest, paraboleModelTest)
 
     TrainingData td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
 
-    size_t archSize = 4;
     vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU};
 
-    Model model(arch, archSize, actFunc, archSize, true);
+    Model model(arch, actFunc, true);
 
     model.modelXavierInitialize();
 
@@ -94,10 +92,10 @@ TEST(ModelTest, parityModelTest)
 {
     TrainingData td = TrainingData(getTestDataPath(std::string("parityTestData.txt")));
     vector<size_t> arch = {8, 8, 1};
-    size_t archSize = 3;
+
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID, SIGMOID};
 
-    Model model(arch, archSize, actFunc, archSize, true);
+    Model model(arch, actFunc, true);
 
     double eps = 1e-1;
     double learningRate = 1e-1;
@@ -119,10 +117,10 @@ TEST(ModelTest, hammingLengthTest)
 {
     TrainingData td = TrainingData(getTestDataPath(std::string("hammingLengthTest.txt")));
     vector<size_t> arch = {7, 10, 10, 3};
-    size_t archSize = 4;
+
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
 
-    Model model(arch, archSize, actFunc, archSize, true);
+    Model model(arch, actFunc, true);
 
     double learningRate = 1e-1;
 
@@ -143,10 +141,10 @@ TEST(ModelTest, digitRecognitionTest)
     TrainingData td = TrainingData(getTestDataPath(std::string("pendigits.tra")));
     td.normalizeData(MIN_MAX_NORMALIZATION);
     vector<size_t> arch = {16, 10, 10, 1};
-    size_t archSize = 4;
+
     vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU};
 
-    Model model(arch, archSize, actFunc, archSize, true);
+    Model model(arch, actFunc, true);
     model.modelXavierInitialize();
 
     double learningRate = 1e-3;

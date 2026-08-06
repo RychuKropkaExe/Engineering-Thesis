@@ -49,7 +49,7 @@ public:
      * CONSTRUCTORS
      ******************************************************************************/
 
-    Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> actFunctions, size_t actFunctionsSize, bool randomize);
+    Model(vector<size_t> arch, vector<ActivationFunctionE> actFunctions, bool randomize);
     Model();
 
     /******************************************************************************

@@ -23,8 +23,10 @@
  *
  * @return Fully functional Model
  ******************************************************************************/
-Model::Model(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> actFunctions, size_t actFunctionsSize, bool randomize)
+Model::Model(vector<size_t> arch, vector<ActivationFunctionE> actFunctions, bool randomize)
 {
+    size_t archSize = arch.size();
+    size_t actFunctionsSize = actFunctions.size();
     assert(archSize == actFunctionsSize);
     this->activationFunctions.resize(actFunctionsSize);
     for (size_t i = 1; i < archSize; ++i)
@@ -264,7 +266,7 @@ FastMatrix Model::run(FastMatrix input)
 void Model::finiteDifference()
 {
 
-    Model fakeGradient(arch, archSize, activationFunctions, archSize, false);
+    Model fakeGradient(arch, activationFunctions, false);
 
     double saved;
     double curCost = costCrossEntropy();
@@ -364,7 +366,7 @@ void Model::clipValues()
 void Model::backPropagation(bool clipGradient, uint32_t batchSize)
 {
     size_t n = batchSize == 0 ? trainingData.numOfSamples : batchSize;
-    Model gradient(arch, archSize, activationFunctions, archSize, false);
+    Model gradient(arch, activationFunctions, false);
 
     for (size_t i = 1; i < gradient.numberOfLayers; ++i)
     {
