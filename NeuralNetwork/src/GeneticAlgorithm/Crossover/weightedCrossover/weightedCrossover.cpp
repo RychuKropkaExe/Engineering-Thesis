@@ -97,6 +97,16 @@ std::vector<Individual> WeightedCrossover::produceOffspring(std::vector<Parents>
           double newValue = ((firstParFitness * firstValue) + (secondParFitness * secondValue)) / (firstParFitness + secondParFitness);
 
           offspringWeights.setElement(row, col, newValue);
+
+          // TODO: verify that is a corrent way to index activation functions
+          if (firstParFitness >= secondParFitness && firstParFitness != 0)
+          {
+            actFunctions[layerIndex] = firstParLayer.functionTypes[col];
+          }
+          else if (firstParFitness < secondParFitness && secondParFitness != 0)
+          {
+            actFunctions[layerIndex] = secondParLayer.functionTypes[col];
+          }
         }
 
         for (size_t col = 0; col < offspringBiases.cols; col++)

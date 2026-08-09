@@ -27,7 +27,8 @@ enum ActivationFunctionE
     SIGMOID,
     RELU,
     SOFTMAX,
-    NO_ACTIVATION
+    NO_ACTIVATION,
+    ACTIVATION_COUNT
 };
 
 /******************************************************************************

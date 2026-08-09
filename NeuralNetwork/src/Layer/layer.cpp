@@ -127,6 +127,7 @@ void Layer::activate()
             break;
         }
         case NO_ACTIVATION:
+        case ACTIVATION_COUNT:
         {
             break;
         }
