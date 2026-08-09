@@ -38,7 +38,7 @@ public:
     vector<size_t> arch;
     size_t archSize;
 
-    TrainingData trainingData{};
+    TrainingData trainingData;
     double learningRate = 1e-8;
     double eps = 1e-3;
 
@@ -67,6 +67,7 @@ public:
     FastMatrix run(FastMatrix input);
 
     double costMeanSquare();
+    double costMeanSquare(TrainingData &trainingDataRef);
     double costCrossEntropy();
     void finiteDifference();
     void backPropagation(bool clipGradientmz, uint32_t batchSize);

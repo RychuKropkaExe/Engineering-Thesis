@@ -212,6 +212,31 @@ double Model::costMeanSquare()
 }
 
 /******************************************************************************
+ * @brief Calculates current cost using mean squared error method
+ *
+ * @return Model cost
+ ******************************************************************************/
+double Model::costMeanSquare(TrainingData &trainingDataRef)
+{
+    LOG(NORMAL_LOGS, INFO_TYPE, "CALCULATING MEAN SQUARE COST");
+    double totalCost = 0;
+
+    for (size_t i = 0; i < trainingDataRef.numOfSamples; ++i)
+    {
+        FastMatrix result = run(trainingDataRef.inputs[i]);
+        for (size_t j = 0; j < result.cols; ++j)
+        {
+            double d = result.getElement(0, j) - trainingDataRef.outputs[i].getElement(0, j);
+            totalCost += d * d;
+        }
+    }
+
+    COND_LOG(trainingDataRef.numOfSamples == 0, ERROR_TYPE, "NUMBER OF SAMPLES == 0");
+
+    return totalCost / (trainingDataRef.numOfSamples);
+}
+
+/******************************************************************************
  * @brief Learning process for a model. Runs back propagation
  *        algorithm @iterations number of times
  *
