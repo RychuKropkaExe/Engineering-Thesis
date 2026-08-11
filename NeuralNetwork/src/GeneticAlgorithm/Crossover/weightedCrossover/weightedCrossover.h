@@ -25,5 +25,5 @@ public:
   /******************************************************************************
    * UTILITIES
    ******************************************************************************/
-  std::vector<Individual> produceOffspring(std::vector<Parents> &parents);
+  void produceOffspring(std::vector<Parents> &parents, vector<Individual> &population);
 };

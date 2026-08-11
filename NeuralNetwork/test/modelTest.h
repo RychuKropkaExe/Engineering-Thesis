@@ -14,7 +14,7 @@ TEST(ModelTest, xorModelTest)
 {
     TrainingData td = TrainingData(getTestDataPath(std::string("xorData.txt")));
     vector<size_t> arch = {2, 2, 4, 1};
-    vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
+    vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID, SIGMOID};
 
     Model model(arch, actFunc, true);
 
@@ -63,7 +63,7 @@ TEST(ModelTest, paraboleModelTest)
 
     TrainingData td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
 
-    vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU};
+    vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU, RELU};
 
     Model model(arch, actFunc, true);
 
@@ -93,7 +93,7 @@ TEST(ModelTest, parityModelTest)
     TrainingData td = TrainingData(getTestDataPath(std::string("parityTestData.txt")));
     vector<size_t> arch = {8, 8, 1};
 
-    vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID, SIGMOID};
+    vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
 
     Model model(arch, actFunc, true);
 
@@ -118,7 +118,7 @@ TEST(ModelTest, hammingLengthTest)
     TrainingData td = TrainingData(getTestDataPath(std::string("hammingLengthTest.txt")));
     vector<size_t> arch = {7, 10, 10, 3};
 
-    vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
+    vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID, SIGMOID};
 
     Model model(arch, actFunc, true);
 
@@ -142,7 +142,7 @@ TEST(ModelTest, digitRecognitionTest)
     td.normalizeData(MIN_MAX_NORMALIZATION);
     vector<size_t> arch = {16, 10, 10, 1};
 
-    vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU};
+    vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU, RELU};
 
     Model model(arch, actFunc, true);
     model.modelXavierInitialize();

@@ -22,10 +22,14 @@ public:
    * CLASS MEMBERS
    ******************************************************************************/
   Model genotype;
-  int id{};
-  int generation{};
-  double fitness{};
-  size_t gracePeriodLength{};
+  size_t id{0};
+  size_t generation{0};
+  double fitness{0.0};
+  size_t gracePeriodLength{0};
+
+  // Find better name for those
+  static size_t maxId;
+  static size_t maxGeneration;
 
   /******************************************************************************
    * CONSTRUCTORS

@@ -15,15 +15,8 @@
 class NoCrossover : public CrossoverAlgorithm
 {
 public:
-  vector<Individual> &population;
-
-  /******************************************************************************
-   * CONSTRUCTORS
-   ******************************************************************************/
-  NoCrossover(vector<Individual> &population);
-
   /******************************************************************************
    * UTILITIES
    ******************************************************************************/
-  std::vector<Individual> produceOffspring(std::vector<Parents> &parents);
+  void produceOffspring(std::vector<Parents> &parents, vector<Individual> &population);
 };

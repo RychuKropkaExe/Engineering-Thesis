@@ -1,3 +1,4 @@
+#include "geneticAlgorithmTest.h"
 #include "logger.h"
 #include "matrixOperationsTest.h"
 #include "modelTest.h"

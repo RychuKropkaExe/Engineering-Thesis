@@ -1,6 +1,9 @@
 #include "individual.h"
 #include <iostream>
 
+size_t Individual::maxGeneration = 0;
+size_t Individual::maxId = 0;
+
 /******************************************************************************
  * CONSTRUCTORS
  ******************************************************************************/
@@ -9,6 +12,9 @@ Individual::Individual(Model model, size_t gracePeriodLength)
 {
   genotype = model;
   this->gracePeriodLength = gracePeriodLength;
+  id = Individual::maxId;
+  Individual::maxId++;
+  generation = Individual::maxGeneration;
 }
 
 /******************************************************************************

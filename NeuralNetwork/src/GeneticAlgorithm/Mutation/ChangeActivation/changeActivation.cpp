@@ -20,11 +20,12 @@ void ChangeActivation::mutateIndividual(Individual &individual)
 
   // archSize - 1 since we don't want to change activation functions of
   // output layers
-  size_t numberOfLayers = genotype.archSize - 1;
+  size_t numberOfLayers = genotype.archSize - 2;
+  size_t minLayer = 1;
 
   for (size_t unused = 0; unused < numberOfChanges; unused++)
   {
-    size_t layerIndex = rand() % numberOfLayers;
+    size_t layerIndex = minLayer % numberOfLayers;
 
     Layer &layer = genotype.layers[layerIndex];
 

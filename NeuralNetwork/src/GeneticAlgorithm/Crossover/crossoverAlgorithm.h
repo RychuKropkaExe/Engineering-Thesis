@@ -9,7 +9,6 @@
  *
  * @brief Base class for all crossover algorithms
  *
- *
  ******************************************************************************/
 class CrossoverAlgorithm
 {
@@ -17,5 +16,5 @@ public:
   /******************************************************************************
    * UTILITIES
    ******************************************************************************/
-  virtual std::vector<Individual> produceOffspring(std::vector<Parents> &parents) = 0;
+  virtual void produceOffspring(std::vector<Parents> &parents, vector<Individual> &population) = 0;
 };

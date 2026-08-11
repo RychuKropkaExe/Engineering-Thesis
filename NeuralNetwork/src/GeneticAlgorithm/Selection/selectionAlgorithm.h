@@ -30,5 +30,5 @@ public:
    ******************************************************************************/
   size_t fasttrackProtectedIndividuals(vector<Individual> &population, vector<Parents> &parents, size_t startIndex);
 
-  virtual vector<Parents> selectParents(vector<Individual> &population, size_t numberOfParentsPairs);
+  virtual vector<Parents> selectParents(vector<Individual> &population, size_t numberOfParentsPairs) = 0;
 };

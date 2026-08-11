@@ -42,8 +42,10 @@ void AdjustWeight::mutateIndividual(Individual &individual)
       {
         size_t weightIndex = adjustmentWeightIndex - 1;
 
+        int sign = (rand() % 2) == 0 ? -1 : 1;
+
         double elementValue = genotype.layers[layerIndex].weights.mat[weightIndex];
-        genotype.layers[layerIndex].weights.mat[weightIndex] = elementValue * adjustmentRate;
+        genotype.layers[layerIndex].weights.mat[weightIndex] = elementValue * adjustmentRate * sign;
       }
     }
   }

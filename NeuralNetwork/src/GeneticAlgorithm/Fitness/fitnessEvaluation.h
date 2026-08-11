@@ -17,5 +17,5 @@ public:
   /******************************************************************************
    * UTILITIES
    ******************************************************************************/
-  virtual void evaluateIndividual(Individual &individual);
+  virtual void evaluateIndividual(Individual &individual) = 0;
 };

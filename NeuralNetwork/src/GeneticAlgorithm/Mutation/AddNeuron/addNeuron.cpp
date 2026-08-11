@@ -31,6 +31,11 @@ static void expandLayerCols(Layer &layer)
   size_t newWeightsRows = layer.weights.rows;
   size_t newWeightsCols = layer.weights.cols + 1;
 
+  // LOG(ESSENTIAL_LOGS, INFO_TYPE, " max row: " << newWeightsRows);
+  // LOG(ESSENTIAL_LOGS, INFO_TYPE, " max col: " << newWeightsCols);
+  // LOG(ESSENTIAL_LOGS, INFO_TYPE, " existing row: " << layer.weights.rows);
+  // LOG(ESSENTIAL_LOGS, INFO_TYPE, " existing col: " << layer.weights.cols);
+
   FastMatrix newWeights = FastMatrix(newWeightsRows, newWeightsCols);
 
   // While adding columns we cant use std::copy since we use flat vector
@@ -41,6 +46,8 @@ static void expandLayerCols(Layer &layer)
   {
     for (size_t col = 0; col < newWeights.cols - 1; col++)
     {
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, " row: " << row);
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, " col: " << col);
       double value = layer.weights.getElement(row, col);
       newWeights.setElement(row, col, value);
     }
@@ -53,9 +60,13 @@ static void expandLayerCols(Layer &layer)
   // in the next layer
   FastMatrix newBiases = FastMatrix(1, newWeightsCols);
 
+  // LOG(ESSENTIAL_LOGS, INFO_TYPE, " TUTAJ??: ");
+
   std::copy(layer.biases.mat.begin(), layer.biases.mat.end(), newBiases.mat.begin());
 
-  newBiases.setElement(1, newWeightsCols - 1, randomdouble());
+  // LOG(ESSENTIAL_LOGS, INFO_TYPE, " A MOŻE TUTAJ??: ");
+
+  newBiases.setElement(0, newWeightsCols - 1, randomdouble());
 
   layer.biases = newBiases;
 }
@@ -63,7 +74,7 @@ static void expandLayerCols(Layer &layer)
 /******************************************************************************
  * UTILITIES
  ******************************************************************************/
-void mutateIndividual(Individual &individual)
+void AddNeuron::mutateIndividual(Individual &individual)
 {
   Model &genotype = individual.genotype;
 

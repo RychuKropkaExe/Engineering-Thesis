@@ -19,5 +19,5 @@ public:
    * UTILITIES
    ******************************************************************************/
 
-  virtual void mutateIndividual(Individual &individual);
+  virtual void mutateIndividual(Individual &individual) = 0;
 };

@@ -12,17 +12,15 @@ WeightedCrossover::WeightedCrossover(double scalingFactor)
 /******************************************************************************
  * UTILITIES
  ******************************************************************************/
-std::vector<Individual> WeightedCrossover::produceOffspring(std::vector<Parents> &parents)
+void WeightedCrossover::produceOffspring(std::vector<Parents> &parents, vector<Individual> &population)
 {
   size_t numberOfOffspring = parents.size();
 
-  std::vector<Individual> offspringList{};
-
-  offspringList.resize(numberOfOffspring);
+  LOG(ESSENTIAL_LOGS, INFO_TYPE, "POPULATION SIZE: " << population.size() << " NUMBER OF OFFSPRING: " << numberOfOffspring);
 
   for (size_t index = 0; index < numberOfOffspring; index++)
   {
-
+    // LOG(ESSENTIAL_LOGS, INFO_TYPE, "OFFSPRING INDEX: " << index);
     Model &firstParentGenotype = parents[index].firstParent.genotype;
     Model &secondParentGenotype = parents[index].secondParent.genotype;
 
@@ -38,6 +36,9 @@ std::vector<Individual> WeightedCrossover::produceOffspring(std::vector<Parents>
       size_t firstParentNeuronsNum = firstParentGenotype.arch[layerIndex];
       size_t secondParentNeuronsNum = secondParentGenotype.arch[layerIndex];
 
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " secondParentNeuronsNum: " << firstParentNeuronsNum);
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " secondParentNeuronsNum: " << secondParentNeuronsNum);
+
       if (firstParentNeuronsNum > secondParentNeuronsNum)
       {
         offspringArch[layerIndex] = firstParentNeuronsNum;
@@ -52,7 +53,7 @@ std::vector<Individual> WeightedCrossover::produceOffspring(std::vector<Parents>
 
     Model offspringModel(offspringArch, actFunctions, false);
 
-    for (size_t layerIndex = 0; layerIndex < firstParentGenotype.archSize;
+    for (size_t layerIndex = 1; layerIndex < firstParentGenotype.archSize;
          layerIndex++)
     {
 
@@ -62,11 +63,25 @@ std::vector<Individual> WeightedCrossover::produceOffspring(std::vector<Parents>
 
       FastMatrix &offspringWeights = offspringModel.layers[layerIndex].weights;
       FastMatrix &offspringBiases = offspringModel.layers[layerIndex].biases;
+      vector<ActivationFunctionE> &offspringAct = offspringModel.layers[layerIndex].functionTypes;
+
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " firstParLayerRows: " << firstParLayer.weights.rows);
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " firstParLayerCols: " << firstParLayer.weights.cols);
+
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " secondParLayerRows: " << secondParLayer.weights.rows);
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " secondParLayerCols: " << secondParLayer.weights.cols);
+
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " offspringWeightsRows: " << offspringWeights.rows);
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " offspringWeightsCols: " << offspringWeights.cols);
+      // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " offspringActSize: " << offspringAct.size());
 
       for (size_t row = 0; row < offspringWeights.rows; row++)
       {
         for (size_t col = 0; col < offspringWeights.cols; col++)
         {
+
+          // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " row: " << row);
+          // LOG(ESSENTIAL_LOGS, INFO_TYPE, "Layer: " << layerIndex << " col: " << col);
 
           double firstValue = 0;
           double secondValue = 0;
@@ -94,53 +109,64 @@ std::vector<Individual> WeightedCrossover::produceOffspring(std::vector<Parents>
             secondParFitness = 0;
           }
 
-          double newValue = ((firstParFitness * firstValue) + (secondParFitness * secondValue)) / (firstParFitness + secondParFitness);
+          // double newValue = ((firstParFitness * firstValue) + (secondParFitness * secondValue)) / (firstParFitness + secondParFitness);
+
+          double newValue = 0;
+
+          if (firstParFitness > secondParFitness)
+          {
+            newValue = firstValue;
+          }
+          else
+          {
+            newValue = secondValue;
+          }
 
           offspringWeights.setElement(row, col, newValue);
+        }
+      }
 
-          // TODO: verify that is a corrent way to index activation functions
-          if (firstParFitness >= secondParFitness && firstParFitness != 0)
-          {
-            actFunctions[layerIndex] = firstParLayer.functionTypes[col];
-          }
-          else if (firstParFitness < secondParFitness && secondParFitness != 0)
-          {
-            actFunctions[layerIndex] = secondParLayer.functionTypes[col];
-          }
+      for (size_t col = 0; col < offspringBiases.cols; col++)
+      {
+
+        double firstValue = 0;
+        double secondValue = 0;
+
+        double firstParFitness = parents[index].firstParent.fitness;
+        double secondParFitness = parents[index].secondParent.fitness;
+
+        if (firstParLayer.biases.cols > col)
+        {
+          firstValue = firstParLayer.biases.getElement(0, col);
+        }
+        else
+        {
+          // If bias is not present in first parent, dont include it in weighted calculations
+          firstParFitness = 0;
         }
 
-        for (size_t col = 0; col < offspringBiases.cols; col++)
+        if (secondParLayer.biases.cols > col)
         {
+          secondValue = secondParLayer.biases.getElement(0, col);
+        }
+        else
+        {
+          // If bias is not present in second parent, dont include it in weighted calculations
+          secondParFitness = 0;
+        }
 
-          double firstValue = 0;
-          double secondValue = 0;
+        double newValue = ((firstParFitness * firstValue) + (secondParFitness * secondValue)) / (firstParFitness + secondParFitness);
 
-          double firstParFitness = parents[index].firstParent.fitness;
-          double secondParFitness = parents[index].secondParent.fitness;
+        offspringBiases.setElement(0, col, newValue);
 
-          if (firstParLayer.biases.cols > col && firstParLayer.biases.rows > row)
-          {
-            firstValue = firstParLayer.biases.getElement(row, col);
-          }
-          else
-          {
-            // If bias is not present in first parent, dont include it in weighted calculations
-            firstParFitness = 0;
-          }
-
-          if (secondParLayer.biases.cols > col && secondParLayer.biases.rows > row)
-          {
-            secondValue = secondParLayer.biases.getElement(row, col);
-          }
-          else
-          {
-            // If bias is not present in second parent, dont include it in weighted calculations
-            secondParFitness = 0;
-          }
-
-          double newValue = ((firstParFitness * firstValue) + (secondParFitness * secondValue)) / (firstParFitness + secondParFitness);
-
-          offspringBiases.setElement(row, col, newValue);
+        // TODO: verify that is a corrent way to index activation functions
+        if (firstParFitness >= secondParFitness && firstParFitness != 0)
+        {
+          offspringAct[col] = firstParLayer.functionTypes[col];
+        }
+        else if (firstParFitness < secondParFitness && secondParFitness != 0)
+        {
+          offspringAct[col] = secondParLayer.functionTypes[col];
         }
       }
     }
@@ -157,8 +183,8 @@ std::vector<Individual> WeightedCrossover::produceOffspring(std::vector<Parents>
       gracePeriodLength--;
     }
 
-    offspringList[index] = Individual(offspringModel, gracePeriodLength);
-  }
+    // LOG(ESSENTIAL_LOGS, INFO_TYPE, offspringModel);
 
-  return offspringList;
+    population[index] = Individual(offspringModel, gracePeriodLength);
+  }
 }

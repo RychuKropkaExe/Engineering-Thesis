@@ -17,13 +17,13 @@ namespace py = pybind11;
 
 void createMainModel(vector<size_t> arch, size_t archSize, vector<ActivationFunctionE> actFunctions, size_t actFunctionsSize, bool randomize)
 {
-    agent.mainModel = Model(arch, archSize, actFunctions, actFunctionsSize, randomize);
-    agent.mainModel.modelXavierInitialize();
+    agent.mainModel = Model(arch, actFunctions, randomize)
+                          agent.mainModel.modelXavierInitialize();
 }
 
 void createTargetModel()
 {
-    agent.targetModel = Model(agent.mainModel.arch, agent.mainModel.archSize, agent.mainModel.activationFunctions, agent.mainModel.activationFunctions.size(), false);
+    agent.targetModel = Model(agent.mainModel.arch, agent.mainModel.activationFunctions, false);
     for (size_t i = 0; i < agent.mainModel.numberOfLayers; ++i)
     {
         for (size_t j = 0; j < agent.mainModel.layers[i].weights.rows; ++j)
@@ -166,11 +166,11 @@ void xorModelTest()
     size_t archSize = 4;
     vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID};
 
-    Model model(arch, archSize, actFunc, archSize, true);
+    Model Model(arch, actFunc, true)
 
-    // model.printModel();
+        // model.printModel();
 
-    float eps = 1e-3;
+        float eps = 1e-3;
     float learningRate = 1e-1f;
 
     model.setEps(eps);

@@ -1,19 +1,10 @@
 #include "noCrossover.h"
-
-/******************************************************************************
- * CONSTRUCTORS
- ******************************************************************************/
-
-NoCrossover::NoCrossover(vector<Individual> &population) : population(population)
-{
-  this->population = population;
-}
-
 /******************************************************************************
  * UTILITIES
  ******************************************************************************/
-std::vector<Individual> NoCrossover::produceOffspring(std::vector<Parents> &parents)
+void NoCrossover::produceOffspring(std::vector<Parents> &parents, vector<Individual> &population)
 {
   (void)parents;
-  return vector{population};
+  (void)population;
+  return;
 }
