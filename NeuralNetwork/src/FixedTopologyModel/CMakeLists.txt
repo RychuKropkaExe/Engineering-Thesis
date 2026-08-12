@@ -1,0 +1,9 @@
+target_include_directories(MainBuild PRIVATE "FastMatrix")
+target_include_directories(MainBuild PRIVATE "Layer")
+target_include_directories(MainBuild PRIVATE "Model")
+target_include_directories(MainBuild PRIVATE "GeneticAlgorithm")
+
+add_subdirectory(FastMatrix)
+add_subdirectory(Layer)
+add_subdirectory(Model)
+add_subdirectory(GeneticAlgorithm)
