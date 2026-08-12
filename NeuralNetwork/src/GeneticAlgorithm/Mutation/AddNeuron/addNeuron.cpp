@@ -1,4 +1,5 @@
 #include "addNeuron.h"
+#include <cassert>
 
 /******************************************************************************
  * Local functions
@@ -69,6 +70,18 @@ static void expandLayerCols(Layer &layer)
   newBiases.setElement(0, newWeightsCols - 1, randomdouble());
 
   layer.biases = newBiases;
+
+  vector<ActivationFunctionE> newActivations(newWeightsCols, NO_ACTIVATION);
+
+  for (size_t index = 0; index < newWeightsCols - 1; index++)
+  {
+    newActivations[index] = layer.functionTypes[index];
+  }
+
+  newActivations[newWeightsCols - 1] = (ActivationFunctionE)(rand() % ACTIVATION_COUNT);
+
+  layer.functionTypes = newActivations;
+
 }
 
 /******************************************************************************
@@ -78,10 +91,14 @@ void AddNeuron::mutateIndividual(Individual &individual)
 {
   Model &genotype = individual.genotype;
 
+  //LOG(ESSENTIAL_LOGS, INFO_TYPE, "MODEL BEFORE: " << genotype);
+
+  assert(genotype.archSize > 3);
+
   // We cant expand input and output layer
   size_t numberOfHiddenLayers = genotype.archSize - 2;
 
-  size_t expandedLayerIndex = 1 + (rand() % numberOfHiddenLayers);
+  size_t expandedLayerIndex = 2 + (rand() % numberOfHiddenLayers);
 
   Layer &expandedLayer = genotype.layers[expandedLayerIndex];
 
@@ -92,4 +109,6 @@ void AddNeuron::mutateIndividual(Individual &individual)
 
   // We also need to expand number of weights in previous layer to account for the new neuron
   expandLayerCols(previousLayer);
+
+  //LOG(ESSENTIAL_LOGS, INFO_TYPE, "MODEL AFTER: " << genotype);
 }

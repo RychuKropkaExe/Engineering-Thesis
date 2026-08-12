@@ -16,7 +16,7 @@ void WeightedCrossover::produceOffspring(std::vector<Parents> &parents, vector<I
 {
   size_t numberOfOffspring = parents.size();
 
-  LOG(ESSENTIAL_LOGS, INFO_TYPE, "POPULATION SIZE: " << population.size() << " NUMBER OF OFFSPRING: " << numberOfOffspring);
+  // LOG(ESSENTIAL_LOGS, INFO_TYPE, "POPULATION SIZE: " << population.size() << " NUMBER OF OFFSPRING: " << numberOfOffspring);
 
   for (size_t index = 0; index < numberOfOffspring; index++)
   {

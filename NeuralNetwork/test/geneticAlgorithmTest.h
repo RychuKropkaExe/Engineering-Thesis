@@ -28,7 +28,7 @@ using std::vector;
 // TEST(GeneticAlgorithmTest, GAxorModelTest)
 // {
 //   TrainingData td = TrainingData(getTestDataPath(std::string("xorData.txt")));
-//   vector<size_t> arch = {2, 2, 2, 1};
+//   vector<size_t> arch = {2, 1, 1, 1};
 //   vector<ActivationFunctionE> actFunc = {SIGMOID, SIGMOID, SIGMOID, SIGMOID};
 
 //   TournamentSelection ts = TournamentSelection();
@@ -42,17 +42,17 @@ using std::vector;
 //   FlipBias fp = FlipBias(1);
 //   FlipWeight fw = FlipWeight(1);
 //   AddNeuron an = AddNeuron();
-//   AdjustWeight aw = AdjustWeight(2, 1.05);
+//   AdjustWeight aw = AdjustWeight(5, 1.05);
 //   ChangeActivation ca = ChangeActivation(1);
 
 //   vector<MutationAlgorithm *> mutationAlgorithms = {&fp, &fw, &an, &aw, &ca};
-//   vector<size_t> mutationRates = {1, 1, 20, 50, 1};
+//   vector<size_t> mutationRates = {1, 1, 20, 20, 1};
 
 //   Model model(arch, actFunc, true);
 
-//   GeneticAlgorithm algorithm = GeneticAlgorithm(selectionAlgorithm, crossoverAlgorithm, fitnessEvaluation, mutationAlgorithms, mutationRates, 0);
+//   GeneticAlgorithm algorithm = GeneticAlgorithm(selectionAlgorithm, crossoverAlgorithm, fitnessEvaluation, mutationAlgorithms, mutationRates, 1);
 
-//   algorithm.initializePopulation(1000, model);
+//   algorithm.initializePopulation(100, model);
 
 //   Individual result = algorithm.runGeneticAlgorithm(10000);
 
@@ -66,7 +66,7 @@ using std::vector;
  ******************************************************************************/
 TEST(ModelTest, GAparaboleModelTest)
 {
-  vector<size_t> arch = {1, 2, 2, 1};
+  vector<size_t> arch = {1, 1, 1, 1};
 
   vector<vector<double>> trainingInputs;
   vector<vector<double>> trainingOutputs;
@@ -94,7 +94,7 @@ TEST(ModelTest, GAparaboleModelTest)
 
   TrainingData td = TrainingData(trainingInputs, inputSize, numberOfSamples, trainingOutputs, outputSize, numberOfSamples);
 
-  vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU, RELU};
+  vector<ActivationFunctionE> actFunc = {RELU, RELU, RELU, SIGMOID};
 
   td.normalizeData(MIN_MAX_NORMALIZATION);
 
@@ -109,25 +109,25 @@ TEST(ModelTest, GAparaboleModelTest)
   FlipBias fp = FlipBias(1);
   FlipWeight fw = FlipWeight(1);
   AddNeuron an = AddNeuron();
-  AdjustWeight aw = AdjustWeight(5, 1.025);
+  AdjustWeight aw = AdjustWeight(2, 1.025);
   ChangeActivation ca = ChangeActivation(1);
 
   vector<MutationAlgorithm *> mutationAlgorithms = {&fp, &fw, &an, &aw, &ca};
-  vector<size_t> mutationRates = {0, 0, 5, 10, 1};
+  vector<size_t> mutationRates = {1, 1, 5, 10, 1};
 
   Model model(arch, actFunc, true);
 
   model.modelXavierInitialize();
 
-  GeneticAlgorithm algorithm = GeneticAlgorithm(selectionAlgorithm, crossoverAlgorithm, fitnessEvaluation, mutationAlgorithms, mutationRates, 0);
+  GeneticAlgorithm algorithm = GeneticAlgorithm(selectionAlgorithm, crossoverAlgorithm, fitnessEvaluation, mutationAlgorithms, mutationRates, 1);
 
-  algorithm.initializePopulation(100, model);
+  algorithm.initializePopulation(50, model);
 
   Individual result = algorithm.runGeneticAlgorithm(10000);
 
   double cost = result.genotype.costMeanSquare(td);
 
-  EXPECT_LE(cost, 0.10f);
+  EXPECT_LE(cost, 0.05f);
 }
 
 // /******************************************************************************

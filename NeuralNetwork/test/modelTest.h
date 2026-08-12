@@ -18,6 +18,8 @@ TEST(ModelTest, xorModelTest)
 
     Model model(arch, actFunc, true);
 
+    LOG(ESSENTIAL_LOGS, INFO_TYPE, model);
+
     double eps = 1e-3;
     double learningRate = 1e-1f;
 
