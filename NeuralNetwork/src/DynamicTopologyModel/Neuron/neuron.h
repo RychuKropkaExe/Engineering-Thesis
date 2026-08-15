@@ -2,8 +2,11 @@
 
 #include "synapse.h"
 #include "utils.h"
+#include <vector>
 
 using std::vector;
+using DTMUtils::NeuronTypeE;
+using DTMUtils::ActivationE;
 
 /******************************************************************************
  * @class Neuron
@@ -26,7 +29,7 @@ public:
    ******************************************************************************/
   size_t id;
   NeuronTypeE type;
-  AtivationFunctionE activation;
+  ActivationE activation;
 
   double value;
   double bias;
@@ -36,7 +39,8 @@ public:
   /******************************************************************************
   * CONSTRUCTORS
   ******************************************************************************/
-  Neuron(size_t id, NeuronTypeE type, vector<Synapse> synapses);
+  Neuron() = default;
+  Neuron(size_t id, NeuronTypeE type, vector<Synapse> synapses, ActivationE activation);
 
   /******************************************************************************
   * OPERATORS
@@ -55,5 +59,5 @@ private:
   /******************************************************************************
   * CLASS MEMBERS
   ******************************************************************************/
-  constexpr size_t SYNAPSE_BUFFER_INTERVAL = 5;
+  static constexpr size_t SYNAPSE_BUFFER_INTERVAL = 5;
 };

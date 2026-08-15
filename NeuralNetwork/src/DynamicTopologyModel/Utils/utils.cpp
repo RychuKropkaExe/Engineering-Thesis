@@ -22,19 +22,21 @@ std::string DTMUtils::neuronTypeToString(NeuronTypeE type)
 
   switch (type)
   {
-  case INPUT_NEURON:
+  case NeuronTypeE::INPUT_NEURON:
   {
     return std::string("INPUT_NEURON");
   }
-  case HIDDEN_NEURON:
+  case NeuronTypeE::HIDDEN_NEURON:
   {
     return std::string("HIDDEN_NEURON");
   }
-  case OUTPUT_NEURON:
+  case NeuronTypeE::OUTPUT_NEURON:
   {
     return std::string("OUTPUT_NEURON");
   }
   }
+
+  return std::string("NO VALID TYPE MATCHED");
 }
 
 /******************************************************************************
@@ -46,19 +48,21 @@ std::string DTMUtils::neuronTypeToString(NeuronTypeE type)
  ******************************************************************************/
 std::string DTMUtils::activationFunctionToString(ActivationE activation)
 {
-  switch (type)
+  switch (activation)
   {
-  case RELU:
+  case ActivationE::RELU:
   {
     return std::string("RELU");
   }
-  case SIGMOID:
+  case ActivationE::SIGMOID:
   {
     return std::string("SIGMOID");
   }
-  case NO_ACTIVATION:
+  case ActivationE::NO_ACTIVATION:
   {
     return std::string("NO_ACTIVATION");
   }
   }
+
+  return std::string("NO MATCHING FUNCTION MATCHED");
 }

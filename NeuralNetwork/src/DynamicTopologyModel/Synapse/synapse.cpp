@@ -4,11 +4,11 @@
  * CONSTRUCTORS
  ******************************************************************************/
 
-Synapse(size_t id, size_t inNeuronId, size_t outNeuronId, double weight)
+Synapse::Synapse(size_t id, size_t inNeuronId, size_t outNeuronId, double weight)
 {
   this->id = id;
-  this->inNeuronId = id;
-  this->outNeuronId = id;
+  this->inNeuronId = inNeuronId;
+  this->outNeuronId = outNeuronId;
   this->weight = weight;
   this->isActive = true;
 }
@@ -19,9 +19,9 @@ Synapse(size_t id, size_t inNeuronId, size_t outNeuronId, double weight)
 
 std::ostream &operator<<(std::ostream &os, const Synapse &synapse)
 {
-  os << "SYNAPSE ID: " << synapse.id << " isActive: " << synapse.isActive << std::endln;
-  os << "INPUT NEURON ID: " < synapse.inNeuronId << std::endln;
-  os << "OUTPUT NEURON ID: " < synapse.outNeuronId << std::endln;
-  os << "WEIGHT VALUE: " << synapse.weight << std::endln;
+  os << "SYNAPSE ID: " << synapse.id << " isActive: " << synapse.isActive << std::endl;
+  os << "INPUT NEURON ID: " << synapse.inNeuronId << std::endl;
+  os << "OUTPUT NEURON ID: " << synapse.outNeuronId << std::endl;
+  os << "WEIGHT VALUE: " << synapse.weight << std::endl;
   return os;
 }

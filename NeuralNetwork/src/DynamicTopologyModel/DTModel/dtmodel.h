@@ -2,7 +2,10 @@
 
 #include <cstddef>
 #include <iostream>
+#include <map>
 #include "utils.h"
+#include "neuron.h"
+#include "synapse.h"
 
 using std::map;
 
@@ -45,7 +48,7 @@ public:
   /******************************************************************************
   * UTILITIES
   ******************************************************************************/
-  void sortTopoligically();
+  void sortTopologically();
 
   void addNeuron(Neuron neuron, Synapse inSynapse, Synapse outSynapse, bool sortAfterAdding);
   void addSynapse(Synapse newSynapse, bool sortAfterAdding);
@@ -59,5 +62,5 @@ private:
   /******************************************************************************
   * CLASS MEMBERS
   ******************************************************************************/
-  constexpr size_t NEURON_BUFFER_INTERVAL = 5;
+  static constexpr size_t NEURON_BUFFER_INTERVAL = 5;
 };

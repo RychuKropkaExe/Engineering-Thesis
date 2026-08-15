@@ -1,0 +1,9 @@
+target_include_directories(MainBuild PRIVATE "DTModel")
+target_include_directories(MainBuild PRIVATE "Neuron")
+target_include_directories(MainBuild PRIVATE "Synapse")
+target_include_directories(MainBuild PRIVATE "Utils")
+
+add_subdirectory(DTModel)
+add_subdirectory(Neuron)
+add_subdirectory(Synapse)
+add_subdirectory(Utils)

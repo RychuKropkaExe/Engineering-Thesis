@@ -1,6 +1,6 @@
 #include "neuron.h"
 #include <cassert>
-
+#include <cmath>
 /******************************************************************************
  * CONSTRUCTORS
  ******************************************************************************/
@@ -10,20 +10,20 @@ Neuron::Neuron(size_t id, NeuronTypeE type, vector<Synapse> synapses, Activation
   this->id = id;
   this->type = type;
 
-  bias = DTMUtils::randomdouble()();
+  bias = DTMUtils::randomdouble();
 
   switch (type)
   {
-  case NeuronTypeE::INPUT_TYPE:
+  case NeuronTypeE::INPUT_NEURON:
   {
     break;
   }
-  case NeuronType::HIDDEN_TYPE:
+  case NeuronTypeE::HIDDEN_NEURON:
   {
     assert(synapses.size() > 0);
     break;
   }
-  case NeuronType::OUTPUT_TYPE:
+  case NeuronTypeE::OUTPUT_NEURON:
   {
     assert(synapses.size() == 0);
     break;
@@ -71,12 +71,12 @@ void Neuron::addSynapse(Synapse newSynapse)
     assert(synapse.id != newSynapse.id);
   }
 
-  if (synapses.size() == synapse.capacity())
+  if (synapses.size() == synapses.capacity())
   {
-    synapse.resize(synapse.size() + SYNAPSE_BUFFER_INTERVAL);
+    synapses.resize(synapses.size() + SYNAPSE_BUFFER_INTERVAL);
   }
 
-  synapse.push_back(newSynapse);
+  synapses.push_back(newSynapse);
 
 }
 
