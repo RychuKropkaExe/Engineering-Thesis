@@ -18,18 +18,22 @@ DTModel::DTModel(size_t id, size_t inputSize, size_t outputSize, ActivationE out
 
   size_t neuronIndex = 0;
 
+  // Add input neurons
   for (size_t _ = 0; _ < inputSize; _++)
   {
-    Neuron neuron(neuronIndex, NeuronTypeE::INPUT_NEURON, vector<Synapse>(), ActivationE::NO_ACTIVATION);
+    Neuron neuron(neuronIndex, NeuronTypeE::INPUT_NEURON, ActivationE::NO_ACTIVATION);
     indexMap[neuronIndex] = neuronIndex;
     neuronIndex++;
+    neurons.push_back(neuron);
   }
 
+  // Add output neurons
   for (size_t _ = 0; _ < outputSize; _++)
   {
-    Neuron neuron(neuronIndex, NeuronTypeE::OUTPUT_NEURON, vector<Synapse>(), outputActivation);
+    Neuron neuron(neuronIndex, NeuronTypeE::OUTPUT_NEURON, outputActivation);
     indexMap[neuronIndex] = neuronIndex;
     neuronIndex++;
+    neurons.push_back(neuron);
   }
 
   isSorted = true;
@@ -47,7 +51,9 @@ std::ostream &operator<<(std::ostream &os, const DTModel &dtmodel)
   os << "NUMBER OF NEURONS: " << dtmodel.neurons.size() << std::endl;
   for (auto neuron : dtmodel.neurons)
   {
-    os << neuron;
+    os << "=====================================" << std::endl;
+    os << neuron << std::endl;
+    os << "=====================================" << std::endl;
   }
 
   return os;
@@ -95,7 +101,9 @@ void DTModel::sortTopologically()
   {
     sortedNeuronsIds.push_back(index);
 
-    for (auto synapse : neurons[index].synapses)
+    size_t inputNeuronIndex = indexMap[index];
+
+    for (auto synapse : neurons[inputNeuronIndex].synapses)
     {
       size_t outNeuronId = synapse.outNeuronId;
       size_t outNeuronIndex = indexMap[outNeuronId];
@@ -128,7 +136,9 @@ void DTModel::sortTopologically()
       size_t outNeuronIndex = indexMap[outNeuronId];
       neuronsConnectionNum[outNeuronIndex]--;
 
-      if (neuronsConnectionNum[outNeuronIndex] == 0)
+      // If vertex(neuron) is of order 0 push it onto queue
+      // Don't push output neurons since they wont feed into any other neuron anyway
+      if (neuronsConnectionNum[outNeuronIndex] == 0 && neurons[outNeuronIndex].type != NeuronTypeE::OUTPUT_NEURON)
       {
         queue.push_back(outNeuronId);
       }
@@ -156,7 +166,8 @@ void DTModel::sortTopologically()
 
   for (auto neuronIndex: sortedNeuronsIds)
   {
-    sortedNeurons.push_back(neurons[neuronIndex]);
+    size_t sortedNeuronIndex = indexMap[neuronIndex];
+    sortedNeurons.push_back(neurons[sortedNeuronIndex]);
   }
 
   indexMap = newIndexMap;
@@ -185,16 +196,28 @@ void DTModel::addNeuron(Neuron neuron, Synapse inSynapse, Synapse outSynapse, bo
   }
 
   // Ensure that new synapse is not going from output neurons
-  assert((inSynapse.inNeuronId < inputSize || inSynapse.inNeuronId > (inputSize + outputSize)));
+  assert((inSynapse.inNeuronId < inputSize || inSynapse.inNeuronId >= (inputSize + outputSize)));
 
   // Ensure that the synapse is going into added neuron
   assert((inSynapse.outNeuronId == neuron.id));
 
   // Ensure that new outgoing synapse is not feeding into input layer
-  assert(outSynapse.outNeuronId > inputSize);
+  assert(outSynapse.outNeuronId >= inputSize);
 
   // Ensure that the synapse is going from added neuron
   assert((outSynapse.inNeuronId == neuron.id));
+
+  // Add synapse goind out from the new neuron
+  neuron.addSynapse(outSynapse);
+
+  size_t inNeuronId = inSynapse.inNeuronId;
+
+  assert(!(indexMap.find(inNeuronId) == indexMap.end()));
+
+  size_t inNeuronIndex = indexMap[inNeuronId];
+
+  // Add synapse feeding into new neuron
+  neurons[inNeuronIndex].addSynapse(inSynapse);
 
   if (neurons.size() == neurons.capacity())
   {
@@ -203,7 +226,7 @@ void DTModel::addNeuron(Neuron neuron, Synapse inSynapse, Synapse outSynapse, bo
 
   neurons.push_back(neuron);
 
-  indexMap[neuron.id] = neurons.size();
+  indexMap[neuron.id] = neurons.size() - 1;
 
   if (sortAfterAdding)
   {
@@ -250,7 +273,7 @@ void DTModel::addSynapse(Synapse newSynapse, bool sortAfterAdding)
     }
   }
 
-  assert(inNeuronFound);
+  Assert(inNeuronFound, "NO NEURON MATCHING inNeuronID " + std::to_string(inNeuronId));
   assert(outNeuronFound);
 
   size_t inNeuronIndex = indexMap[inNeuronId];
@@ -270,29 +293,52 @@ void DTModel::addSynapse(Synapse newSynapse, bool sortAfterAdding)
 }
 
 /******************************************************************************
- * @brief Removes a neuron from neural network
+ * @brief Sets neuron bias
  *
- * @param id  ID of neuron to remove
+ * @param neuronId  Which neuron bias to set
+ * @param value     New value of bias
  *
  ******************************************************************************/
-void DTModel::removeNeuron(size_t id)
+void DTModel::setBias(size_t neuronId, double value)
+{
+
+  bool isNeuronInNetwork = !(indexMap.find(neuronId) == indexMap.end());
+
+  assert(isNeuronInNetwork);
+
+  size_t neuronIndex = indexMap[neuronId];
+
+  neurons[neuronIndex].bias = value;
+
+}
+
+/******************************************************************************
+ * @brief Removes a neuron from neural network
+ *
+ * @param id              ID of neuron to remove
+ * @param sortAfterRemove If netowrk should be sorted after removal
+ *
+ ******************************************************************************/
+void DTModel::removeNeuron(size_t id, bool sortAfterRemove)
 {
   // input and output neurons cannot be removed;
   assert(id >= inputSize + outputSize);
 
-  bool isNeuronInNetwork = (indexMap.find(id) == indexMap.end());
+  bool isNeuronInNetwork = !(indexMap.find(id) == indexMap.end());
 
   assert(isNeuronInNetwork);
 
   size_t neuronIndex = indexMap[id];
 
+  size_t switchedNeuronId = neurons[neurons.size() - 1].id;
+
   // Overwrite neuron we want to remove with last one in the list
   // This way we can pop back neurons list. We need to sort topologically
   // this network anyway so it doesnt matter if we ruin the order
-  neurons[neuronIndex] = neurons[neurons.size()];
+  neurons[neuronIndex] = neurons[neurons.size() - 1];
 
   // Update index map
-  indexMap[neurons[neuronIndex].id] = neuronIndex;
+  indexMap[switchedNeuronId] = neuronIndex;
 
   // Delete removed neuron id from map
   indexMap.erase(id);
@@ -303,36 +349,54 @@ void DTModel::removeNeuron(size_t id)
   // Remove all synapses feeding into that neuron
   for (auto neuron : neurons)
   {
+    vector<std::pair<size_t, size_t>> neuronSynapseIdPairs{};
+    // At most we remove all synapses from a neuron
+    neuronSynapseIdPairs.reserve(neuron.synapses.size());
     for (auto synapse : neuron.synapses)
     {
       if (synapse.outNeuronId == id)
       {
-        neuron.removeSynapse(synapse.id);
+        std::pair<size_t, size_t> pair(neuron.id, synapse.id);
+        neuronSynapseIdPairs.push_back(pair);
       }
+    }
+
+    for (size_t index = 0; index < neuronSynapseIdPairs.size(); index++)
+    {
+      size_t neuronId = neuronSynapseIdPairs[index].first;
+      size_t synapseId = neuronSynapseIdPairs[index].second;
+
+      size_t neuronIndex = indexMap[neuronId];
+
+      neurons[neuronIndex].removeSynapse(synapseId);
     }
   }
 
-  sortTopologically();
-  isSorted = true;
+  if (sortAfterRemove)
+  {
+    sortTopologically();
+    isSorted = true;
+  }
 
 }
 
 /******************************************************************************
  * @brief Removes a synapse from neural network
  *
- * @param id  ID of synapse to remove
+ * @param inNeuronId  ID of neuron connection is going from
+ * @param outNeuronId ID of neuron connection is feeding into
  *
  ******************************************************************************/
-void DTModel::removeSynapse(size_t inNeuronId, size_t outNeuronId)
+void DTModel::removeSynapse(size_t inNeuronId, size_t outNeuronId, bool sortAfterRemoveal)
 {
   // No synapse can feed into input neurons
   assert(outNeuronId >= inputSize);
 
-  bool isInNeuronInNetwork = (indexMap.find(inNeuronId) == indexMap.end());
+  bool isInNeuronInNetwork = !(indexMap.find(inNeuronId) == indexMap.end());
 
   assert(isInNeuronInNetwork);
 
-  bool isOutNeuronInNetwork = (indexMap.find(outNeuronId) == indexMap.end());
+  bool isOutNeuronInNetwork = !(indexMap.find(outNeuronId) == indexMap.end());
 
   assert(isOutNeuronInNetwork);
 
@@ -352,8 +416,11 @@ void DTModel::removeSynapse(size_t inNeuronId, size_t outNeuronId)
 
   }
 
-  sortTopologically();
-  isSorted = true;
+  if (sortAfterRemoveal)
+  {
+    sortTopologically();
+    isSorted = true;
+  }
 
 }
 
@@ -382,6 +449,11 @@ vector<double> DTModel::feedForward(vector<double> input)
   for (size_t index = 0; index < neurons.size(); index++)
   {
     neurons[index].value = 0;
+  }
+
+  for (size_t index = 0; index < inputSize; index++)
+  {
+    neurons[index].value = input[index];
   }
 
   for (size_t index = 0; index < neurons.size(); index++)

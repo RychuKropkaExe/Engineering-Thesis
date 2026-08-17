@@ -2,6 +2,7 @@
 #include "matrixOperationsTest.h"
 #include "modelTest.h"
 #include "trainingDataTest.h"
+#include "dtmodelTest.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <time.h>

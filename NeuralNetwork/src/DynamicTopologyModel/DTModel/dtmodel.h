@@ -43,7 +43,7 @@ public:
   /******************************************************************************
   * OPERATORS
   ******************************************************************************/
-  friend std::ostream &operator<<(std::ostream &os, const Synapse &synapse);
+  friend std::ostream &operator<<(std::ostream &os, const DTModel &dtmodel);
 
   /******************************************************************************
   * UTILITIES
@@ -53,8 +53,10 @@ public:
   void addNeuron(Neuron neuron, Synapse inSynapse, Synapse outSynapse, bool sortAfterAdding);
   void addSynapse(Synapse newSynapse, bool sortAfterAdding);
 
-  void removeNeuron(size_t id);
-  void removeSynapse(size_t inNeuronId, size_t outNeuronId);
+  void setBias(size_t neuronId, double value);
+
+  void removeNeuron(size_t id, bool sortAfterRemove);
+  void removeSynapse(size_t inNeuronId, size_t outNeuronId, bool sortAfterRemoveal);
 
   vector<double> feedForward(vector<double> input);
 

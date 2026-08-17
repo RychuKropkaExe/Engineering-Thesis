@@ -15,10 +15,12 @@ FetchContent_MakeAvailable(googletest)
 message("DEBUG_MODE=${DEBUG_MODE}")
 message("LOG_PRIO=${LOG_PRIO}")
 
-set(COMPILE_FLAGS "-Wall -Wextra -Werror -O3 -DLOGGING_ACTIVATED -DDEBUG_PRIO=1")
+set(COMPILE_FLAGS "-Wall -Wextra -Werror -DLOGGING_ACTIVATED")
 
 if(DEBUG_MODE)
-  set(COMPILE_FLAGS "${COMPILE_FLAGS} -ggdb3 -g")
+  set(COMPILE_FLAGS "${COMPILE_FLAGS} -O0 -ggdb3 -g -DDEBUG_PRIO=1")
+else()
+  set(COMPILE_FLAGS "${COMPILE_FLAGS} -O3")
 endif()
 
 if(LOG_PRIO GREATER 0)

@@ -1,5 +1,15 @@
 #pragma once
 #include <string>
+#include <iostream>
+
+#ifndef NDEBUG
+#define Assert(Expr, Msg) \
+    myAssert(Expr, __FILE__, __LINE__, Msg)
+#else
+#define Assert(Expr, Msg) ;
+#endif
+
+void myAssert(bool expr, const char *file, int line, std::string msg);
 
 namespace DTMUtils{
 

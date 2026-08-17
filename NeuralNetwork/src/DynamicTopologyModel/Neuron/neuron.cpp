@@ -5,29 +5,16 @@
  * CONSTRUCTORS
  ******************************************************************************/
 
-Neuron::Neuron(size_t id, NeuronTypeE type, vector<Synapse> synapses, ActivationE activation)
+Neuron::Neuron(size_t id, NeuronTypeE type, ActivationE activation, vector<Synapse> synapses)
 {
   this->id = id;
   this->type = type;
 
   bias = DTMUtils::randomdouble();
 
-  switch (type)
-  {
-  case NeuronTypeE::INPUT_NEURON:
-  {
-    break;
-  }
-  case NeuronTypeE::HIDDEN_NEURON:
-  {
-    assert(synapses.size() > 0);
-    break;
-  }
-  case NeuronTypeE::OUTPUT_NEURON:
+  if (type == NeuronTypeE::OUTPUT_NEURON)
   {
     assert(synapses.size() == 0);
-    break;
-  }
   }
 
   this->synapses = synapses;
@@ -43,11 +30,13 @@ std::ostream &operator<<(std::ostream &os, const Neuron &neuron)
 {
   os << "NEURON ID: " << neuron.id << std::endl;
   os << "NEURON TYPE: " << DTMUtils::neuronTypeToString(neuron.type) << std::endl;
-  os << "ACTIVATION FUNCTION: " << DTMUtils::activationFunctionToString(neuron.activation);
+  os << "ACTIVATION FUNCTION: " << DTMUtils::activationFunctionToString(neuron.activation) << std::endl;
   os << "OUTGOING CONNECTIONS:" << std::endl;
   for (auto synapse : neuron.synapses)
   {
+    os << "-------------------------------------" << std::endl;
     os << synapse;
+    os << "-------------------------------------" << std::endl;
   }
   return os;
 }
@@ -73,7 +62,7 @@ void Neuron::addSynapse(Synapse newSynapse)
 
   if (synapses.size() == synapses.capacity())
   {
-    synapses.resize(synapses.size() + SYNAPSE_BUFFER_INTERVAL);
+    synapses.reserve(synapses.size() + SYNAPSE_BUFFER_INTERVAL);
   }
 
   synapses.push_back(newSynapse);
@@ -95,7 +84,7 @@ void Neuron::removeSynapse(size_t id)
   {
     if (synapses[index].id == id)
     {
-      synapses[index] = synapses[synapses.size()];
+      synapses[index] = synapses[synapses.size() - 1];
       (void)synapses.pop_back();
       doesSynapseExist = true;
     }

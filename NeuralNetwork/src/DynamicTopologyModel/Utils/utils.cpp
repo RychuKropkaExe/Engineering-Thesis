@@ -1,5 +1,25 @@
 #include "utils.h"
 
+
+/******************************************************************************
+ * @brief Matrix assert used for debugging
+ *
+ * @param expr Tested expresion
+ * @param file File name from which the assert was called
+ * @param line Line number from which the assert was called
+ * @param msg Message to display if the assert is false
+ *
+ * @return Nothing.
+ ******************************************************************************/
+void myAssert(bool expr, const char *file, int line, std::string msg)
+{
+    if (!expr)
+    {
+        std::cerr << file << " " << line << ": " << " ASSERT FAILED: " << msg << "\n";
+        abort();
+    }
+}
+
 /******************************************************************************
  * @brief Returns random double
  *

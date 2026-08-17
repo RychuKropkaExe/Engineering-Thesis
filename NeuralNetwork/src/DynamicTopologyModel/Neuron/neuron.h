@@ -19,7 +19,7 @@ using DTMUtils::ActivationE;
  * @public @param  synapses                Synapses going out from neuron
  * @private @param SYNAPSE_BUFFER_INTERVAL Initial size of synapse buffers
  *                                         and how much larger they become after
- *                                         each resize-ing.
+ *                                         each reserve-ing.
  ******************************************************************************/
 class Neuron
 {
@@ -40,7 +40,7 @@ public:
   * CONSTRUCTORS
   ******************************************************************************/
   Neuron() = default;
-  Neuron(size_t id, NeuronTypeE type, vector<Synapse> synapses, ActivationE activation);
+  Neuron(size_t id, NeuronTypeE type, ActivationE activation, vector<Synapse> synapses = vector<Synapse>{});
 
   /******************************************************************************
   * OPERATORS
