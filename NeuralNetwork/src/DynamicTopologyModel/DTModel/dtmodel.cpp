@@ -4,13 +4,12 @@
 /******************************************************************************
 * CONSTRUCTORS
 ******************************************************************************/
-DTModel::DTModel(size_t id, size_t inputSize, size_t outputSize, ActivationE outputActivation)
+DTModel::DTModel(size_t inputSize, size_t outputSize, ActivationE outputActivation)
 {
 
   assert(inputSize != 0);
   assert(outputSize != 0);
 
-  this->id = id;
   this->inputSize = inputSize;
   this->outputSize = outputSize;
 
@@ -45,7 +44,7 @@ DTModel::DTModel(size_t id, size_t inputSize, size_t outputSize, ActivationE out
 ******************************************************************************/
 std::ostream &operator<<(std::ostream &os, const DTModel &dtmodel)
 {
-  os << "DT NEURAL NETWORK WITH ID: " << dtmodel.id << std::endl;
+  os << "DT NEURAL NETWORK" << std::endl;
   os << "NUMBER OF INPUTS: " << dtmodel.inputSize << std::endl;
   os << "NUMBER OF OUTPUTS: " << dtmodel.outputSize << std::endl;
   os << "NUMBER OF NEURONS: " << dtmodel.neurons.size() << std::endl;
@@ -115,6 +114,11 @@ void DTModel::sortTopologically()
       {
         queue.push_back(outNeuronId);
       }
+
+      if (neurons[outNeuronIndex].depth <= neurons[inputNeuronIndex].depth)
+      {
+        neurons[outNeuronIndex].depth = neurons[inputNeuronIndex].depth + 1;
+      }
     }
 
   }
@@ -141,6 +145,11 @@ void DTModel::sortTopologically()
       if (neuronsConnectionNum[outNeuronIndex] == 0 && neurons[outNeuronIndex].type != NeuronTypeE::OUTPUT_NEURON)
       {
         queue.push_back(outNeuronId);
+      }
+
+      if (neurons[outNeuronIndex].depth <= neurons[neuronIndex].depth)
+      {
+        neurons[outNeuronIndex].depth = neurons[neuronIndex].depth + 1;
       }
     }
 
@@ -173,6 +182,43 @@ void DTModel::sortTopologically()
   indexMap = newIndexMap;
   neurons = sortedNeurons;
 
+}
+
+/******************************************************************************
+ * @brief Checks if all hidden neurons are reachable from input. By rule
+ *        dangling pointers are not allowed.
+ *
+ * @return if model is valid or not
+ ******************************************************************************/
+bool DTModel::validateModel()
+{
+
+  vector<bool> isNeuronReachable(neurons.size(), false);
+  vector<size_t> numberOfSynapses(neurons.size(), 0);
+
+  // Check each synapse to see which neurons are connected
+  for (size_t index = 0; index <  neurons.size(); index++)
+  {
+    numberOfSynapses[index] = neurons[index].synapses.size();
+
+    for (auto synapse: neurons[index].synapses)
+    {
+      size_t outNeuronId = synapse.outNeuronId;
+      size_t outNeuronIndex = indexMap[outNeuronId];
+      isNeuronReachable[outNeuronIndex] = true;
+    }
+  }
+
+  for (size_t index = 0; index < neurons.size(); index++)
+  {
+    if (neurons[index].type == NeuronTypeE::HIDDEN_NEURON && (!isNeuronReachable[index] ||
+        numberOfSynapses[index] == 0))
+    {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 /******************************************************************************

@@ -14,7 +14,13 @@ using std::map;
  *
  * @brief Represents a model with changing topology
  *
- * @public @param id          Synapse id
+ * @public @param inputSize   Number of inputs
+ * @public @param outputSize  Number of outputs
+ * @public @param indexMap    Mapping between neurons IDs and their indexes in list
+ * @public @param neurons     List of neurons
+ * @public @param isSorted    Indicates if neural network is topologically sorted at
+ *                            the moment
+ *
  ******************************************************************************/
 class DTModel
 {
@@ -23,7 +29,6 @@ public:
   * CLASS MEMBERS
   ******************************************************************************/
 
-  size_t id;
   size_t inputSize;
   size_t outputSize;
 
@@ -31,14 +36,13 @@ public:
 
   vector<Neuron> neurons;
 
-  vector<double> output;
-
   bool isSorted;
 
   /******************************************************************************
   * CONSTRUCTORS
   ******************************************************************************/
-  DTModel(size_t id, size_t inputSize, size_t outputSize, ActivationE outputActivation);
+  DTModel() = default;
+  DTModel(size_t inputSize, size_t outputSize, ActivationE outputActivation);
 
   /******************************************************************************
   * OPERATORS
@@ -57,6 +61,8 @@ public:
 
   void removeNeuron(size_t id, bool sortAfterRemove);
   void removeSynapse(size_t inNeuronId, size_t outNeuronId, bool sortAfterRemoveal);
+
+  bool validateModel();
 
   vector<double> feedForward(vector<double> input);
 

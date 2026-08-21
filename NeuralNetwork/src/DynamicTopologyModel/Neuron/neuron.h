@@ -14,6 +14,7 @@ using DTMUtils::ActivationE;
  * @brief Represents a single neuron in a dynamic topology network
  *
  * @public @param  id                      Neuron id
+ * @public @param  depth                   Neuron depth in network
  * @public @param  type                    Neuron type
  * @public @param  value                   Neuron value after applying weights and calculations
  * @public @param  synapses                Synapses going out from neuron
@@ -28,6 +29,7 @@ public:
    * CLASS MEMBERS
    ******************************************************************************/
   size_t id;
+  size_t depth;
   NeuronTypeE type;
   ActivationE activation;
 

@@ -20,6 +20,8 @@ Neuron::Neuron(size_t id, NeuronTypeE type, ActivationE activation, vector<Synap
   this->synapses = synapses;
 
   this->activation = activation;
+
+  this->depth = 0;
 }
 
 /******************************************************************************

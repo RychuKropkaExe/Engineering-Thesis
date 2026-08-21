@@ -21,9 +21,7 @@ TEST(DTModelTest, addSynapseTest)
   vector<size_t> inputNeuronsIds{0, 1, 2};
   vector<size_t> outputNeuronsIds{3, 4};
 
-  size_t testModelId = 0;
-
-  DTModel testModel(testModelId, inputSize, outputSize, ActivationE::NO_ACTIVATION);
+  DTModel testModel(inputSize, outputSize, ActivationE::NO_ACTIVATION);
 
   size_t synapseId = 0;
 
@@ -76,9 +74,7 @@ TEST(DTModelTest, addNeuronTest)
   vector<size_t> inputNeuronsIds{0, 1};
   vector<size_t> outputNeuronsIds{2, 3};
 
-  size_t testModelId = 0;
-
-  DTModel testModel(testModelId, inputSize, outputSize, ActivationE::NO_ACTIVATION);
+  DTModel testModel(inputSize, outputSize, ActivationE::NO_ACTIVATION);
 
   size_t synapseId = 0;
 
@@ -163,9 +159,7 @@ TEST(DTModelTest, removeNeuronTest)
   vector<size_t> inputNeuronsIds{0, 1};
   vector<size_t> outputNeuronsIds{2, 3};
 
-  size_t testModelId = 0;
-
-  DTModel testModel(testModelId, inputSize, outputSize, ActivationE::NO_ACTIVATION);
+  DTModel testModel(inputSize, outputSize, ActivationE::NO_ACTIVATION);
 
   size_t synapseId = 0;
 
@@ -236,9 +230,7 @@ TEST(DTModelTest, removeSynapseTest)
   vector<size_t> inputNeuronsIds{0, 1};
   vector<size_t> outputNeuronsIds{2, 3};
 
-  size_t testModelId = 0;
-
-  DTModel testModel(testModelId, inputSize, outputSize, ActivationE::NO_ACTIVATION);
+  DTModel testModel(inputSize, outputSize, ActivationE::NO_ACTIVATION);
 
   size_t synapseId = 0;
 
@@ -287,9 +279,7 @@ TEST(DTModelTest, topologicallSortingTest)
   vector<size_t> inputNeuronsIds{0, 1};
   vector<size_t> outputNeuronsIds{2, 3};
 
-  size_t testModelId = 0;
-
-  DTModel testModel(testModelId, inputSize, outputSize, ActivationE::NO_ACTIVATION);
+  DTModel testModel(inputSize, outputSize, ActivationE::NO_ACTIVATION);
 
   size_t synapseId = 0;
 
@@ -324,6 +314,7 @@ TEST(DTModelTest, topologicallSortingTest)
 
   vector<size_t> neuronsIdToAdd{4, 5};
 
+  // Add two hidden neurons between input and output layer
   for (size_t index = 0; index < neuronsIdToAdd.size(); index++)
   {
     Synapse inSynapse(synapseId, inputNeuronsIds[index], neuronsIdToAdd[index], 1.0);
@@ -370,6 +361,8 @@ TEST(DTModelTest, topologicallSortingTest)
   neuronMinimalIndexAfterSort = vector<size_t>{0, 0, 6, 6, 2, 2, 4, 4};
   neuronMaximalIndexAfterSort = vector<size_t>{1, 1, 7, 7, 3, 3, 5, 5};
 
+  vector<size_t> expectedDepth{0, 0, 3, 3, 1, 1, 2, 2};
+
   for (size_t index = 0; index < testModel.neurons.size(); index++)
   {
     size_t neuronIndex = testModel.indexMap[index];
@@ -377,7 +370,96 @@ TEST(DTModelTest, topologicallSortingTest)
     EXPECT_GE(neuronIndex, neuronMinimalIndexAfterSort[index]);
     EXPECT_LE(neuronIndex, neuronMaximalIndexAfterSort[index]);
 
+    EXPECT_EQ(testModel.neurons[neuronIndex].depth, expectedDepth[index]);
+
   }
+
+}
+
+/******************************************************************************
+ * @brief Tests model validation of Dynamic Topology Model
+ ******************************************************************************/
+TEST(DTModelTest, validateModelTest)
+{
+  size_t inputSize = 2;
+  size_t outputSize = 2;
+
+  vector<size_t> inputNeuronsIds{0, 1};
+  vector<size_t> outputNeuronsIds{2, 3};
+
+  DTModel testModel(inputSize, outputSize, ActivationE::NO_ACTIVATION);
+
+  size_t synapseId = 0;
+
+  // Connect every input to every output
+  for (size_t inputNeuronId : inputNeuronsIds)
+  {
+    for (size_t outputNeuronsId : outputNeuronsIds)
+    {
+      Synapse newSynapse(synapseId, inputNeuronId, outputNeuronsId, 1.0);
+      synapseId++;
+      testModel.addSynapse(newSynapse, false);
+    }
+  }
+
+  EXPECT_TRUE(testModel.validateModel());
+
+  vector<size_t> neuronsIdToAdd{4, 5};
+
+  // Add two hidden neurons between input and output layer
+  for (size_t index = 0; index < neuronsIdToAdd.size(); index++)
+  {
+    Synapse inSynapse(synapseId, inputNeuronsIds[index], neuronsIdToAdd[index], 1.0);
+    synapseId++;
+    Synapse outSynapse(synapseId, neuronsIdToAdd[index], outputNeuronsIds[index], 1.0);
+    synapseId++;
+
+    Neuron neuronToAdd(neuronsIdToAdd[index], NeuronTypeE::HIDDEN_NEURON, ActivationE::NO_ACTIVATION);
+
+    testModel.addNeuron(neuronToAdd, inSynapse, outSynapse, true);
+  }
+
+  EXPECT_TRUE(testModel.validateModel());
+
+  // Remove one of added synapses, invalidating the model
+  testModel.removeSynapse(inputNeuronsIds[0], neuronsIdToAdd[0], false);
+
+  EXPECT_FALSE(testModel.validateModel());
+
+  // Add the removed synapse back
+  testModel.addSynapse(Synapse(synapseId,inputNeuronsIds[0], neuronsIdToAdd[0], 1.0), false);
+  synapseId++;
+
+  EXPECT_TRUE(testModel.validateModel());
+
+  // Add "third layer" to the network
+  vector<size_t> previousNeuronsIds{4, 5};
+  neuronsIdToAdd = vector<size_t>{6, 7};
+
+  for (size_t index = 0; index < neuronsIdToAdd.size(); index++)
+  {
+    Synapse inSynapse(synapseId, previousNeuronsIds[index], neuronsIdToAdd[index], 1.0);
+    synapseId++;
+    Synapse outSynapse(synapseId, neuronsIdToAdd[index], outputNeuronsIds[index], 1.0);
+    synapseId++;
+
+    Neuron neuronToAdd(neuronsIdToAdd[index], NeuronTypeE::HIDDEN_NEURON, ActivationE::NO_ACTIVATION);
+
+    testModel.addNeuron(neuronToAdd, inSynapse, outSynapse, true);
+  }
+
+  EXPECT_TRUE(testModel.validateModel());
+
+  // Remove one of added synapses, invalidating the model
+  testModel.removeSynapse(previousNeuronsIds[0], neuronsIdToAdd[0], false);
+
+  EXPECT_FALSE(testModel.validateModel());
+
+  // Add the removed synapse back
+  testModel.addSynapse(Synapse(synapseId, previousNeuronsIds[0], neuronsIdToAdd[0], 1.0), false);
+  synapseId++;
+
+  EXPECT_TRUE(testModel.validateModel());
 
 }
 
@@ -451,9 +533,7 @@ TEST(DTModelTest, feedForwardTest)
   vector<size_t> inputNeuronsIds{0, 1, 2};
   vector<size_t> outputNeuronsIds{3, 4};
 
-  size_t testModelId = 0;
-
-  DTModel testModel(testModelId, inputSize, outputSize, ActivationE::RELU);
+  DTModel testModel(inputSize, outputSize, ActivationE::RELU);
 
   testModel.setBias(outputNeuronsIds[0], 1.0);
   testModel.setBias(outputNeuronsIds[1], 1.0);
