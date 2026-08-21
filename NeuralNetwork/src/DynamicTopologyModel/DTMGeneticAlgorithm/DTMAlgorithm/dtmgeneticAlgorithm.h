@@ -6,6 +6,7 @@
 #include "hyperparameters.h"
 #include "dtmodel.h"
 #include "dtindividual.h"
+#include "gaparents.h"
 
 using std::vector;
 using std::pair;
@@ -53,6 +54,10 @@ public:
   void initializePopulation();
   size_t getNewUniqueSynapseId();
   size_t getNewUniqueIndividualCounter();
+
+  vector<vector<size_t>> divideIntoSpecies();
+
+  vector<vector<GAParents>> tournamentSelection(vector<vector<size_t>> species);
 
 private:
   /******************************************************************************

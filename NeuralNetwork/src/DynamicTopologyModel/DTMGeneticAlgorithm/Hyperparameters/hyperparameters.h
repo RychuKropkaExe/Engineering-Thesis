@@ -25,6 +25,10 @@ public:
   size_t inputSize{};
   size_t outputSize{};
 
+  size_t gracePeriodLength{};
+
+  size_t tournamentSize;
+
   ActivationE outputActivation;
 
   /******************************************************************************

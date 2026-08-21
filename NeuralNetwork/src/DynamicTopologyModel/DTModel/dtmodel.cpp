@@ -119,6 +119,11 @@ void DTModel::sortTopologically()
       {
         neurons[outNeuronIndex].depth = neurons[inputNeuronIndex].depth + 1;
       }
+
+      if (neurons[outNeuronIndex].depth > maxDepth)
+      {
+        maxDepth = neurons[outNeuronIndex].depth;
+      }
     }
 
   }

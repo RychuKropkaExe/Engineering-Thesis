@@ -16,6 +16,7 @@ using std::map;
  *
  * @public @param inputSize   Number of inputs
  * @public @param outputSize  Number of outputs
+ * @public @param maxDepth    Maximum depth of a neuron
  * @public @param indexMap    Mapping between neurons IDs and their indexes in list
  * @public @param neurons     List of neurons
  * @public @param isSorted    Indicates if neural network is topologically sorted at
@@ -31,6 +32,7 @@ public:
 
   size_t inputSize;
   size_t outputSize;
+  size_t maxDepth;
 
   map<size_t, size_t> indexMap;
 
