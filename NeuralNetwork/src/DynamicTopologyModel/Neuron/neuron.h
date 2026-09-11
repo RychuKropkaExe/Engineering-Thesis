@@ -13,11 +13,15 @@ using DTMUtils::ActivationE;
  *
  * @brief Represents a single neuron in a dynamic topology network
  *
- * @public @param  id                      Neuron id
+ * @public @param  id                      Neuron unique id
+ * @public @param  depthId                 Neuron ID in relation to its depth. Changes dynamically,
+ *                                         is not unique and can be used to compare two neurons in
+ *                                         different networks.
  * @public @param  depth                   Neuron depth in network
  * @public @param  type                    Neuron type
  * @public @param  value                   Neuron value after applying weights and calculations
- * @public @param  synapses                Synapses going out from neuron
+ * @public @param  inSynapses              Synapses going into neuron
+ * @public @param  outSynapses             Synapses going out from neuron
  * @private @param SYNAPSE_BUFFER_INTERVAL Initial size of synapse buffers
  *                                         and how much larger they become after
  *                                         each reserve-ing.
@@ -29,20 +33,22 @@ public:
    * CLASS MEMBERS
    ******************************************************************************/
   size_t id;
+  size_t depthId{0};
   size_t depth;
   NeuronTypeE type;
   ActivationE activation;
 
-  double value;
+  double value{0.0};
   double bias;
 
-  vector<Synapse> synapses;
+  vector<Synapse> inSynapses;
+  vector<Synapse> outSynapses;
 
   /******************************************************************************
   * CONSTRUCTORS
   ******************************************************************************/
   Neuron() = default;
-  Neuron(size_t id, NeuronTypeE type, ActivationE activation, vector<Synapse> synapses = vector<Synapse>{});
+  Neuron(size_t id, NeuronTypeE type, ActivationE activation, vector<Synapse> outSynapses = vector<Synapse>{});
 
   /******************************************************************************
   * OPERATORS
@@ -52,7 +58,8 @@ public:
   /******************************************************************************
   * UTILITIES
   ******************************************************************************/
-  void addSynapse(Synapse newSynapse);
+  void addOutSynapse(Synapse newSynapse);
+  void addInSynapse(Synapse newSynapse);
   void removeSynapse(size_t id);
 
   void activate();

@@ -5,7 +5,7 @@
  * CONSTRUCTORS
  ******************************************************************************/
 
-Neuron::Neuron(size_t id, NeuronTypeE type, ActivationE activation, vector<Synapse> synapses)
+Neuron::Neuron(size_t id, NeuronTypeE type, ActivationE activation, vector<Synapse> outSynapses)
 {
   this->id = id;
   this->type = type;
@@ -14,10 +14,10 @@ Neuron::Neuron(size_t id, NeuronTypeE type, ActivationE activation, vector<Synap
 
   if (type == NeuronTypeE::OUTPUT_NEURON)
   {
-    assert(synapses.size() == 0);
+    assert(outSynapses.size() == 0);
   }
 
-  this->synapses = synapses;
+  this->outSynapses = outSynapses;
 
   this->activation = activation;
 
@@ -34,7 +34,7 @@ std::ostream &operator<<(std::ostream &os, const Neuron &neuron)
   os << "NEURON TYPE: " << DTMUtils::neuronTypeToString(neuron.type) << std::endl;
   os << "ACTIVATION FUNCTION: " << DTMUtils::activationFunctionToString(neuron.activation) << std::endl;
   os << "OUTGOING CONNECTIONS:" << std::endl;
-  for (auto synapse : neuron.synapses)
+  for (auto synapse : neuron.outSynapses)
   {
     os << "-------------------------------------" << std::endl;
     os << synapse;
@@ -54,20 +54,43 @@ std::ostream &operator<<(std::ostream &os, const Neuron &neuron)
  * @param newSynapse Synapse to be added
  *
  ******************************************************************************/
-void Neuron::addSynapse(Synapse newSynapse)
+void Neuron::addOutSynapse(Synapse newSynapse)
 {
 
-  for (Synapse synapse : synapses)
+  for (Synapse synapse : outSynapses)
   {
     assert(synapse.id != newSynapse.id);
   }
 
-  if (synapses.size() == synapses.capacity())
+  if (outSynapses.size() == outSynapses.capacity())
   {
-    synapses.reserve(synapses.size() + SYNAPSE_BUFFER_INTERVAL);
+    outSynapses.reserve(outSynapses.size() + SYNAPSE_BUFFER_INTERVAL);
   }
 
-  synapses.push_back(newSynapse);
+  outSynapses.push_back(newSynapse);
+
+}
+
+/******************************************************************************
+ * @brief Add a new synapse going out from neuron
+ *
+ * @param newSynapse Synapse to be added
+ *
+ ******************************************************************************/
+void Neuron::addInSynapse(Synapse newSynapse)
+{
+
+  for (Synapse synapse : inSynapses)
+  {
+    assert(synapse.id != newSynapse.id);
+  }
+
+  if (inSynapses.size() == inSynapses.capacity())
+  {
+    inSynapses.reserve(inSynapses.size() + SYNAPSE_BUFFER_INTERVAL);
+  }
+
+  inSynapses.push_back(newSynapse);
 
 }
 
@@ -82,12 +105,22 @@ void Neuron::removeSynapse(size_t id)
 
   bool doesSynapseExist = false;
 
-  for (size_t index = 0; index < synapses.size(); index++)
+  for (size_t index = 0; index < outSynapses.size(); index++)
   {
-    if (synapses[index].id == id)
+    if (outSynapses[index].id == id)
     {
-      synapses[index] = synapses[synapses.size() - 1];
-      (void)synapses.pop_back();
+      outSynapses[index] = outSynapses[outSynapses.size() - 1];
+      (void)outSynapses.pop_back();
+      doesSynapseExist = true;
+    }
+  }
+
+  for (size_t index = 0; index < inSynapses.size(); index++)
+  {
+    if (inSynapses[index].id == id)
+    {
+      inSynapses[index] = inSynapses[inSynapses.size() - 1];
+      (void)inSynapses.pop_back();
       doesSynapseExist = true;
     }
   }

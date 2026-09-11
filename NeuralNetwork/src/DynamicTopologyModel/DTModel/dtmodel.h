@@ -14,13 +14,14 @@ using std::map;
  *
  * @brief Represents a model with changing topology
  *
- * @public @param inputSize   Number of inputs
- * @public @param outputSize  Number of outputs
- * @public @param maxDepth    Maximum depth of a neuron
- * @public @param indexMap    Mapping between neurons IDs and their indexes in list
- * @public @param neurons     List of neurons
- * @public @param isSorted    Indicates if neural network is topologically sorted at
- *                            the moment
+ * @public @param inputSize      Number of inputs
+ * @public @param outputSize     Number of outputs
+ * @public @param maxDepth       Maximum depth of a neuron
+ * @public @param indexMap       Mapping between neurons IDs and their indexes in list
+ *                               depth*CONST_VALUE + counter
+ * @public @param neurons        List of neurons
+ * @public @param isSorted       Indicates if neural network is topologically sorted at
+ *                               the moment
  *
  ******************************************************************************/
 class DTModel
@@ -32,7 +33,7 @@ public:
 
   size_t inputSize;
   size_t outputSize;
-  size_t maxDepth;
+  size_t maxDepth{0};
 
   map<size_t, size_t> indexMap;
 
@@ -57,7 +58,7 @@ public:
   void sortTopologically();
 
   void addNeuron(Neuron neuron, Synapse inSynapse, Synapse outSynapse, bool sortAfterAdding);
-  void addSynapse(Synapse newSynapse, bool sortAfterAdding);
+  void addOutSynapse(Synapse newSynapse, bool sortAfterAdding);
 
   void setBias(size_t neuronId, double value);
 

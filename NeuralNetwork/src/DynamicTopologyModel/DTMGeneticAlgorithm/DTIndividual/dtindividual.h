@@ -4,9 +4,14 @@
 /******************************************************************************
  * @class DTIndividual
  *
- * @brief Represents an indivudal and its dtindividual
+ * @brief Represents an individual in the dynamic topology genetic algorithm
  *
- * @public @param id          Synapse id
+ * @public @param id                  Individual unique id
+ * @public @param generation          Generation in which the individual was created
+ * @public @param model               Dynamic topology model represented by the individual
+ * @public @param fitness             Fitness value assigned to the individual
+ * @public @param gracePeriodLength   Number of generations for which the individual is
+ *                                    protected from removal
  ******************************************************************************/
 class DTIndividual
 {
@@ -20,7 +25,7 @@ public:
 
   DTModel model;
 
-  double fitness;
+  double fitness{0.0};
 
   size_t gracePeriodLength{0};
 

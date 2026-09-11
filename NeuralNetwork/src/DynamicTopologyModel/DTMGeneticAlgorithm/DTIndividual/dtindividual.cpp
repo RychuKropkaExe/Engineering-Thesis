@@ -1,6 +1,7 @@
 #include "dtindividual.h"
 #include <cassert>
 #include <cmath>
+#include <utility>
 /******************************************************************************
  * CONSTRUCTORS
  ******************************************************************************/
@@ -8,7 +9,7 @@
 DTIndividual::DTIndividual(size_t id, size_t generation, DTModel model)
 {
   this->id = id;
-  this->model = model;
+  this->model = std::move(model);
   this->generation = generation;
 }
 
