@@ -1,8 +1,2 @@
-target_sources(MainBuild PRIVATE
-    dtmgeneticAlgorithm.cpp
-    dtmgeneticInitialization.cpp
-    dtmgeneticSpeciation.cpp
-    dtmgeneticSelection.cpp
-    dtmgeneticCrossover.cpp
-    dtmgeneticAlgorithm.h
-)
+file(GLOB DTMAlgorithm *.cpp *.h)
+target_sources(MainBuild PRIVATE ${DTMAlgorithm})

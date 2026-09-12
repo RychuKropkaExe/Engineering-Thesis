@@ -39,6 +39,19 @@ enum class ActivationE
     NO_ACTIVATION
 };
 
+/******************************************************************************
+ * @enum MutationE
+ *
+ * @brief Selects a topology mutation for a dynamic-topology individual
+ ******************************************************************************/
+enum class MutationE
+{
+    ADD_NEURON,     // Insert a hidden neuron with an incoming and outgoing synapse.
+    REMOVE_NEURON,  // Remove a hidden neuron and its incident synapses.
+    ADD_SYNAPSE,    // Add a forward connection between two existing neurons.
+    REMOVE_SYNAPSE  // Remove a connection without leaving hidden neurons dangling.
+};
+
 std::string neuronTypeToString(NeuronTypeE type);
 std::string activationFunctionToString(ActivationE activation);
 

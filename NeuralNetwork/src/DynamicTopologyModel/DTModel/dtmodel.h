@@ -59,6 +59,7 @@ public:
 
   void addNeuron(Neuron neuron, Synapse inSynapse, Synapse outSynapse, bool sortAfterAdding);
   void addOutSynapse(Synapse newSynapse, bool sortAfterAdding);
+  bool hasSynapse(size_t inNeuronId, size_t outNeuronId) const;
 
   void setBias(size_t neuronId, double value);
 

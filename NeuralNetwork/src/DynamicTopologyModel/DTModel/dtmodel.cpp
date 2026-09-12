@@ -341,6 +341,36 @@ void DTModel::addNeuron(Neuron neuron, Synapse inSynapse, Synapse outSynapse, bo
 }
 
 /******************************************************************************
+ * @brief Checks whether a directed connection already exists
+ *
+ * Uses the source neuron's outgoing synapses, the model's canonical connection
+ * storage. Disabled synapses also count as existing connections. Neither a
+ * missing neuron ID nor this query modifies indexMap or the model.
+ *
+ * @param inNeuronId  ID of the source neuron
+ * @param outNeuronId ID of the destination neuron
+ *
+ * @return True if a synapse connects these endpoints in this direction
+ ******************************************************************************/
+bool DTModel::hasSynapse(size_t inNeuronId, size_t outNeuronId) const
+{
+  const auto source = indexMap.find(inNeuronId);
+  if (source == indexMap.end())
+  {
+    return false;
+  }
+
+  for (const Synapse &synapse : neurons[source->second].outSynapses)
+  {
+    if (synapse.inNeuronId == inNeuronId && synapse.outNeuronId == outNeuronId)
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+/******************************************************************************
  * @brief Adds a new connection to the network
  *
  * @param newSynapse      New connection
@@ -492,6 +522,7 @@ void DTModel::removeNeuron(size_t id, bool sortAfterRemove)
     }
   }
 
+  isSorted = false;
   if (sortAfterRemove)
   {
     sortTopologically();
@@ -539,8 +570,8 @@ void DTModel::removeSynapse(size_t inNeuronId, size_t outNeuronId, bool sortAfte
 
   for (size_t index = 0; index < neurons[outNeuronIndex].inSynapses.size(); index++)
   {
-    size_t synapseInNeuronId = neurons[outNeuronIndex].outSynapses[index].inNeuronId;
-    size_t synapseOutNeuronId = neurons[outNeuronIndex].outSynapses[index].outNeuronId;
+    size_t synapseInNeuronId = neurons[outNeuronIndex].inSynapses[index].inNeuronId;
+    size_t synapseOutNeuronId = neurons[outNeuronIndex].inSynapses[index].outNeuronId;
 
     if (synapseInNeuronId == inNeuronId && synapseOutNeuronId == outNeuronId)
     {
@@ -551,6 +582,7 @@ void DTModel::removeSynapse(size_t inNeuronId, size_t outNeuronId, bool sortAfte
 
   }
 
+  isSorted = false;
   if (sortAfterRemoveal)
   {
     sortTopologically();

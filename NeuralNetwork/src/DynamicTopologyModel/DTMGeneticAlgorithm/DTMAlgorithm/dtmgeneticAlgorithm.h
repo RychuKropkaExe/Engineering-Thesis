@@ -12,6 +12,7 @@ using std::vector;
 using std::pair;
 using DTMUtils::NeuronTypeE;
 using DTMUtils::ActivationE;
+using DTMUtils::MutationE;
 
 /******************************************************************************
  * @class SimilarDTModelElements
@@ -108,7 +109,22 @@ public:
 
   void crossover(const vector<vector<GAParents>> &parentsLists);
 
+  /******************************************************************************
+  * MUTATIONS
+  *
+  * Each call makes one attempt on a valid acyclic model. Addition mutations
+  * require model.isSorted. Failure leaves the individual unchanged; success
+  * sorts the model and resets the individual's grace period.
+  ******************************************************************************/
+  bool addNeuronMutation(DTIndividual &individual);
+  bool removeNeuronMutation(DTIndividual &individual);
+  bool addSynapseMutation(DTIndividual &individual);
+  bool removeSynapseMutation(DTIndividual &individual);
+  bool mutate(DTIndividual &individual, MutationE mutation);
+
 private:
+  void synchronizeMutationIds(const DTModel &model);
+
   /******************************************************************************
   * CLASS MEMBERS
   ******************************************************************************/
