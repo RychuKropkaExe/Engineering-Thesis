@@ -3,6 +3,10 @@
 #include "modelTest.h"
 #include "trainingDataTest.h"
 #include "dtmodelTest.h"
+#include "dtmodelTopologyTest.h"
+#include "dtmodelFeedForwardTest.h"
+#include "dtmgeneticCrossoverTest.h"
+#include "dtmgeneticMutationTest.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <time.h>
