@@ -307,7 +307,7 @@ vector<vector<GAParents>> DTMGeneticAlgorithm::tournamentSelection(vector<vector
 
         size_t bestIndividualIndex = 0;
 
-        size_t bestFitness = 0;
+        double bestFitness = 0;
 
         for (auto individualIndex : tournament)
         {
@@ -582,6 +582,18 @@ void DTMGeneticAlgorithm::crossover(const vector<vector<GAParents>> &parentsList
       const bool firstIsDominant = firstParent.fitness >= secondParent.fitness;
       const DTModel &dominantModel = firstIsDominant ? firstModel : secondModel;
 
+      size_t gracePeriodLength = firstParent.gracePeriodLength;
+
+      if (gracePeriodLength < secondParent.gracePeriodLength)
+      {
+        gracePeriodLength = secondParent.gracePeriodLength;
+      }
+
+      if (gracePeriodLength != 0)
+      {
+        gracePeriodLength--;
+      }
+
       assert(firstModel.inputSize == secondModel.inputSize);
       assert(firstModel.outputSize == secondModel.outputSize);
 
@@ -695,6 +707,9 @@ void DTMGeneticAlgorithm::crossover(const vector<vector<GAParents>> &parentsList
       offspringModel.sortTopologically();
       newPopulation.emplace_back(getNewUniqueIndividualCounter(), currentGeneration,
                                  std::move(offspringModel));
+      // To avoid copy we use emplace_back but after that we need to update gracePeriodLength
+      // Since its not a part of the constructor.
+      newPopulation[newPopulation.size() - 1].gracePeriodLength = gracePeriodLength;
     }
   }
 
