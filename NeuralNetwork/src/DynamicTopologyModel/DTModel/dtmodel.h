@@ -68,7 +68,7 @@ public:
 
   bool validateModel();
 
-  vector<double> feedForward(vector<double> input);
+  vector<double> feedForward(const vector<double> &input);
 
 private:
   /******************************************************************************

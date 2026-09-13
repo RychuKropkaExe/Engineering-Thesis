@@ -6,6 +6,7 @@
 #include "dtmodelTopologyTest.h"
 #include "dtmodelFeedForwardTest.h"
 #include "dtmgeneticCrossoverTest.h"
+#include "dtmgeneticFitnessTest.h"
 #include "dtmgeneticMutationTest.h"
 #include <gtest/gtest.h>
 #include <iostream>

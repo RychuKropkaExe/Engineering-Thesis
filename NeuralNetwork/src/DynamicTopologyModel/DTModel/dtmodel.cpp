@@ -594,10 +594,10 @@ void DTModel::removeSynapse(size_t inNeuronId, size_t outNeuronId, bool sortAfte
 /******************************************************************************
  * @brief Runs input through neural netowrk
  *
- * @param input Neural network input
+ * @param input Neural network input, read by reference without copying
  *
  ******************************************************************************/
-vector<double> DTModel::feedForward(vector<double> input)
+vector<double> DTModel::feedForward(const vector<double> &input)
 {
 
   if (!isSorted)

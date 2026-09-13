@@ -8,6 +8,8 @@
 #include "dtindividual.h"
 #include "gaparents.h"
 
+class TrainingData;
+
 using std::vector;
 using std::pair;
 using DTMUtils::NeuronTypeE;
@@ -108,6 +110,12 @@ public:
       const vector<Synapse> &similarSynapses);
 
   void crossover(const vector<vector<GAParents>> &parentsLists);
+
+  /******************************************************************************
+  * FITNESS
+  ******************************************************************************/
+  static double calculateMMSE(DTModel &model, const TrainingData &trainingData);
+  static void evaluateIndividual(DTIndividual &individual, const TrainingData &trainingData);
 
   /******************************************************************************
   * MUTATIONS
