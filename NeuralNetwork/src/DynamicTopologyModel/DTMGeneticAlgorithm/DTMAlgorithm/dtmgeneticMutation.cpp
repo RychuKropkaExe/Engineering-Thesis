@@ -1,4 +1,5 @@
 #include "dtmgeneticAlgorithm.h"
+#include "logger.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -473,22 +474,30 @@ bool DTMGeneticAlgorithm::changeActivationMutation(DTIndividual &individual)
  ******************************************************************************/
 bool DTMGeneticAlgorithm::mutate(DTIndividual &individual, MutationE mutation)
 {
+  bool changed = false;
   switch (mutation)
   {
   case MutationE::ADD_NEURON:
-    return addNeuronMutation(individual);
+    changed = addNeuronMutation(individual);
+    break;
   case MutationE::REMOVE_NEURON:
-    return removeNeuronMutation(individual);
+    changed = removeNeuronMutation(individual);
+    break;
   case MutationE::ADD_SYNAPSE:
-    return addSynapseMutation(individual);
+    changed = addSynapseMutation(individual);
+    break;
   case MutationE::REMOVE_SYNAPSE:
-    return removeSynapseMutation(individual);
+    changed = removeSynapseMutation(individual);
+    break;
   case MutationE::ADJUST_WEIGHT:
-    return adjustWeightMutation(individual);
+    changed = adjustWeightMutation(individual);
+    break;
   case MutationE::ADJUST_BIAS:
-    return adjustBiasMutation(individual);
+    changed = adjustBiasMutation(individual);
+    break;
   case MutationE::CHANGE_ACTIVATION:
-    return changeActivationMutation(individual);
+    changed = changeActivationMutation(individual);
+    break;
   }
-  return false;
+  return changed;
 }

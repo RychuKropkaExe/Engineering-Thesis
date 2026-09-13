@@ -1,4 +1,5 @@
 #include "dtmodel.h"
+#include "logger.h"
 #include <cassert>
 #include <utility>
 
@@ -270,6 +271,7 @@ bool DTModel::validateModel()
  ******************************************************************************/
 void DTModel::addNeuron(Neuron neuron, Synapse inSynapse, Synapse outSynapse, bool sortAfterAdding)
 {
+  TIME_MEASURE_BEGIN(DTM_MODEL_ADD_NEURON);
 
   for (Neuron n : neurons)
   {
@@ -329,7 +331,7 @@ void DTModel::addNeuron(Neuron neuron, Synapse inSynapse, Synapse outSynapse, bo
   {
     isSorted = false;
   }
-
+  TIME_MEASURE_END(DTM_MODEL_ADD_NEURON);
 }
 
 /******************************************************************************
@@ -372,6 +374,7 @@ bool DTModel::hasSynapse(size_t inNeuronId, size_t outNeuronId) const
  ******************************************************************************/
 void DTModel::addOutSynapse(Synapse newSynapse, bool sortAfterAdding)
 {
+  TIME_MEASURE_BEGIN(DTM_MODEL_ADD_OUT_SYNAPSE);
 
   size_t inNeuronId = newSynapse.inNeuronId;
   size_t outNeuronId = newSynapse.outNeuronId;
@@ -411,7 +414,7 @@ void DTModel::addOutSynapse(Synapse newSynapse, bool sortAfterAdding)
   {
     isSorted = false;
   }
-
+  TIME_MEASURE_END(DTM_MODEL_ADD_OUT_SYNAPSE);
 }
 
 /******************************************************************************
@@ -443,6 +446,7 @@ void DTModel::setBias(size_t neuronId, double value)
  ******************************************************************************/
 void DTModel::removeNeuron(size_t id, bool sortAfterRemove)
 {
+  TIME_MEASURE_BEGIN(DTM_MODEL_REMOVE_NEURON);
   // input and output neurons cannot be removed;
   assert(id >= inputSize + outputSize);
 
@@ -520,7 +524,7 @@ void DTModel::removeNeuron(size_t id, bool sortAfterRemove)
     sortTopologically();
     isSorted = true;
   }
-
+  TIME_MEASURE_END(DTM_MODEL_REMOVE_NEURON);
 }
 
 /******************************************************************************
@@ -532,6 +536,7 @@ void DTModel::removeNeuron(size_t id, bool sortAfterRemove)
  ******************************************************************************/
 void DTModel::removeSynapse(size_t inNeuronId, size_t outNeuronId, bool sortAfterRemoveal)
 {
+  TIME_MEASURE_BEGIN(DTM_MODEL_REMOVE_SYNAPSE);
   // No synapse can feed into input neurons
   assert(outNeuronId >= inputSize);
 
@@ -580,7 +585,7 @@ void DTModel::removeSynapse(size_t inNeuronId, size_t outNeuronId, bool sortAfte
     sortTopologically();
     isSorted = true;
   }
-
+  TIME_MEASURE_END(DTM_MODEL_REMOVE_SYNAPSE);
 }
 
 /******************************************************************************
@@ -591,6 +596,12 @@ void DTModel::removeSynapse(size_t inNeuronId, size_t outNeuronId, bool sortAfte
  ******************************************************************************/
 vector<double> DTModel::feedForward(const vector<double> &input)
 {
+  // Per-sample logging is extremely costly during fitness evaluation; enable
+  // this detailed timer only at the highest logging priority.
+  if (MAX_DEBUG_PRIO >= HEAVY_LOGS)
+  {
+    TIME_MEASURE_BEGIN(DTM_MODEL_FEED_FORWARD);
+  }
 
   if (!isSorted)
   {
@@ -642,6 +653,10 @@ vector<double> DTModel::feedForward(const vector<double> &input)
 
   }
 
+  if (MAX_DEBUG_PRIO >= HEAVY_LOGS)
+  {
+    TIME_MEASURE_END(DTM_MODEL_FEED_FORWARD);
+  }
   return output;
 
 }

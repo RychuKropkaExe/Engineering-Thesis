@@ -62,4 +62,6 @@ public:
 #else
 #define LOG(...)
 #define COND_LOG(...)
+#define TIME_MEASURE_BEGIN(EVENT_NAME)
+#define TIME_MEASURE_END(EVENT_NAME)
 #endif

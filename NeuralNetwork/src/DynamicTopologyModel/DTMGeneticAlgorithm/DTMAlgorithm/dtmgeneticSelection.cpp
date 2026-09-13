@@ -1,4 +1,5 @@
 #include "dtmgeneticAlgorithm.h"
+#include "logger.h"
 #include <cassert>
 #include <cstdlib>
 
@@ -16,6 +17,7 @@
 vector<vector<GAParents>> DTMGeneticAlgorithm::tournamentSelection(
     const vector<vector<size_t>> &species)
 {
+  TIME_MEASURE_BEGIN(DTM_TOURNAMENT_SELECTION);
   assert(hyperparameters.tournamentSize > 0);
   vector<vector<GAParents>> parentsLists(species.size());
 
@@ -57,5 +59,6 @@ vector<vector<GAParents>> DTMGeneticAlgorithm::tournamentSelection(
       parents.push_back(pair);
     }
   }
+  TIME_MEASURE_END(DTM_TOURNAMENT_SELECTION);
   return parentsLists;
 }

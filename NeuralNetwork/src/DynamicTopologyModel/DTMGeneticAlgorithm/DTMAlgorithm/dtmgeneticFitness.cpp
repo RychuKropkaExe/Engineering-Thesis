@@ -1,4 +1,5 @@
 #include "dtmgeneticAlgorithm.h"
+#include "logger.h"
 #include "trainingData.h"
 #include <cassert>
 
@@ -42,7 +43,6 @@ double DTMGeneticAlgorithm::calculateMMSE(DTModel &model, const TrainingData &tr
       totalSquaredError += difference * difference;
     }
   }
-
   return totalSquaredError / static_cast<double>(trainingData.numOfSamples);
 }
 

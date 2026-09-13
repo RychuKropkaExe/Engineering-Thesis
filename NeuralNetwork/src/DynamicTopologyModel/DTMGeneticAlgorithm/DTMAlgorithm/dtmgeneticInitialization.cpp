@@ -1,4 +1,5 @@
 #include "dtmgeneticAlgorithm.h"
+#include "logger.h"
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -14,6 +15,7 @@
  ******************************************************************************/
 void DTMGeneticAlgorithm::initializePopulation()
 {
+  TIME_MEASURE_BEGIN(DTM_POPULATION_INITIALIZATION);
   assert(hyperparameters.populationSize != 0);
 
   population.resize(hyperparameters.populationSize);
@@ -71,5 +73,5 @@ void DTMGeneticAlgorithm::initializePopulation()
     model.sortTopologically();
     population[index] = DTIndividual(getNewUniqueIndividualCounter(), 0, std::move(model));
   }
-
+  TIME_MEASURE_END(DTM_POPULATION_INITIALIZATION);
 }

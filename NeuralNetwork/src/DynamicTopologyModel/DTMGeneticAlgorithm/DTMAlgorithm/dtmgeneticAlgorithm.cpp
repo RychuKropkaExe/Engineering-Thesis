@@ -1,4 +1,5 @@
 #include "dtmgeneticAlgorithm.h"
+#include "logger.h"
 #include "trainingData.h"
 #include <algorithm>
 #include <cstdlib>
@@ -140,6 +141,8 @@ DTIndividual DTMGeneticAlgorithm::run(size_t numberOfGenerations,
     }
   }
 
+  // The run timer includes calls to the individually timed GA functions.
+  TIME_MEASURE_BEGIN(DTM_GENETIC_RUN);
   currentGeneration = 0;
   initializePopulation();
   std::optional<DTIndividual> bestIndividual;
@@ -148,6 +151,8 @@ DTIndividual DTMGeneticAlgorithm::run(size_t numberOfGenerations,
   for (size_t generation = 0; generation < numberOfGenerations; generation++)
   {
     const auto species = divideIntoSpecies();
+
+    TIME_MEASURE_BEGIN(DTM_EVALUATE_FITNESS);
     for (DTIndividual &individual : population)
     {
       evaluateIndividual(individual, trainingData);
@@ -158,11 +163,14 @@ DTIndividual DTMGeneticAlgorithm::run(size_t numberOfGenerations,
         bestIndividual = individual;
       }
     }
+    TIME_MEASURE_END(DTM_EVALUATE_FITNESS);
 
     const auto parents = tournamentSelection(species);
+
     currentGeneration++;
     crossover(parents);
 
+    TIME_MEASURE_BEGIN(DTM_MUTATE_POPULATION);
     for (size_t typeIndex = 0; typeIndex < hyperparameters.mutationTypes.size(); typeIndex++)
     {
       std::iota(mutationIndexes.begin(), mutationIndexes.end(), 0);
@@ -176,7 +184,9 @@ DTIndividual DTMGeneticAlgorithm::run(size_t numberOfGenerations,
         mutate(population[mutationIndexes[index]], hyperparameters.mutationTypes[typeIndex]);
       }
     }
+    TIME_MEASURE_END(DTM_MUTATE_POPULATION);
   }
 
+  TIME_MEASURE_END(DTM_GENETIC_RUN);
   return std::move(*bestIndividual);
 }

@@ -1,4 +1,5 @@
 #include "dtmgeneticAlgorithm.h"
+#include "logger.h"
 #include <algorithm>
 
 /******************************************************************************
@@ -12,8 +13,10 @@
  ******************************************************************************/
 vector<vector<size_t>> DTMGeneticAlgorithm::divideIntoSpecies()
 {
+  TIME_MEASURE_BEGIN(DTM_SPECIATION);
   if (population.empty())
   {
+    TIME_MEASURE_END(DTM_SPECIATION);
     return {};
   }
 
@@ -41,5 +44,6 @@ vector<vector<size_t>> DTMGeneticAlgorithm::divideIntoSpecies()
   {
     species[population[index].model.maxDepth].push_back(index);
   }
+  TIME_MEASURE_END(DTM_SPECIATION);
   return species;
 }

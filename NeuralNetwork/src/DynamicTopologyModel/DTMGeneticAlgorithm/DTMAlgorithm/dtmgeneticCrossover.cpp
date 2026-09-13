@@ -1,4 +1,5 @@
 #include "dtmgeneticAlgorithm.h"
+#include "logger.h"
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
@@ -266,6 +267,7 @@ NonSimilarDTModelElements DTMGeneticAlgorithm::findNonSimilarNeuronsAndSynapses(
  ******************************************************************************/
 void DTMGeneticAlgorithm::crossover(const vector<vector<GAParents>> &parentsLists)
 {
+  TIME_MEASURE_BEGIN(DTM_CROSSOVER);
   size_t offspringCount = 0;
   for (const vector<GAParents> &speciesParents : parentsLists)
   {
@@ -449,4 +451,5 @@ void DTMGeneticAlgorithm::crossover(const vector<vector<GAParents>> &parentsList
 
   population = std::move(newPopulation);
   hyperparameters.populationSize = population.size();
+  TIME_MEASURE_END(DTM_CROSSOVER);
 }
