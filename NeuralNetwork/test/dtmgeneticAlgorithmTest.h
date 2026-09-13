@@ -197,3 +197,41 @@ TEST(DTMGeneticAlgorithmTest, hammingLengthTest)
   EXPECT_NEAR(cost, DTMGeneticAlgorithm::calculateMMSE(best.model, data), 1e-9);
   EXPECT_LE(cost, 0.05);
 }
+
+/******************************************************************************
+ * @brief Tests evolution of digit recognition from 16 pen-stroke features
+ ******************************************************************************/
+TEST(DTMGeneticAlgorithmTest, digitRecognitionTest)
+{
+  TrainingData trainingData(getTestDataPath("pendigits.tra"));
+  trainingData.normalizeData(MIN_MAX_NORMALIZATION);
+
+  Hyperparameters parameters{};
+  parameters.inputSize = 16;
+  parameters.outputSize = 1;
+  parameters.outputActivation = ActivationE::RELU;
+  parameters.gracePeriodLength = 2;
+  parameters.populationSize = 50;
+  parameters.maxNumberOfNeurons = 40;
+  parameters.tournamentSize = 5;
+  parameters.mutationTypes = {MutationE::ADD_NEURON, MutationE::REMOVE_NEURON,
+                              MutationE::ADD_SYNAPSE, MutationE::REMOVE_SYNAPSE,
+                              MutationE::ADJUST_WEIGHT, MutationE::ADJUST_BIAS,
+                              MutationE::CHANGE_ACTIVATION};
+  parameters.numberOfMutations = {1, 1, 2, 1, 5, 5, 1};
+  parameters.weightMutationStrength = 2.0;
+  parameters.biasMutationStrength = 2.0;
+
+  srand(2027);
+  DTMGeneticAlgorithm algorithm(parameters);
+  DTIndividual best = algorithm.run(3000, trainingData);
+  const double cost = 1.0 / best.fitness;
+  RecordProperty("cost", std::to_string(cost));
+  EXPECT_NEAR(cost, DTMGeneticAlgorithm::calculateMMSE(best.model, trainingData), 1e-9);
+  EXPECT_LE(cost, 0.05);
+
+  TrainingData testData(getTestDataPath("pendigits.tes"));
+  testData.normalizeData(MIN_MAX_NORMALIZATION);
+  RecordProperty("heldOutCost", std::to_string(
+      DTMGeneticAlgorithm::calculateMMSE(best.model, testData)));
+}
