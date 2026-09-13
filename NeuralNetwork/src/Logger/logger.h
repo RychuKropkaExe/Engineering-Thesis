@@ -3,9 +3,14 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <chrono>
+#include <unordered_map>
+
+using namespace std::chrono;
 
 constexpr std::string INFO_TYPE{"[INFO]"};
 constexpr std::string ERROR_TYPE{"[ERROR]"};
+constexpr std::string TIME_STAMP{"[TIME_STAMP]"};
 
 constexpr int ESSENTIAL_LOGS{1};
 constexpr int NORMAL_LOGS{2};
@@ -29,6 +34,11 @@ class Logger
 {
 public:
   static std::ofstream logFile;
+  static time_point<steady_clock> programClock;
+
+  static void startTimeStamp(std::string eventName);
+
+  static void endTimeStamp(std::string eventName);
 };
 
 #ifdef LOGGING_ACTIVATED
@@ -37,6 +47,9 @@ public:
   (PRIO_TYPE <= MAX_DEBUG_PRIO ? (Logger::logFile << DEBUG_TYPE << ": " << EXPR << "\n" \
                                                   << std::flush)                        \
                                : FLUSH_LOG())
+
+#define TIME_MEASURE_BEGIN(EVENT_NAME) Logger::startTimeStamp(std::string(#EVENT_NAME));
+#define TIME_MEASURE_END(EVENT_NAME) Logger::endTimeStamp(std::string(#EVENT_NAME));
 
 #define FLUSH_LOG() \
   (Logger::logFile << std::flush)

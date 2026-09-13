@@ -150,7 +150,7 @@ TEST(DTModelTest, addNeuronTest)
  ******************************************************************************/
 TEST(DTModelTest, removeNeuronTest)
 {
-
+  TIME_MEASURE_BEGIN(REMOVE_NEURON_TEST);
   size_t inputSize = 2;
   size_t outputSize = 2;
 
@@ -216,6 +216,7 @@ TEST(DTModelTest, removeNeuronTest)
   EXPECT_FALSE(newInConnectionsFound[0]) << "DID FOUND CONNECTION FEEDING INTO FIRST REMOVED NEURON";
   EXPECT_FALSE(newInConnectionsFound[1]) << "DID FOUND CONNECTION FEEDING INTO SECOND REMOVED NEURON";
 
+  TIME_MEASURE_END(REMOVE_NEURON_TEST);
 }
 
 /******************************************************************************

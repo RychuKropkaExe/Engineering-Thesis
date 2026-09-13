@@ -14,8 +14,6 @@
 #include <iostream>
 #include <time.h>
 
-std::ofstream Logger::logFile = std::ofstream("logs.log");
-
 #define BATCH_SIZE 64
 
 int main(int argc, char **argv)
