@@ -1,43 +1,45 @@
 #include "dtmgeneticAlgorithm.h"
+#include <algorithm>
 
 /******************************************************************************
  * @brief Groups population individuals by the maximum depth of their models
+ *
+ * Refreshes unsorted models before grouping. Empty depths remain empty species;
+ * empty populations return no species. Population indexes, not individual IDs,
+ * are stored so selection can access the owning individuals directly.
  *
  * @return Lists of population indexes grouped by model depth
  ******************************************************************************/
 vector<vector<size_t>> DTMGeneticAlgorithm::divideIntoSpecies()
 {
-
-  size_t maxDepth = 0;
-
-  for (size_t index = 0; index < hyperparameters.populationSize; index++)
+  if (population.empty())
   {
-    if (population[index].model.maxDepth > maxDepth)
+    return {};
+  }
+
+  size_t maximumDepth = 0;
+  for (DTIndividual &individual : population)
+  {
+    if (!individual.model.isSorted)
     {
-      maxDepth = population[index].model.maxDepth;
+      individual.model.sortTopologically();
     }
+    maximumDepth = std::max(maximumDepth, individual.model.maxDepth);
   }
 
-  const size_t bufferInterval = hyperparameters.populationSize / maxDepth;
-
-  vector<vector<size_t>> speciesIndexes;
-
-  for (size_t index = 0; index < hyperparameters.populationSize; index++)
+  vector<vector<size_t>> species(maximumDepth + 1);
+  vector<size_t> speciesSizes(species.size(), 0);
+  for (const DTIndividual &individual : population)
   {
-    speciesIndexes[index].reserve(bufferInterval);
+    speciesSizes[individual.model.maxDepth]++;
   }
-
-  for (size_t index = 0; index < hyperparameters.populationSize; index++)
+  for (size_t depth = 0; depth < species.size(); depth++)
   {
-    size_t individualDepth = population[index].model.maxDepth;
-    if (speciesIndexes[individualDepth].size() == speciesIndexes[individualDepth].capacity())
-    {
-      speciesIndexes[individualDepth].reserve(speciesIndexes[individualDepth].size() + bufferInterval);
-    }
-
-    speciesIndexes[individualDepth].push_back(index);
+    species[depth].reserve(speciesSizes[depth]);
   }
-
-  return speciesIndexes;
+  for (size_t index = 0; index < population.size(); index++)
+  {
+    species[population[index].model.maxDepth].push_back(index);
+  }
+  return species;
 }
-

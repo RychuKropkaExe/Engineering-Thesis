@@ -1,5 +1,6 @@
 #include "dtmgeneticAlgorithm.h"
 #include <algorithm>
+#include <cmath>
 #include <cstdlib>
 
 namespace
@@ -296,7 +297,173 @@ bool DTMGeneticAlgorithm::removeSynapseMutation(DTIndividual &individual)
 }
 
 /******************************************************************************
- * @brief Dispatches one topology mutation for an individual
+ * @brief Perturbs one randomly selected synapse weight in either direction
+ *
+ * Adds a uniform change in [-weightMutationStrength, weightMutationStrength].
+ * Weights may cross zero and grow beyond their initialization range. Updates
+ * any incoming mirror of the selected synapse as well as its canonical outgoing
+ * entry. Connection IDs, activity and topological metadata are preserved.
+ *
+ * @param individual Individual to mutate by reference
+ *
+ * @return True after a finite weight change and grace-period reset; false with
+ *         no change if no synapse exists, strength is invalid, or rounding or
+ *         overflow prevents a finite change. A failed draw is not retried.
+ ******************************************************************************/
+bool DTMGeneticAlgorithm::adjustWeightMutation(DTIndividual &individual)
+{
+  const double strength = hyperparameters.weightMutationStrength;
+  if (!std::isfinite(strength) || strength <= 0.0)
+  {
+    return false;
+  }
+
+  DTModel &model = individual.model;
+  size_t count = 0;
+  for (const Neuron &neuron : model.neurons)
+  {
+    count += neuron.outSynapses.size();
+  }
+  if (count == 0)
+  {
+    return false;
+  }
+  size_t selected = rand() % count;
+  for (Neuron &neuron : model.neurons)
+  {
+    if (selected >= neuron.outSynapses.size())
+    {
+      selected -= neuron.outSynapses.size();
+      continue;
+    }
+    Synapse &synapse = neuron.outSynapses[selected];
+    const double weight = synapse.weight + (2.0 * DTMUtils::randomdouble() - 1.0) * strength;
+    if (!std::isfinite(weight) || weight == synapse.weight)
+    {
+      return false;
+    }
+    synapse.weight = weight;
+    for (Synapse &mirror : model.neurons[model.indexMap.at(synapse.outNeuronId)].inSynapses)
+    {
+      if (mirror.id == synapse.id)
+      {
+        mirror.weight = weight;
+      }
+    }
+    individual.gracePeriodLength = hyperparameters.gracePeriodLength;
+    return true;
+  }
+  return false;
+}
+
+/******************************************************************************
+ * @brief Perturbs one randomly selected hidden or output neuron's bias
+ *
+ * Adds a uniform change in [-biasMutationStrength, biasMutationStrength], with
+ * no sign restriction. Input neurons are excluded. The model's topology and
+ * activation functions are preserved.
+ *
+ * @param individual Individual to mutate by reference
+ *
+ * @return True after a finite bias change and grace-period reset; false without
+ *         modification if no eligible neuron exists or no finite change is made
+ ******************************************************************************/
+bool DTMGeneticAlgorithm::adjustBiasMutation(DTIndividual &individual)
+{
+  const double strength = hyperparameters.biasMutationStrength;
+  if (!std::isfinite(strength) || strength <= 0.0)
+  {
+    return false;
+  }
+  auto eligible = [](const Neuron &neuron)
+  {
+    return neuron.type == NeuronTypeE::HIDDEN_NEURON || neuron.type == NeuronTypeE::OUTPUT_NEURON;
+  };
+  auto &neurons = individual.model.neurons;
+  const size_t count = std::count_if(neurons.begin(), neurons.end(), eligible);
+  if (count == 0)
+  {
+    return false;
+  }
+  size_t selected = rand() % count;
+  for (Neuron &neuron : neurons)
+  {
+    if (!eligible(neuron))
+    {
+      continue;
+    }
+    if (selected != 0)
+    {
+      selected--;
+      continue;
+    }
+    const double bias = neuron.bias + (2.0 * DTMUtils::randomdouble() - 1.0) * strength;
+    if (!std::isfinite(bias) || bias == neuron.bias)
+    {
+      return false;
+    }
+    neuron.bias = bias;
+    individual.gracePeriodLength = hyperparameters.gracePeriodLength;
+    return true;
+  }
+  return false;
+}
+
+/******************************************************************************
+ * @brief Switches one hidden neuron to a different supported activation function
+ *
+ * Selects one hidden neuron and chooses uniformly between its other two
+ * supported activations (sigmoid, ReLU, or no activation). Input and output
+ * activations, numerical parameters and topology are preserved.
+ *
+ * @param individual Individual to mutate by reference
+ *
+ * @return True after switching activation and resetting the grace period;
+ *         false without modification when there is no hidden neuron
+ ******************************************************************************/
+bool DTMGeneticAlgorithm::changeActivationMutation(DTIndividual &individual)
+{
+  auto &neurons = individual.model.neurons;
+  const size_t count = std::count_if(neurons.begin(), neurons.end(),
+      [](const Neuron &neuron) { return neuron.type == NeuronTypeE::HIDDEN_NEURON; });
+  if (count == 0)
+  {
+    return false;
+  }
+  size_t selected = rand() % count;
+  for (Neuron &neuron : neurons)
+  {
+    if (neuron.type != NeuronTypeE::HIDDEN_NEURON)
+    {
+      continue;
+    }
+    if (selected != 0)
+    {
+      selected--;
+      continue;
+    }
+    size_t alternative = rand() % 2;
+    for (ActivationE activation : {ActivationE::SIGMOID, ActivationE::RELU, ActivationE::NO_ACTIVATION})
+    {
+      if (activation == neuron.activation)
+      {
+        continue;
+      }
+      if (alternative != 0)
+      {
+        alternative--;
+        continue;
+      }
+      neuron.activation = activation;
+      individual.gracePeriodLength = hyperparameters.gracePeriodLength;
+      return true;
+    }
+  }
+  return false;
+}
+
+/******************************************************************************
+ * @brief Dispatches one topology or parameter mutation for an individual
  *
  * @param individual Individual to mutate in place
  * @param mutation   Mutation to attempt, selected with MutationE
@@ -316,6 +483,12 @@ bool DTMGeneticAlgorithm::mutate(DTIndividual &individual, MutationE mutation)
     return addSynapseMutation(individual);
   case MutationE::REMOVE_SYNAPSE:
     return removeSynapseMutation(individual);
+  case MutationE::ADJUST_WEIGHT:
+    return adjustWeightMutation(individual);
+  case MutationE::ADJUST_BIAS:
+    return adjustBiasMutation(individual);
+  case MutationE::CHANGE_ACTIVATION:
+    return changeActivationMutation(individual);
   }
   return false;
 }

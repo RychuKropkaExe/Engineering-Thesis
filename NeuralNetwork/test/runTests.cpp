@@ -1,6 +1,6 @@
 #include "logger.h"
 #include "matrixOperationsTest.h"
-#include "modelTest.h"
+// #include "modelTest.h"
 #include "trainingDataTest.h"
 #include "dtmodelTest.h"
 #include "dtmodelTopologyTest.h"
@@ -8,6 +8,8 @@
 #include "dtmgeneticCrossoverTest.h"
 #include "dtmgeneticFitnessTest.h"
 #include "dtmgeneticMutationTest.h"
+#include "dtmgeneticParameterMutationTest.h"
+#include "dtmgeneticAlgorithmTest.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <time.h>

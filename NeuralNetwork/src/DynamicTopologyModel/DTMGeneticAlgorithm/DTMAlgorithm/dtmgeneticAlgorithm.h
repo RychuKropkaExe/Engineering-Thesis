@@ -93,13 +93,14 @@ public:
   * UTILITIES
   ******************************************************************************/
   void initializePopulation();
+  DTIndividual run(size_t numberOfGenerations, const TrainingData &trainingData);
   size_t getNewUniqueSynapseId();
   size_t getNewUniqueNeuronId();
   size_t getNewUniqueIndividualCounter();
 
   vector<vector<size_t>> divideIntoSpecies();
 
-  vector<vector<GAParents>> tournamentSelection(vector<vector<size_t>> species);
+  vector<vector<GAParents>> tournamentSelection(const vector<vector<size_t>> &species);
 
   static SimilarDTModelElements findSimilarNeuronsAndSynapses(
       const DTModel &firstModel, const DTModel &secondModel);
@@ -122,12 +123,15 @@ public:
   *
   * Each call makes one attempt on a valid acyclic model. Addition mutations
   * require model.isSorted. Failure leaves the individual unchanged; success
-  * sorts the model and resets the individual's grace period.
+  * refreshes changed topology and resets the individual's grace period.
   ******************************************************************************/
   bool addNeuronMutation(DTIndividual &individual);
   bool removeNeuronMutation(DTIndividual &individual);
   bool addSynapseMutation(DTIndividual &individual);
   bool removeSynapseMutation(DTIndividual &individual);
+  bool adjustWeightMutation(DTIndividual &individual);
+  bool adjustBiasMutation(DTIndividual &individual);
+  bool changeActivationMutation(DTIndividual &individual);
   bool mutate(DTIndividual &individual, MutationE mutation);
 
 private:

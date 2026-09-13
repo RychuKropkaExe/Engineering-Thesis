@@ -1,92 +1,61 @@
 #include "dtmgeneticAlgorithm.h"
+#include <cassert>
 #include <cstdlib>
 
 /******************************************************************************
- * @brief Selects parent pairs using tournament selection within each species
+ * @brief Selects one offspring's parent pair per individual within each species
  *
- * Individuals still in their grace period are copied by selecting them as
- * both parents. The remaining parent pairs are selected by comparing the
- * fitness of individuals sampled from the corresponding species.
+ * Protected individuals first receive self-parent pairs. Remaining pairs use
+ * tournaments sampled with replacement within their species. Grace periods
+ * are decremented by crossover only, once per generation.
  *
  * @param species Lists of population indexes grouped into species
  *
- * @return Parent pairs grouped according to their species
+ * @return Parent pairs grouped by species, preserving each species' size
  ******************************************************************************/
-vector<vector<GAParents>> DTMGeneticAlgorithm::tournamentSelection(vector<vector<size_t>> species)
+vector<vector<GAParents>> DTMGeneticAlgorithm::tournamentSelection(
+    const vector<vector<size_t>> &species)
 {
+  assert(hyperparameters.tournamentSize > 0);
+  vector<vector<GAParents>> parentsLists(species.size());
 
-  vector<vector<GAParents>> parentsLists;
-
-  for (size_t index = 0; index < species.size(); index++)
+  for (size_t speciesIndex = 0; speciesIndex < species.size(); speciesIndex++)
   {
-    parentsLists.reserve(species[index].size());
-  }
+    const auto &members = species[speciesIndex];
+    auto &parents = parentsLists[speciesIndex];
+    parents.reserve(members.size());
 
-  // Fast forward protected individuals
-  for (size_t index = 0; index < species.size(); index++)
-  {
-    for (auto individualIndex : species[index])
+    for (size_t individualIndex : members)
     {
-      if (population[individualIndex].gracePeriodLength > 0)
+      if (population.at(individualIndex).gracePeriodLength > 0)
       {
-        // Pairs of parents with the same individual
-        // are processed by just copying the individual to the next generation
-        GAParents parents;
-        parents.addParent(individualIndex);
-        parents.addParent(individualIndex);
-        parentsLists[index].push_back(parents);
-        population[individualIndex].gracePeriodLength--;
+        GAParents protectedPair;
+        protectedPair.addParent(individualIndex);
+        protectedPair.addParent(individualIndex);
+        parents.push_back(protectedPair);
       }
     }
-  }
 
-
-  for (size_t index = 0; index < parentsLists.size(); index++)
-  {
-    while(parentsLists[index].size() != parentsLists[index].capacity())
+    while (parents.size() < members.size())
     {
-
-      constexpr size_t numberOfParents = 2;
-
-      GAParents parents;
-
-      for (size_t _ = 0; _ < numberOfParents; _++)
+      GAParents pair;
+      for (size_t parent = 0; parent < 2; parent++)
       {
-
-        vector<size_t> tournament;
-
-        tournament.reserve(hyperparameters.tournamentSize);
-
-        while (tournament.size() != tournament.capacity())
+        // A random offset belongs to the species list. Resolve it to the
+        // population index before comparing fitness, including for the winner.
+        size_t bestIndex = members[rand() % members.size()];
+        for (size_t sample = 1; sample < hyperparameters.tournamentSize; sample++)
         {
-          size_t individualIndex = rand() % species[index].size();
-          tournament.push_back(individualIndex);
-        }
-
-        size_t bestIndividualIndex = 0;
-
-        double bestFitness = 0;
-
-        for (auto individualIndex : tournament)
-        {
-          if (population[individualIndex].fitness > bestFitness)
+          const size_t candidate = members[rand() % members.size()];
+          if (population[candidate].fitness > population[bestIndex].fitness)
           {
-            bestFitness = population[individualIndex].fitness;
-            bestIndividualIndex = individualIndex;
+            bestIndex = candidate;
           }
         }
-
-        parents.addParent(bestIndividualIndex);
-
+        pair.addParent(bestIndex);
       }
-
-      parentsLists[index].push_back(parents);
-
-
+      parents.push_back(pair);
     }
   }
-
   return parentsLists;
-
 }
-

@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <random>
+#include <utility>
 
 /******************************************************************************
  * @brief Initializes the population with randomly generated individuals
@@ -16,6 +17,7 @@ void DTMGeneticAlgorithm::initializePopulation()
   assert(hyperparameters.populationSize != 0);
 
   population.resize(hyperparameters.populationSize);
+  synapseIdMap.clear();
 
   vector<Synapse> possibleSynapses{};
   // Number of possible combinations = inputSize * outputSize
@@ -66,8 +68,8 @@ void DTMGeneticAlgorithm::initializePopulation()
       model.addOutSynapse(possibleSynapses[synapseIndex], false);
     }
 
-    population[index] = DTIndividual(getNewUniqueIndividualCounter(), 0, model);
+    model.sortTopologically();
+    population[index] = DTIndividual(getNewUniqueIndividualCounter(), 0, std::move(model));
   }
 
 }
-

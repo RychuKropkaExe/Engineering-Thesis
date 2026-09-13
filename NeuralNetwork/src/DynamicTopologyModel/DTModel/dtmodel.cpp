@@ -198,30 +198,22 @@ void DTModel::sortTopologically()
   indexMap = std::move(newIndexMap);
   neurons = std::move(sortedNeurons);
 
-  size_t currentDepth = 0;
-  size_t previousDepth = 0;
-  size_t counter = 0;
+  // Outputs are appended last even when their depths differ. Keep one counter
+  // per depth so returning to an earlier depth (e.g. a disconnected output at
+  // depth zero) cannot reuse an ID already assigned to an input or hidden neuron.
+  vector<size_t> depthCounters(neurons.size(), 0);
 
   constexpr size_t DEPTH_ID_CONSTANT = 1000;
 
   for (Neuron &neuron : neurons)
   {
-    currentDepth = neuron.depth;
+    const size_t currentDepth = neuron.depth;
     if (currentDepth > maxDepth)
     {
       maxDepth = currentDepth;
     }
 
-    if (currentDepth != previousDepth)
-    {
-      counter = 0;
-    }
-
-    neuron.depthId = currentDepth*DEPTH_ID_CONSTANT + counter;
-
-    previousDepth = currentDepth;
-
-    counter++;
+    neuron.depthId = currentDepth*DEPTH_ID_CONSTANT + depthCounters[currentDepth]++;
   }
 
   isSorted = true;

@@ -5,13 +5,18 @@ using std::vector;
 using std::pair;
 using DTMUtils::NeuronTypeE;
 using DTMUtils::ActivationE;
+using DTMUtils::MutationE;
 
 /******************************************************************************
  * @class Hyperparameters
  *
  * @brief Represents hyperparameters used for genetic algorithm
  *
- * @public @param id          Synapse id
+ * @public @param mutationTypes     Mutations attempted after each crossover
+ * @public @param numberOfMutations Number of distinct individuals selected for
+ *                                  each mutation at the corresponding index
+ * @public @param weightMutationStrength Maximum absolute additive weight change
+ * @public @param biasMutationStrength   Maximum absolute additive bias change
  ******************************************************************************/
 class Hyperparameters
 {
@@ -28,6 +33,12 @@ public:
   size_t gracePeriodLength{};
 
   size_t tournamentSize;
+
+  vector<MutationE> mutationTypes{};
+  vector<size_t> numberOfMutations{};
+
+  double weightMutationStrength{1.0};
+  double biasMutationStrength{1.0};
 
   ActivationE outputActivation;
 
