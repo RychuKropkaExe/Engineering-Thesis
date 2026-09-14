@@ -200,6 +200,12 @@ Timestamp records use `[TIME_STAMP]: EVENT_BEGIN <name> <microseconds>` and the 
 
 Timestamp values are microseconds relative to the logger's clock origin. Subtract an event's start from its matching end to get elapsed time. Nested events include their children's time, so summing all event durations does not give total runtime.
 
+Use the [timestamp analyzer](tools/timeStampAnalyzer/readme.md) to report event totals and percentages separately for each `DTM_GENETIC_RUN`. From `NeuralNetwork`:
+
+```bash
+python3 tools/timeStampAnalyzer/timeStampAnalyzer.py build/timeStampLog.log
+```
+
 ## Project layout
 
 ```text
@@ -211,6 +217,7 @@ NeuralNetwork/
 │   ├── Logger/               # Logging and timing macros
 │   └── AgentControl/         # Legacy Trackmania/Python integration
 ├── test/                     # GoogleTest suites and bundled TestData/
+├── tools/timeStampAnalyzer/  # Streaming Python reports for timestamp logs
 ├── CMakeLists.txt            # C++20 build and GoogleTest configuration
 ├── gitenv.sh                 # Dataset-path environment setup
 └── setup.py                  # Legacy Python-extension build configuration
