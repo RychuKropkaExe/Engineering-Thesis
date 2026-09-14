@@ -15,7 +15,7 @@ FetchContent_MakeAvailable(googletest)
 message("DEBUG_MODE=${DEBUG_MODE}")
 message("LOG_PRIO=${LOG_PRIO}")
 
-set(COMPILE_FLAGS "-Wall -Wextra -Werror -DLOGGING_ACTIVATED")
+set(COMPILE_FLAGS "-Wall -Wextra -Werror -fopenmp -DLOGGING_ACTIVATED")
 
 if(DEBUG_MODE)
   set(COMPILE_FLAGS "${COMPILE_FLAGS} -O0 -ggdb3 -g -DDEBUG_PRIO=1")

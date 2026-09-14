@@ -153,9 +153,13 @@ DTIndividual DTMGeneticAlgorithm::run(size_t numberOfGenerations,
     const auto species = divideIntoSpecies();
 
     TIME_MEASURE_BEGIN(DTM_EVALUATE_FITNESS);
+    #pragma omp parallel for
     for (DTIndividual &individual : population)
     {
       evaluateIndividual(individual, trainingData);
+    }
+    for (DTIndividual &individual : population)
+    {
       if (!bestIndividual || individual.fitness > bestIndividual->fitness)
       {
         // Population storage is replaced by crossover. Copy only improvements,
