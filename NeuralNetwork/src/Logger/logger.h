@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <string_view>
+#include "timeStampLogger.h"
 #include <chrono>
 #include <unordered_map>
 
@@ -36,9 +38,9 @@ public:
   static std::ofstream logFile;
   static time_point<steady_clock> programClock;
 
-  static void startTimeStamp(std::string eventName);
+  static void startTimeStamp(std::string_view eventName);
 
-  static void endTimeStamp(std::string eventName);
+  static void endTimeStamp(std::string_view eventName);
 };
 
 #ifdef LOGGING_ACTIVATED
@@ -48,8 +50,8 @@ public:
                                                   << std::flush)                        \
                                : FLUSH_LOG())
 
-#define TIME_MEASURE_BEGIN(EVENT_NAME) Logger::startTimeStamp(std::string(#EVENT_NAME));
-#define TIME_MEASURE_END(EVENT_NAME) Logger::endTimeStamp(std::string(#EVENT_NAME));
+#define TIME_MEASURE_BEGIN(EVENT_NAME) Logger::startTimeStamp(#EVENT_NAME);
+#define TIME_MEASURE_END(EVENT_NAME) Logger::endTimeStamp(#EVENT_NAME);
 
 #define FLUSH_LOG() \
   (Logger::logFile << std::flush)

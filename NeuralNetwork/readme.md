@@ -192,7 +192,11 @@ The [`Logger`](src/Logger/logger.h) module provides priority-based logs and pair
 - `LOG_PRIO=3`: adds heavy logs, including per-call forward-propagation timing. This can generate very large files and affect measured performance.
 - `DEBUG_MODE=1`: selects an unoptimized build with debug symbols; use `DEBUG_MODE=0` for optimized performance measurements.
 
-Logs go to **`logs.log` in the process's working directory**. Each process opens the file in overwrite mode, so preserve a log before starting another run and avoid parallel test processes sharing that file when collecting timings.
+Ordinary logs go to **`logs.log`**, while timestamps go to **`timeStampLog.log`**, both in the process's working directory. Each process opens these files in overwrite mode, so preserve logs before starting another run and avoid parallel test processes sharing these files when collecting timings.
+
+Timestamp logging uses a dedicated worker and two reusable buffers of 4,096 entries. The main thread captures events without per-event file I/O, switching buffers when full and waiting only when the worker still owns the next buffer. `test/runTests.cpp` starts the worker and drains all remaining entries before joining it at shutdown. This is a single-producer interface: timing macros must be called on the main thread.
+
+Timestamp records use `[TIME_STAMP]: EVENT_BEGIN <name> <microseconds>` and the corresponding `EVENT_END` form. The `TIME_MEASURE_BEGIN` / `TIME_MEASURE_END` call sites are unchanged.
 
 Timestamp values are microseconds relative to the logger's clock origin. Subtract an event's start from its matching end to get elapsed time. Nested events include their children's time, so summing all event durations does not give total runtime.
 

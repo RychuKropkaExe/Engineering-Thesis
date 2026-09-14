@@ -18,6 +18,24 @@
 
 int main(int argc, char **argv)
 {
-    testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    try
+    {
+        testing::InitGoogleTest(&argc, argv);
+#ifdef LOGGING_ACTIVATED
+        // Initialize on the producer thread; the worker waits for a full buffer.
+        TimeStampLogger &timeStampLogger = TimeStampLogger::getInstance();
+        timeStampLogger.start();
+#endif
+        const int result = RUN_ALL_TESTS();
+#ifdef LOGGING_ACTIVATED
+        // Publish the partial buffer, drain all timestamps and join before exit.
+        timeStampLogger.stop();
+#endif
+        return result;
+    }
+    catch (const std::exception &error)
+    {
+        std::cerr << "Test runner failed: " << error.what() << '\n';
+        return 1;
+    }
 }
