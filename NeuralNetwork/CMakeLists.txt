@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.30)
 
+project(NeuralNetwork LANGUAGES CXX)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+find_package(ZLIB REQUIRED)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -11,6 +16,18 @@ FetchContent_Declare(
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+
+FetchContent_Declare(
+  ForeverValidator
+  GIT_REPOSITORY https://github.com/Skycrafter-dev/ForeverValidator.git
+  GIT_TAG main
+  GIT_SHALLOW TRUE
+)
+set(FOREVERVALIDATOR_BUILD_CLI OFF CACHE BOOL "" FORCE)
+set(FOREVERVALIDATOR_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(FOREVERVALIDATOR_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+set(FOREVERVALIDATOR_ENABLE_CUDA OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(ForeverValidator)
 
 message("DEBUG_MODE=${DEBUG_MODE}")
 message("LOG_PRIO=${LOG_PRIO}")
@@ -27,8 +44,6 @@ if(LOG_PRIO GREATER 0)
   set(COMPILE_FLAGS "${COMPILE_FLAGS} -DDEBUG_PRIO=${LOG_PRIO}")
 endif()
 
-project(NeuralNetwork)
-
 set(CMAKE_CXX_FLAGS "${COMPILE_FLAGS}")
 
 add_executable(MainBuild)
@@ -41,6 +56,8 @@ add_subdirectory(test)
 target_link_libraries(
   MainBuild
   GTest::gtest_main
+  ForeverValidator::native
+  ForeverValidator::json
 )
 
 include(GoogleTest)
