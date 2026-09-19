@@ -10,6 +10,7 @@
 #include "dtmgeneticMutationTest.h"
 #include "dtmgeneticParameterMutationTest.h"
 #include "dtmgeneticAlgorithmTest.h"
+#include "trackmaniaSimulatorTest.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <time.h>
