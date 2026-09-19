@@ -22,6 +22,14 @@ constexpr std::uint32_t FACADE = 0xfacade01;
 constexpr std::string_view NICKNAME = "TrackmaniaSimulator (scripted)";
 constexpr float PI = std::numbers::pi_v<float>;
 
+/******************************************************************************
+ * @brief Checks a size against the signed 32-bit limit used by GBX archives
+ *
+ * @param size Byte count, entry count or duration to encode
+ *
+ * @return Checked value represented as an unsigned 32-bit integer
+ * @throws std::length_error If size exceeds the signed 32-bit maximum
+ ******************************************************************************/
 std::uint32_t size32(std::size_t size)
 {
   if (size > std::numeric_limits<std::int32_t>::max())
@@ -29,31 +37,97 @@ std::uint32_t size32(std::size_t size)
   return static_cast<std::uint32_t>(size);
 }
 
+/******************************************************************************
+ * @struct Writer
+ *
+ * @brief Builds an owned byte buffer using little-endian GBX field encodings
+ *
+ * @public @param bytes Encoded bytes accumulated by successive write operations
+ ******************************************************************************/
 struct Writer
 {
   AssetBytes bytes;
+
+  /******************************************************************************
+   * @brief Appends a single unsigned byte
+   * @param value Byte to append
+   ******************************************************************************/
   void u8(std::uint8_t value) { bytes.push_back(static_cast<std::byte>(value)); }
+
+  /******************************************************************************
+   * @brief Appends a 16-bit integer in little-endian byte order
+   * @param value Integer to encode
+   ******************************************************************************/
   void u16(std::uint16_t value) { u8(value & 255); u8(value >> 8); }
+
+  /******************************************************************************
+   * @brief Appends a 32-bit integer in little-endian byte order
+   * @param value Integer to encode
+   ******************************************************************************/
   void u32(std::uint32_t value) { u16(value & 65535); u16(value >> 16); }
+
+  /******************************************************************************
+   * @brief Appends the bit representation of a 32-bit floating-point value
+   * @param value Float whose bits are written in little-endian byte order
+   ******************************************************************************/
   void f32(float value) { u32(std::bit_cast<std::uint32_t>(value)); }
+
+  /******************************************************************************
+   * @brief Copies raw bytes into the buffer without adding a length prefix
+   * @param value Byte sequence to append
+   ******************************************************************************/
   void append(std::span<const std::byte> value)
   { bytes.insert(bytes.end(), value.begin(), value.end()); }
+
+  /******************************************************************************
+   * @brief Appends a GBX string with a checked 32-bit byte-length prefix
+   * @param value String bytes, written without a trailing null terminator
+   * @throws std::length_error If the string exceeds the GBX size limit
+   ******************************************************************************/
   void string(std::string_view value)
   {
     u32(size32(value.size()));
     append(std::as_bytes(std::span(value.data(), value.size())));
   }
+
+  /******************************************************************************
+   * @brief Appends a new named identifier rather than an ID-table reference
+   * @param value Identifier text for the current archive's identifier table
+   * @throws std::length_error If the identifier text exceeds the GBX size limit
+   ******************************************************************************/
   void id(std::string_view value) { u32(0x40000000); string(value); }
+
+  /******************************************************************************
+   * @brief Appends a skippable chunk with its marker, size and payload bytes
+   * @param chunk   GBX chunk identifier
+   * @param payload Already encoded chunk contents
+   * @throws std::length_error If the payload exceeds the GBX size limit
+   ******************************************************************************/
   void wrapped(std::uint32_t chunk, const Writer &payload)
   {
     u32(chunk); u32(0x534b4950); u32(size32(payload.bytes.size())); append(payload.bytes);
   }
 };
 
+/******************************************************************************
+ * @struct Reader
+ *
+ * @brief Reads bounded fields from a non-owning view of a Challenge.Gbx header
+ *
+ * @public @param bytes  Source bytes, which must outlive the reader and its views
+ * @public @param offset Position of the next unread byte
+ ******************************************************************************/
 struct Reader
 {
   std::span<const std::byte> bytes;
   std::size_t offset = 0;
+
+  /******************************************************************************
+   * @brief Returns the next byte range and advances the cursor after validation
+   * @param count Number of bytes to consume
+   * @return Non-owning view of the requested bytes
+   * @throws std::invalid_argument If the range lies outside the source buffer
+   ******************************************************************************/
   std::span<const std::byte> take(std::size_t count)
   {
     if (offset > bytes.size() || count > bytes.size() - offset)
@@ -62,6 +136,12 @@ struct Reader
     offset += count;
     return result;
   }
+
+  /******************************************************************************
+   * @brief Reads a little-endian 32-bit integer and advances by four bytes
+   * @return Decoded unsigned integer
+   * @throws std::invalid_argument If fewer than four source bytes remain
+   ******************************************************************************/
   std::uint32_t u32()
   {
     const auto value = take(4);
@@ -72,8 +152,18 @@ struct Reader
   }
 };
 
-// The map's header Ident consists of UID, environment and author. Re-encode
-// its IDs so references in the map's ID table never leak into the replay.
+/******************************************************************************
+ * @brief Re-encodes the map UID, environment and author for a replay header
+ *
+ * Resolves the map's identifier-table references and writes fresh named IDs so
+ * those references do not leak into the replay's independent identifier table.
+ *
+ * @param map Complete standalone binary GBX v6 Challenge.Gbx bytes
+ *
+ * @return Encoded map Ident, including the identifier-table version
+ * @throws std::invalid_argument If the header or identifier format is unsupported
+ * @throws std::length_error If identifier text exceeds the GBX size limit
+ ******************************************************************************/
 Writer mapIdent(const AssetBytes &map)
 {
   Reader file{map};
@@ -131,6 +221,18 @@ Writer mapIdent(const AssetBytes &map)
   throw std::invalid_argument("Challenge.Gbx has no map identifier header");
 }
 
+/******************************************************************************
+ * @brief Clamps a float to an interval and rounds it to an unsigned encoding
+ *
+ * @param value   Floating-point value to encode
+ * @param minimum Lower endpoint, mapped to zero
+ * @param maximum Upper endpoint, mapped to scale
+ * @param scale   Largest encoded value, no greater than 65535
+ *
+ * @pre Endpoints are finite and maximum is greater than minimum
+ * @return Nearest integer in [0, scale] after clamping
+ * @throws std::runtime_error If value is not finite
+ ******************************************************************************/
 std::uint16_t quantize(float value, float minimum, float maximum, unsigned scale)
 {
   if (!std::isfinite(value)) throw std::runtime_error("Non-finite replay state");
@@ -138,6 +240,15 @@ std::uint16_t quantize(float value, float minimum, float maximum, unsigned scale
       std::clamp((value - minimum) / (maximum - minimum), 0.0f, 1.0f) * scale));
 }
 
+/******************************************************************************
+ * @brief Encodes velocity as a logarithmic magnitude and two direction angles
+ *
+ * Near-zero magnitudes use the format's zero-vector sentinel. The resulting
+ * packed representation occupies four bytes in a ghost sample.
+ *
+ * @param out Buffer receiving the encoded vector
+ * @param v   Finite linear or angular velocity vector
+ ******************************************************************************/
 void packedVelocity(Writer &out, Vector3 v)
 {
   const float magnitude = std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
@@ -153,8 +264,17 @@ void packedVelocity(Writer &out, Vector3 v)
                                                  -1.0f, 1.0f)) * 254 / PI)));
 }
 
-// TMF state version 9: 61 bytes per sample. Layout and quantization follow
-// GBX.NET's CSceneVehicleCar.Sample and GbxWriter (see README references).
+/******************************************************************************
+ * @brief Encodes one car observation as a 61-byte TMF version 9 ghost sample
+ *
+ * Layout and quantization follow GBX.NET's CSceneVehicleCar.Sample and GbxWriter
+ * (see README references). Unavailable cosmetic vehicle fields use defaults.
+ *
+ * @param out   Buffer receiving the encoded sample
+ * @param state Observation containing pose, velocities, controls and car signals
+ *
+ * @throws std::runtime_error If a value passed to quantize() is not finite
+ ******************************************************************************/
 void sample(Writer &out, const PhysicsSandboxStateView &state)
 {
   const auto &car = state.car;
@@ -194,6 +314,18 @@ void sample(Writer &out, const PhysicsSandboxStateView &state)
   out.u8(0); // Dirt blend unavailable.
 }
 
+/******************************************************************************
+ * @brief Encodes recorded observations and compresses their ghost-state archive
+ *
+ * Samples use version 9 vehicle state, a fixed 10 ms period and zlib compression.
+ * The caller validates the recording's time spacing before calling this helper.
+ *
+ * @param states Chronological car states, including the initial observation
+ *
+ * @return Complete ghost-state chunk with encoded and compressed byte counts
+ * @throws std::length_error If an archive size exceeds the GBX limit
+ * @throws std::runtime_error If sample encoding or zlib compression fails
+ ******************************************************************************/
 Writer ghostStates(const std::vector<PhysicsSandboxStateView> &states)
 {
   Writer raw;
@@ -215,6 +347,20 @@ Writer ghostStates(const std::vector<PhysicsSandboxStateView> &states)
   return chunk;
 }
 
+/******************************************************************************
+ * @brief Writes validation inputs with an explicit scripted-run clock marker
+ *
+ * Supports RaceRunning, Accelerate, Brake and Steer. Race-relative timestamps
+ * are shifted to the TMF input clock and marked as scripted for recognition by
+ * ForeverValidator; this does not fabricate a finish event.
+ *
+ * @param out      Buffer receiving the validation-input chunk
+ * @param inputs   Canonical timeline events retained by the sandbox
+ * @param duration Positive recorded race duration in milliseconds
+ *
+ * @throws std::invalid_argument If an action or timestamp is unsupported
+ * @throws std::length_error If an event count or string exceeds the GBX limit
+ ******************************************************************************/
 void writeInputs(Writer &out, const std::vector<PhysicsSandboxInputEvent> &inputs,
                  std::uint32_t duration)
 {
@@ -243,8 +389,16 @@ void writeInputs(Writer &out, const std::vector<PhysicsSandboxInputEvent> &input
   out.u32(0); out.u32(0); out.u32(0); out.string(""); out.u32(0);
 }
 
-// A standards-compatible literal-only LZO1X stream. The embedded map is
-// already compressed; avoiding match compression needs no extra dependency.
+/******************************************************************************
+ * @brief Wraps the replay body in a literal-only LZO1X stream
+ *
+ * The embedded map is already compressed. Literal encoding avoids an extra
+ * compression dependency and appends the LZO end marker without finding matches.
+ *
+ * @param bytes Replay body bytes to encode
+ *
+ * @return LZO1X stream containing the unchanged body as a literal run
+ ******************************************************************************/
 Writer lzoLiteral(const AssetBytes &bytes)
 {
   Writer out;
@@ -261,6 +415,24 @@ Writer lzoLiteral(const AssetBytes &bytes)
 }
 } // namespace
 
+/******************************************************************************
+ * @brief Assembles and saves a scripted GBX v6 replay for a recorded Stadium run
+ *
+ * Embeds the original map, recorded car states and input timeline. Writes the
+ * complete Stadium vehicle identifier and retains an unfinished race as such.
+ * Parent directories are created and an existing output file is overwritten.
+ *
+ * @param path   Destination Replay.Gbx file
+ * @param map    Standalone binary GBX v6 Challenge.Gbx bytes
+ * @param states Contiguous 10 ms Stadium states, starting at race time zero
+ * @param inputs Recorded canonical driving and race-start events
+ *
+ * @throws std::logic_error If no initial state and subsequent tick are available
+ * @throws std::invalid_argument If map, states or inputs are unsupported
+ * @throws std::length_error If an encoded size exceeds the GBX limit
+ * @throws std::runtime_error If encoding, compression or writing the file fails
+ * @throws std::filesystem::filesystem_error If creating parent directories fails
+ ******************************************************************************/
 void trackmania::writeReplay(
     const std::string &path, const AssetBytes &map,
     const std::vector<PhysicsSandboxStateView> &states,

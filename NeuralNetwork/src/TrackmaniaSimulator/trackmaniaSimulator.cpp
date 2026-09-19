@@ -18,6 +18,15 @@ using namespace forevervalidator::experimental;
 const std::filesystem::path PACKS_DIRECTORY =
     "NeuralNetwork/src/TrackmaniaSimulator/Packs";
 
+/******************************************************************************
+ * @brief Resolves the fixed Packs directory from the repository environment
+ *
+ * Accepts either the repository root or its NeuralNetwork subdirectory in
+ * GIT_REPOSITORY_NEURAL_NETWORK_PATH.
+ *
+ * @return Lexically normalized path to TrackmaniaSimulator/Packs
+ * @throws std::runtime_error If the environment variable is not set
+ ******************************************************************************/
 std::string getPacksDirectory()
 {
   const char *environmentPath =
@@ -39,8 +48,17 @@ std::string getPacksDirectory()
   return (repositoryPath / PACKS_DIRECTORY).lexically_normal().string();
 }
 
-// Both the native API and sandbox API return checked results. Keep all
-// failures visible to the caller, including loading and input replacement.
+/******************************************************************************
+ * @brief Extracts a successful library result or reports its diagnostic
+ *
+ * @tparam T     Value type returned by the native or sandbox API
+ * @tparam Error Error type exposing a diagnostic string
+ * @param result    Checked result whose value may be moved out
+ * @param operation Description prepended to an error diagnostic
+ *
+ * @return Value moved from a successful result
+ * @throws std::runtime_error If the library operation failed
+ ******************************************************************************/
 template<typename T, typename Error>
 T takeValue(DiscriminatedResult<T, Error> result, const std::string &operation)
 {
@@ -51,6 +69,18 @@ T takeValue(DiscriminatedResult<T, Error> result, const std::string &operation)
   return std::move(result).Value();
 }
 
+/******************************************************************************
+ * @brief Creates a reference-CPU sandbox with a fresh canonical race timeline
+ *
+ * Loads the installed TMUF packs and configures 10 ms ticks with a 2600 ms
+ * countdown. The horizon is bounded to keep input timestamps in signed range.
+ *
+ * @param options Simulation configuration supplying the race-relative horizon
+ *
+ * @return Initialized sandbox ready to load a scenario
+ * @throws std::invalid_argument If the horizon is not a supported multiple of 10
+ * @throws std::runtime_error If resolving packs or creating the sandbox fails
+ ******************************************************************************/
 PhysicsSandbox createSandbox(const TrackmaniaSimulatorOptions &options)
 {
   constexpr std::uint32_t prestartDurationMs = 2600;
@@ -80,6 +110,15 @@ PhysicsSandbox createSandbox(const TrackmaniaSimulatorOptions &options)
                    "Create physics sandbox");
 }
 
+/******************************************************************************
+ * @brief Creates a pressed or released switch event on the canonical timeline
+ *
+ * @param timeMs  Race-relative timestamp in milliseconds
+ * @param action  Switch action, such as Accelerate or Brake
+ * @param pressed Whether the switch should be pressed
+ *
+ * @return Input event with a canonical switch value
+ ******************************************************************************/
 PhysicsSandboxInputEvent switchEvent(std::int32_t timeMs,
                                     PhysicsSandboxInputAction action,
                                     bool pressed)
@@ -94,6 +133,15 @@ PhysicsSandboxInputEvent switchEvent(std::int32_t timeMs,
 }
 } // namespace
 
+/******************************************************************************
+ * @brief Loads a fresh race and optionally records its initial state
+ *
+ * @param scenarioPath Challenge.Gbx or Replay.Gbx providing the scenario map
+ * @param options      Sandbox horizon, input generator seed and recording flag
+ *
+ * @throws std::invalid_argument If the requested horizon is invalid
+ * @throws std::runtime_error If asset loading or scenario initialization fails
+ ******************************************************************************/
 TrackmaniaSimulator::TrackmaniaSimulator(
     const std::string &scenarioPath,
     const TrackmaniaSimulatorOptions &options)
@@ -116,11 +164,27 @@ TrackmaniaSimulator::TrackmaniaSimulator(
   }
 }
 
+/******************************************************************************
+ * @brief Obtains the current sandbox observation without changing the race
+ *
+ * @return Current simulation state
+ * @throws std::runtime_error If reading the state fails
+ ******************************************************************************/
 TrackmaniaSimulator::State TrackmaniaSimulator::readState() const
 {
   return takeValue(sandbox.ReadState(), "Read simulation state");
 }
 
+/******************************************************************************
+ * @brief Replaces next-tick controls, advances physics and records the result
+ *
+ * @param input Accelerate, brake and native analog steering for the next tick
+ *
+ * @return State after one 10 ms simulation step
+ * @throws std::invalid_argument If steering is outside the native analog range
+ * @throws std::logic_error If the simulation has finished or timed out
+ * @throws std::runtime_error If a sandbox operation fails
+ ******************************************************************************/
 TrackmaniaSimulator::State TrackmaniaSimulator::step(const Input &input)
 {
   using namespace forevervalidator;
@@ -166,6 +230,15 @@ TrackmaniaSimulator::State TrackmaniaSimulator::step(const Input &input)
   return state;
 }
 
+/******************************************************************************
+ * @brief Writes retained states and sandbox inputs to a scripted replay
+ *
+ * @param replayPath Destination file, overwritten if it already exists
+ *
+ * @throws std::logic_error If recording was not enabled
+ * @throws std::runtime_error If reading the input timeline fails
+ * @see trackmania::writeReplay for format requirements and export errors
+ ******************************************************************************/
 void TrackmaniaSimulator::exportReplay(const std::string &replayPath) const
 {
   if (!recordingReplay)
@@ -176,6 +249,14 @@ void TrackmaniaSimulator::exportReplay(const std::string &replayPath) const
                          takeValue(sandbox.ReadInputs(), "Read replay inputs"));
 }
 
+/******************************************************************************
+ * @brief Samples driving controls independently of the observed game state
+ *
+ * Switches each have a 50 percent chance of being pressed. Steering is sampled
+ * uniformly over the complete native integer range, including both endpoints.
+ *
+ * @return Random accelerate, brake and steering values
+ ******************************************************************************/
 TrackmaniaSimulator::Input TrackmaniaSimulator::selectRandomInput()
 {
   std::bernoulli_distribution pressed(0.5);
@@ -189,6 +270,14 @@ TrackmaniaSimulator::Input TrackmaniaSimulator::selectRandomInput()
   return {pressed(randomEngine), pressed(randomEngine), steering(randomEngine)};
 }
 
+/******************************************************************************
+ * @brief Repeats observation, random input selection and a single physics tick
+ *
+ * Resumes at the current state and stops on race completion or the time limit.
+ *
+ * @return Stop reason together with the final observed state
+ * @throws std::runtime_error If a sandbox operation fails
+ ******************************************************************************/
 TrackmaniaSimulator::RunResult TrackmaniaSimulator::run()
 {
   State currentState = readState();
