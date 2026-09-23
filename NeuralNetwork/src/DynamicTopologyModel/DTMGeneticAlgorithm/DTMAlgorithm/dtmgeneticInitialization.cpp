@@ -19,7 +19,6 @@ void DTMGeneticAlgorithm::initializePopulation()
   assert(hyperparameters.populationSize != 0);
 
   population.resize(hyperparameters.populationSize);
-  synapseIdMap.clear();
 
   vector<Synapse> possibleSynapses{};
   // Number of possible combinations = inputSize * outputSize
@@ -37,8 +36,6 @@ void DTMGeneticAlgorithm::initializePopulation()
       pair<size_t, size_t> neuronIdPair{inputNeuronId, outputNeuronId};
 
       size_t synapseId = getNewUniqueSynapseId();
-
-      synapseIdMap[neuronIdPair] = synapseId;
 
       double weight = DTMUtils::randomdouble();
 

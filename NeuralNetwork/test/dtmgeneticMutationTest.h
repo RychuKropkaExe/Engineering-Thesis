@@ -126,7 +126,8 @@ TEST(DTModelTest, addNeuronMutationTest)
   parameters.outputSize = 1;
   parameters.maxNumberOfNeurons = 4;
   parameters.gracePeriodLength = 9;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(1, 1, ActivationE::RELU);
   model.addNeuron(Neuron(40, NeuronTypeE::HIDDEN_NEURON, ActivationE::RELU),
                   Synapse(100, 0, 40, 2.5), Synapse(101, 40, 1, 3.5), true);
@@ -200,7 +201,8 @@ TEST(DTModelTest, removeNeuronMutationTest)
 {
   Hyperparameters parameters{};
   parameters.gracePeriodLength = 8;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(2, 1, ActivationE::RELU);
   model.addNeuron(Neuron(40, NeuronTypeE::HIDDEN_NEURON, ActivationE::SIGMOID),
                   Synapse(100, 0, 40, 0.2), Synapse(101, 40, 2, 0.3), false);
@@ -244,7 +246,8 @@ TEST(DTModelTest, removeNeuronMutationRejectsDanglingTest)
 {
   Hyperparameters parameters{};
   parameters.gracePeriodLength = 8;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(1, 1, ActivationE::RELU);
   model.addNeuron(Neuron(40, NeuronTypeE::HIDDEN_NEURON, ActivationE::SIGMOID),
                   Synapse(100, 0, 40, 0.2), Synapse(101, 40, 1, 0.3), false);
@@ -272,7 +275,8 @@ TEST(DTModelTest, addSynapseMutationTest)
   parameters.inputSize = 1;
   parameters.outputSize = 1;
   parameters.gracePeriodLength = 6;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTIndividual individual(7, 3, DTModel(1, 1, ActivationE::RELU));
 
   ASSERT_TRUE(algorithm.addSynapseMutation(individual));
@@ -308,7 +312,8 @@ TEST(DTModelTest, addSynapseMutationTopologyTest)
 {
   Hyperparameters parameters{};
   parameters.gracePeriodLength = 6;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(2, 2, ActivationE::RELU);
   model.addNeuron(Neuron(40, NeuronTypeE::HIDDEN_NEURON, ActivationE::SIGMOID),
                   Synapse(100, 0, 40, 0.2), Synapse(101, 40, 2, 0.3), false);
@@ -362,7 +367,8 @@ TEST(DTModelTest, removeSynapseMutationTest)
 {
   Hyperparameters parameters{};
   parameters.gracePeriodLength = 5;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(2, 2, ActivationE::RELU);
   model.addNeuron(Neuron(40, NeuronTypeE::HIDDEN_NEURON, ActivationE::SIGMOID),
                   Synapse(100, 0, 40, 0.2), Synapse(101, 40, 2, 0.3), false);
@@ -412,7 +418,8 @@ TEST(DTModelTest, removeSynapseMutationRejectsDanglingTest)
 {
   Hyperparameters parameters{};
   parameters.gracePeriodLength = 5;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(1, 1, ActivationE::RELU);
   model.addNeuron(Neuron(40, NeuronTypeE::HIDDEN_NEURON, ActivationE::SIGMOID),
                   Synapse(100, 0, 40, 0.2), Synapse(101, 40, 1, 0.3), true);
@@ -472,7 +479,8 @@ TEST(DTModelTest, mutationDispatchTest)
   parameters.maxNumberOfNeurons = 3;
   // A successful mutation must reset the grace period even when it is zero.
   parameters.gracePeriodLength = 0;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTIndividual individual(7, 3, DTModel(1, 1, ActivationE::RELU));
 
   individual.gracePeriodLength = 2;

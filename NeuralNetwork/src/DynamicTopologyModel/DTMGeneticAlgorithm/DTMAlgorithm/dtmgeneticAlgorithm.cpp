@@ -1,8 +1,8 @@
 #include "dtmgeneticAlgorithm.h"
 #include "logger.h"
-#include "trainingData.h"
 #include <algorithm>
 #include <cstdlib>
+#include <exception>
 #include <numeric>
 #include <optional>
 #include <stdexcept>
@@ -12,9 +12,21 @@
  * CONSTRUCTORS
  ******************************************************************************/
 
-DTMGeneticAlgorithm::DTMGeneticAlgorithm(Hyperparameters hyperparameters)
+/******************************************************************************
+ * @brief Stores evolution settings and a borrowed, non-null fitness strategy
+ *
+ * @param hyperparameters Population and genetic operator configuration
+ * @param fitnessEvaluation Evaluator that must outlive the algorithm
+ * @throws std::invalid_argument If the evaluator pointer is null
+ ******************************************************************************/
+DTMGeneticAlgorithm::DTMGeneticAlgorithm(Hyperparameters hyperparameters,
+                                         DTMFitnessEvaluation *fitnessEvaluation)
+    : hyperparameters(std::move(hyperparameters)), fitnessEvaluation(fitnessEvaluation)
 {
-  this->hyperparameters = hyperparameters;
+  if (fitnessEvaluation == nullptr)
+  {
+    throw std::invalid_argument("A fitness evaluator is required");
+  }
 }
 
 /******************************************************************************
@@ -97,37 +109,22 @@ size_t DTMGeneticAlgorithm::getNewUniqueIndividualCounter()
  * an independent copy from the evaluated generations, including generation zero.
  *
  * @param numberOfGenerations Number of evaluation/reproduction iterations, > 0
- * @param trainingData        Nonempty, dimension-compatible data, already
- *                            normalized if desired; passed by const reference
  *
  * @return Individual with the highest fitness seen during evaluation
  * @throws std::invalid_argument For invalid generation/population/tournament
- *         sizes, incompatible data, or mismatched/out-of-range mutation counts
+ *         sizes, zero model dimensions, or mismatched/out-of-range mutation counts
+ * @throws Any exception raised by the evaluator, rethrown on the calling thread
  ******************************************************************************/
-DTIndividual DTMGeneticAlgorithm::run(size_t numberOfGenerations,
-                                     const TrainingData &trainingData)
+DTIndividual DTMGeneticAlgorithm::run(size_t numberOfGenerations)
 {
   if (numberOfGenerations == 0 || hyperparameters.populationSize == 0 ||
       hyperparameters.tournamentSize == 0)
   {
     throw std::invalid_argument("Generations, population size and tournament size must be positive");
   }
-  if (hyperparameters.inputSize == 0 || hyperparameters.outputSize == 0 ||
-      trainingData.inputSize != hyperparameters.inputSize ||
-      trainingData.outputSize != hyperparameters.outputSize ||
-      trainingData.numOfSamples == 0 ||
-      trainingData.inputs.size() != trainingData.numOfSamples ||
-      trainingData.outputs.size() != trainingData.numOfSamples)
+  if (hyperparameters.inputSize == 0 || hyperparameters.outputSize == 0)
   {
-    throw std::invalid_argument("Training data must be nonempty and match the model dimensions");
-  }
-  for (size_t index = 0; index < trainingData.numOfSamples; index++)
-  {
-    if (trainingData.inputs[index].mat.size() != hyperparameters.inputSize ||
-        trainingData.outputs[index].mat.size() != hyperparameters.outputSize)
-    {
-      throw std::invalid_argument("Training sample dimensions do not match the model");
-    }
+    throw std::invalid_argument("Model input and output sizes must be positive");
   }
   if (hyperparameters.mutationTypes.size() != hyperparameters.numberOfMutations.size())
   {
@@ -153,10 +150,32 @@ DTIndividual DTMGeneticAlgorithm::run(size_t numberOfGenerations,
     const auto species = divideIntoSpecies();
 
     TIME_MEASURE_BEGIN(DTM_EVALUATE_FITNESS);
+    std::exception_ptr evaluationError;
     #pragma omp parallel for
     for (DTIndividual &individual : population)
     {
-      evaluateIndividual(individual, trainingData);
+      try
+      {
+        fitnessEvaluation->evaluateIndividual(individual);
+      }
+      catch (...)
+      {
+        // Exceptions cannot escape an OpenMP worker. Preserve one failure and
+        // rethrow it on the caller after the parallel loop's implicit barrier.
+        #pragma omp critical(DTM_FITNESS_ERROR)
+        {
+          if (!evaluationError)
+          {
+            evaluationError = std::current_exception();
+          }
+        }
+      }
+    }
+    if (evaluationError)
+    {
+      TIME_MEASURE_END(DTM_EVALUATE_FITNESS);
+      TIME_MEASURE_END(DTM_GENETIC_RUN);
+      std::rethrow_exception(evaluationError);
     }
     for (DTIndividual &individual : population)
     {

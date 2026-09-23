@@ -1,14 +1,18 @@
 #pragma once
 
-#include "dtmgeneticAlgorithm.h"
+#include "dtindividual.h"
+#include "meanSquaredEval.h"
 #include "trainingData.h"
 #include <gtest/gtest.h>
 #include <utility>
 
+using DTMUtils::ActivationE;
+using DTMUtils::NeuronTypeE;
+
 /******************************************************************************
  * @brief Tests MMSE averaging over samples with multiple inputs and outputs
  ******************************************************************************/
-TEST(DTMGeneticFitnessTest, calculateMMSETest)
+TEST(DTMGeneticFitnessTest, meanSquaredEvaluationTest)
 {
   constexpr double delta = 1e-9;
   DTModel model(2, 2, ActivationE::NO_ACTIVATION);
@@ -27,9 +31,14 @@ TEST(DTMGeneticFitnessTest, calculateMMSETest)
   // The model computes [2*x0 + x1 - 1, -x0 + 3*x1 - 2].
   // Predictions are [3, 3], [4, -1], [0, 8]; squared error sums are 8, 16, 20.
   // Match the fixed model's divisor of 3 samples, not 6 output values.
-  EXPECT_NEAR(DTMGeneticAlgorithm::calculateMMSE(model, data), 44.0 / 3.0, delta);
-  EXPECT_TRUE(model.isSorted);
-  EXPECT_NEAR(DTMGeneticAlgorithm::calculateMMSE(model, data), 44.0 / 3.0, delta);
+  DTIndividual individual(7, 3, std::move(model));
+  MeanSquaredEval evaluator(data);
+  DTMFitnessEvaluation &strategy = evaluator;
+  strategy.evaluateIndividual(individual);
+  EXPECT_NEAR(individual.fitness, 3.0 / 44.0, delta);
+  EXPECT_TRUE(individual.model.isSorted);
+  strategy.evaluateIndividual(individual);
+  EXPECT_NEAR(1.0 / individual.fitness, 44.0 / 3.0, delta);
   EXPECT_EQ(data.inputs, inputsBefore);
   EXPECT_EQ(data.outputs, outputsBefore);
 }
@@ -50,11 +59,12 @@ TEST(DTMGeneticFitnessTest, evaluateIndividualTest)
   individual.fitness = 123.0;
   individual.gracePeriodLength = 8;
   const TrainingData data({{-1.0}, {2.0}}, 1, 2, {{1.0}, {5.0}}, 1, 2);
+  MeanSquaredEval evaluator(data);
 
   // y = RELU(3 * RELU(2*x - 1) - 2) gives [0, 7].
   // MMSE = ((0 - 1)^2 + (7 - 5)^2) / 2 = 2.5, so fitness = 0.4.
   ASSERT_FALSE(individual.model.isSorted);
-  DTMGeneticAlgorithm::evaluateIndividual(individual, data);
+  evaluator.evaluateIndividual(individual);
   EXPECT_NEAR(individual.fitness, 0.4, delta);
   EXPECT_TRUE(individual.model.isSorted);
   EXPECT_EQ(individual.model.maxDepth, 2u);
@@ -62,13 +72,14 @@ TEST(DTMGeneticFitnessTest, evaluateIndividualTest)
   EXPECT_EQ(individual.generation, 3u);
   EXPECT_EQ(individual.gracePeriodLength, 8u);
 
-  DTMGeneticAlgorithm::evaluateIndividual(individual, data);
+  evaluator.evaluateIndividual(individual);
   EXPECT_NEAR(individual.fitness, 0.4, delta);
 
   // New targets give MMSE = 0.25. Fitness must be the raw reciprocal (4.0),
   // using the newly supplied data and replacing the previous fitness value.
   const TrainingData closerTargets({{-1.0}, {2.0}}, 1, 2, {{0.5}, {7.5}}, 1, 2);
-  DTMGeneticAlgorithm::evaluateIndividual(individual, closerTargets);
+  MeanSquaredEval closerEvaluation(closerTargets);
+  closerEvaluation.evaluateIndividual(individual);
   EXPECT_NEAR(individual.fitness, 4.0, delta);
 }
 
@@ -92,8 +103,8 @@ TEST(DTMGeneticFitnessTest, fractionalValuesTest)
   constexpr double expectedMMSE = 0.1126 / 3.0;
   constexpr double expectedFitness = 30000.0 / 1126.0;
 
-  EXPECT_NEAR(DTMGeneticAlgorithm::calculateMMSE(individual.model, data),
-              expectedMMSE, delta);
-  DTMGeneticAlgorithm::evaluateIndividual(individual, data);
+  MeanSquaredEval evaluator(data);
+  evaluator.evaluateIndividual(individual);
+  EXPECT_NEAR(1.0 / individual.fitness, expectedMMSE, delta);
   EXPECT_NEAR(individual.fitness, expectedFitness, delta);
 }

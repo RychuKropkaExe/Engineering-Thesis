@@ -14,7 +14,8 @@ TEST(DTMGeneticParameterMutationTest, adjustWeightTest)
   Hyperparameters parameters{};
   parameters.gracePeriodLength = 2;
   parameters.weightMutationStrength = 2.0;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(1, 1, ActivationE::SIGMOID);
   const Synapse connection(100, 0, 1, 0.0);
   model.addOutSynapse(connection, true);
@@ -81,7 +82,8 @@ TEST(DTMGeneticParameterMutationTest, adjustBiasTest)
   Hyperparameters parameters{};
   parameters.gracePeriodLength = 2;
   parameters.biasMutationStrength = 2.0;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(1, 1, ActivationE::SIGMOID);
   Neuron hidden(10, NeuronTypeE::HIDDEN_NEURON, ActivationE::RELU);
   hidden.bias = 0.0;
@@ -149,7 +151,8 @@ TEST(DTMGeneticParameterMutationTest, changeActivationTest)
 {
   Hyperparameters parameters{};
   parameters.gracePeriodLength = 2;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   for (ActivationE activation : {ActivationE::SIGMOID, ActivationE::RELU, ActivationE::NO_ACTIVATION})
   {
     DTModel model(1, 1, ActivationE::SIGMOID);

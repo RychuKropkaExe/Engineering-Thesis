@@ -7,8 +7,7 @@
 #include "dtmodel.h"
 #include "dtindividual.h"
 #include "gaparents.h"
-
-class TrainingData;
+#include "dtmfitnessEvaluation.h"
 
 using std::vector;
 using std::pair;
@@ -57,13 +56,13 @@ public:
 /******************************************************************************
  * @class DTMGeneticAlgorithm
  *
- * @brief Represents a single synapse connecting two neurons in a dynamic topology network
+ * @brief Evolves dynamic-topology networks to produce the best individual
+ *        for given fitness strategu
  *
- * @public @param hyperparameters Hyperparameters
- * @public @param population      List of individuals
- * @public @param synapseIdMap    Map to unfiy synapses id across individuals.
- *                                Maps pair of neuron input and output id to
- *                                synapse id.
+ * @public @param hyperparameters    Hyperparameters
+ * @public @param population         List of individuals
+ * @public @param currentGeneration  Generation assigned to the current offspring
+ * @private @param fitnessEvaluation Fitness strategy
  ******************************************************************************/
 class DTMGeneticAlgorithm
 {
@@ -77,12 +76,19 @@ public:
 
   size_t currentGeneration{0};
 
-  map<pair<size_t, size_t>, size_t> synapseIdMap;
-
   /******************************************************************************
   * CONSTRUCTORS
   ******************************************************************************/
-  DTMGeneticAlgorithm(Hyperparameters hyperparameters);
+  /******************************************************************************
+   * @brief Stores the evolution settings and borrows a fitness evaluator
+   *
+   * @param hyperparameters   Population, topology, selection and mutation settings
+   * @param fitnessEvaluation Base class pointer to fitness strategy used.
+   *
+   * @throws std::invalid_argument If the evaluator pointer is null
+   ******************************************************************************/
+  DTMGeneticAlgorithm(Hyperparameters hyperparameters,
+                      DTMFitnessEvaluation *fitnessEvaluation);
 
   /******************************************************************************
   * OPERATORS
@@ -93,7 +99,17 @@ public:
   * UTILITIES
   ******************************************************************************/
   void initializePopulation();
-  DTIndividual run(size_t numberOfGenerations, const TrainingData &trainingData);
+
+  /******************************************************************************
+   * @brief Runs fresh evolution and returns the best evaluated individual
+   *
+   * @param numberOfGenerations Positive number of evaluation/reproduction cycles
+   * @return Independent copy of the best individual across evaluated generations
+   * @throws std::invalid_argument If evolution settings are invalid
+   * @throws Any exception raised by the supplied evaluator, after workers join
+   ******************************************************************************/
+  DTIndividual run(size_t numberOfGenerations);
+
   size_t getNewUniqueSynapseId();
   size_t getNewUniqueNeuronId();
   size_t getNewUniqueIndividualCounter();
@@ -111,12 +127,6 @@ public:
       const vector<Synapse> &similarSynapses);
 
   void crossover(const vector<vector<GAParents>> &parentsLists);
-
-  /******************************************************************************
-  * FITNESS
-  ******************************************************************************/
-  static double calculateMMSE(DTModel &model, const TrainingData &trainingData);
-  static void evaluateIndividual(DTIndividual &individual, const TrainingData &trainingData);
 
   /******************************************************************************
   * MUTATIONS
@@ -140,6 +150,8 @@ private:
   /******************************************************************************
   * CLASS MEMBERS
   ******************************************************************************/
+  DTMFitnessEvaluation *fitnessEvaluation;
+
   size_t uniqueSynapseIdCounter{0};
   size_t uniqueNeuronIdCounter{0};
   size_t uniqueIndividualIdCounter{0};

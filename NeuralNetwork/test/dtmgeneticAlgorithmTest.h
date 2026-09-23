@@ -1,13 +1,32 @@
 #pragma once
 
 #include "dtmgeneticAlgorithm.h"
+#include "meanSquaredEval.h"
 #include "trainingData.h"
 #include "testUtils.h"
 #include <gtest/gtest.h>
 #include <algorithm>
+#include <atomic>
 #include <cstdlib>
 #include <set>
 #include <stdexcept>
+
+namespace
+{
+/******************************************************************************
+ * @brief Checks saved fitness without changing the original individual
+ *
+ * @param individual Saved individual whose fitness must match its model
+ * @param evaluator  Strategy used to independently reevaluate a copy
+ ******************************************************************************/
+void expectMatchingFitness(const DTIndividual &individual,
+                           DTMFitnessEvaluation &evaluator)
+{
+  DTIndividual evaluated = individual;
+  evaluator.evaluateIndividual(evaluated);
+  EXPECT_NEAR(individual.fitness, evaluated.fitness, 1e-9);
+}
+}
 
 /******************************************************************************
  * @brief Tests depth-zero species, empty populations and population index mapping
@@ -16,7 +35,8 @@ TEST(DTMGeneticAlgorithmTest, speciationAndSelectionTest)
 {
   Hyperparameters parameters{};
   parameters.tournamentSize = 3;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   EXPECT_TRUE(algorithm.divideIntoSpecies().empty());
   EXPECT_TRUE(algorithm.tournamentSelection({}).empty());
 
@@ -63,7 +83,8 @@ TEST(DTMGeneticAlgorithmTest, disconnectedOutputCrossoverTest)
   Hyperparameters parameters{};
   parameters.inputSize = 1;
   parameters.outputSize = 2;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(1, 2, ActivationE::SIGMOID);
   model.addOutSynapse(Synapse(100, 0, 1, 0.5), true);
   std::set<size_t> depthIds;
@@ -98,21 +119,22 @@ TEST(DTMGeneticAlgorithmTest, runTest)
   parameters.mutationTypes = {MutationE::ADD_NEURON};
   parameters.numberOfMutations = {5};
   const TrainingData data({{0.0}, {1.0}}, 1, 2, {{0.2}, {0.8}}, 1, 2);
+  MeanSquaredEval fitnessEvaluation(data);
 
   // Reproduce the initial population independently to know its true best.
   srand(1234);
-  DTMGeneticAlgorithm initial(parameters);
+  DTMGeneticAlgorithm initial(parameters, &fitnessEvaluation);
   initial.initializePopulation();
   double initialBest = 0.0;
   for (DTIndividual &individual : initial.population)
   {
-    DTMGeneticAlgorithm::evaluateIndividual(individual, data);
+    fitnessEvaluation.evaluateIndividual(individual);
     initialBest = std::max(initialBest, individual.fitness);
   }
 
   srand(1234);
-  DTMGeneticAlgorithm algorithm(parameters);
-  DTIndividual best = algorithm.run(1, data);
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
+  DTIndividual best = algorithm.run(1);
   EXPECT_NEAR(best.fitness, initialBest, 1e-9);
   EXPECT_EQ(best.generation, 0u);
   EXPECT_EQ(best.model.neurons.size(), 2u);
@@ -126,22 +148,19 @@ TEST(DTMGeneticAlgorithmTest, runTest)
     EXPECT_DOUBLE_EQ(child.fitness, 0.0);
     EXPECT_EQ(child.gracePeriodLength, child.model.neurons.size() == 3 ? 2u : 0u);
   }
-  EXPECT_NEAR(1.0 / best.fitness,
-              DTMGeneticAlgorithm::calculateMMSE(best.model, data), 1e-9);
+  expectMatchingFitness(best, fitnessEvaluation);
 
   srand(1234);
-  best = algorithm.run(4, data);
+  best = algorithm.run(4);
   EXPECT_GE(best.fitness, initialBest - 1e-9);
   EXPECT_LT(best.generation, 4u);
   EXPECT_EQ(algorithm.currentGeneration, 4u);
   EXPECT_EQ(algorithm.population.size(), parameters.populationSize);
-  EXPECT_NEAR(1.0 / best.fitness,
-              DTMGeneticAlgorithm::calculateMMSE(best.model, data), 1e-9);
+  expectMatchingFitness(best, fitnessEvaluation);
 
   // Mutating population storage cannot change the separately saved model.
   algorithm.population.clear();
-  EXPECT_NEAR(1.0 / best.fitness,
-              DTMGeneticAlgorithm::calculateMMSE(best.model, data), 1e-9);
+  expectMatchingFitness(best, fitnessEvaluation);
 }
 
 /******************************************************************************
@@ -155,13 +174,26 @@ TEST(DTMGeneticAlgorithmTest, invalidRunSettingsTest)
   parameters.outputActivation = ActivationE::SIGMOID;
   parameters.populationSize = 4;
   parameters.tournamentSize = 2;
-  DTMGeneticAlgorithm algorithm(parameters);
-  const TrainingData data({{0.0}}, 1, 1, {{1.0}}, 1, 1);
-  EXPECT_THROW(algorithm.run(0, data), std::invalid_argument);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
+  EXPECT_THROW(algorithm.run(0), std::invalid_argument);
   algorithm.hyperparameters.mutationTypes = {MutationE::ADD_NEURON};
-  EXPECT_THROW(algorithm.run(1, data), std::invalid_argument);
+  EXPECT_THROW(algorithm.run(1), std::invalid_argument);
   algorithm.hyperparameters.numberOfMutations = {5};
-  EXPECT_THROW(algorithm.run(1, data), std::invalid_argument);
+  EXPECT_THROW(algorithm.run(1), std::invalid_argument);
+  algorithm.hyperparameters.mutationTypes.clear();
+  algorithm.hyperparameters.numberOfMutations.clear();
+  algorithm.hyperparameters.inputSize = 0;
+  EXPECT_THROW(algorithm.run(1), std::invalid_argument);
+  algorithm.hyperparameters.inputSize = 1;
+  algorithm.hyperparameters.outputSize = 0;
+  EXPECT_THROW(algorithm.run(1), std::invalid_argument);
+  algorithm.hyperparameters.outputSize = 1;
+  algorithm.hyperparameters.populationSize = 0;
+  EXPECT_THROW(algorithm.run(1), std::invalid_argument);
+  algorithm.hyperparameters.populationSize = 4;
+  algorithm.hyperparameters.tournamentSize = 0;
+  EXPECT_THROW(algorithm.run(1), std::invalid_argument);
   EXPECT_TRUE(algorithm.population.empty());
 }
 
@@ -190,11 +222,12 @@ TEST(DTMGeneticAlgorithmTest, hammingLengthTest)
   parameters.biasMutationStrength = 2.0;
 
   srand(2026);
-  DTMGeneticAlgorithm algorithm(parameters);
-  DTIndividual best = algorithm.run(4000, data);
+  MeanSquaredEval fitnessEvaluation(data);
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
+  DTIndividual best = algorithm.run(4000);
   const double cost = 1.0 / best.fitness;
   RecordProperty("cost", std::to_string(cost));
-  EXPECT_NEAR(cost, DTMGeneticAlgorithm::calculateMMSE(best.model, data), 1e-9);
+  expectMatchingFitness(best, fitnessEvaluation);
   EXPECT_LE(cost, 0.05);
 }
 
@@ -223,15 +256,48 @@ TEST(DTMGeneticAlgorithmTest, digitRecognitionTest)
   parameters.biasMutationStrength = 2.0;
 
   srand(2027);
-  DTMGeneticAlgorithm algorithm(parameters);
-  DTIndividual best = algorithm.run(3000, trainingData);
+  MeanSquaredEval fitnessEvaluation(trainingData);
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
+  DTIndividual best = algorithm.run(3000);
   const double cost = 1.0 / best.fitness;
   RecordProperty("cost", std::to_string(cost));
-  EXPECT_NEAR(cost, DTMGeneticAlgorithm::calculateMMSE(best.model, trainingData), 1e-9);
+  expectMatchingFitness(best, fitnessEvaluation);
   EXPECT_LE(cost, 0.05);
 
   TrainingData testData(getTestDataPath("pendigits.tes"));
   testData.normalizeData(MIN_MAX_NORMALIZATION);
-  RecordProperty("heldOutCost", std::to_string(
-      DTMGeneticAlgorithm::calculateMMSE(best.model, testData)));
+  MeanSquaredEval heldOutEvaluation(std::move(testData));
+  DTIndividual heldOut = best;
+  heldOutEvaluation.evaluateIndividual(heldOut);
+  RecordProperty("heldOutCost", std::to_string(1.0 / heldOut.fitness));
+}
+
+/******************************************************************************
+ * @brief Tests rejection of a null, non-owning evaluator pointer
+ ******************************************************************************/
+TEST(DTMGeneticAlgorithmTest, nullFitnessEvaluationTest)
+{
+  EXPECT_THROW((DTMGeneticAlgorithm(Hyperparameters{}, nullptr)), std::invalid_argument);
+}
+
+/******************************************************************************
+ * @brief Tests that worker failures reach the caller instead of terminating
+ ******************************************************************************/
+TEST(DTMGeneticAlgorithmTest, fitnessEvaluationErrorTest)
+{
+  Hyperparameters parameters{};
+  parameters.inputSize = 1;
+  parameters.outputSize = 1;
+  parameters.outputActivation = ActivationE::SIGMOID;
+  parameters.populationSize = 4;
+  parameters.tournamentSize = 2;
+  DTMFitnessEvaluation unimplemented;
+  DTMGeneticAlgorithm algorithm(parameters, &unimplemented);
+  EXPECT_THROW(algorithm.run(1), std::logic_error);
+  EXPECT_EQ(algorithm.currentGeneration, 0u);
+
+  MeanSquaredEval mismatched(TrainingData({{0.0, 1.0}}, 2, 1, {{1.0}}, 1, 1));
+  DTMGeneticAlgorithm incompatible(parameters, &mismatched);
+  EXPECT_THROW(incompatible.run(1), std::invalid_argument);
+  EXPECT_EQ(incompatible.currentGeneration, 0u);
 }

@@ -129,7 +129,8 @@ TEST(DTModelTest, getNewUniqueNeuronIdTest)
   Hyperparameters parameters{};
   parameters.inputSize = 2;
   parameters.outputSize = 1;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
 
   EXPECT_EQ(algorithm.getNewUniqueNeuronId(), 3u);
   EXPECT_EQ(algorithm.getNewUniqueNeuronId(), 4u);
@@ -193,7 +194,8 @@ TEST(DTModelTest, crossoverTest)
     parameters.inputSize = 2;
     parameters.outputSize = 1;
     parameters.populationSize = 2;
-    DTMGeneticAlgorithm algorithm(parameters);
+    DTMFitnessEvaluation fitnessEvaluation;
+    DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
     algorithm.currentGeneration = 7;
     algorithm.population.emplace_back(40, 1, firstModel);
     algorithm.population.emplace_back(50, 1, secondModel);
@@ -367,7 +369,8 @@ TEST(DTModelTest, crossoverSameParentAndEmptyListsTest)
   Hyperparameters parameters{};
   parameters.inputSize = 1;
   parameters.outputSize = 1;
-  DTMGeneticAlgorithm algorithm(parameters);
+  DTMFitnessEvaluation fitnessEvaluation;
+  DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
   DTModel model(1, 1, ActivationE::NO_ACTIVATION);
   Neuron hidden(10, NeuronTypeE::HIDDEN_NEURON, ActivationE::RELU);
   hidden.bias = 1.0;
@@ -417,4 +420,3 @@ TEST(DTModelTest, crossoverSameParentAndEmptyListsTest)
   EXPECT_TRUE(algorithm.population.empty());
   EXPECT_EQ(algorithm.hyperparameters.populationSize, 0u);
 }
-

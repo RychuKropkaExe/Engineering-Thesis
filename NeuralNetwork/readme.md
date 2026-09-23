@@ -85,7 +85,7 @@ These are full training runs, so expect them to take substantially longer than t
 
 ## Evolving a network
 
-`DTMGeneticAlgorithm::run(numberOfGenerations, trainingData)` initializes a fresh population and returns the **best evaluated individual across all generations**.
+`DTMGeneticAlgorithm::run(numberOfGenerations)` initializes a fresh population and returns the **best evaluated individual across all generations**.
 
 Each generation performs:
 
@@ -103,6 +103,7 @@ The following snippet uses the project's headers and mirrors the Hamming-count t
 
 ```cpp
 #include "dtmgeneticAlgorithm.h"
+#include "meanSquaredEval.h"
 #include "trainingData.h"
 #include <cstdlib>
 
@@ -131,8 +132,9 @@ DTIndividual evolveHammingCount()
     parameters.biasMutationStrength = 2.0;
 
     std::srand(2026);
-    DTMGeneticAlgorithm algorithm(parameters);
-    return algorithm.run(4000, data);
+    MeanSquaredEval fitnessEvaluation(data);
+    DTMGeneticAlgorithm algorithm(parameters, &fitnessEvaluation);
+    return algorithm.run(4000);
 }
 ```
 
@@ -142,18 +144,18 @@ The neuron limit includes input and output neurons. Weight and bias mutation str
 
 ### Fitness
 
-The implementation calls its cost metric `MMSE`: it sums squared errors across outputs, then averages over samples.
+[`MeanSquaredEval`](src/DynamicTopologyModel/DTMGeneticAlgorithm/DTMAlgorithm/Fitness/MeanSquaredEval/meanSquaredEval.h) implements dataset-based fitness. Its constructor validates and stores an immutable copy of the supplied `TrainingData`. It sums squared errors across outputs, then averages over samples:
 
 ```text
-MMSE = sum_over_samples(sum_over_outputs((prediction - target)^2)) / sample_count
-fitness = 1 / MMSE
+MSE = sum_over_samples(sum_over_outputs((prediction - target)^2)) / sample_count
+fitness = 1 / MSE
 ```
 
-Higher fitness is better. Recover the cost with `1.0 / best.fitness`, or evaluate a model directly with `DTMGeneticAlgorithm::calculateMMSE(model, data)`. The reciprocal assumes nonzero cost. Training data is used as supplied; normalization is the caller's responsibility.
+Other fitness strategies can derive from [`DTMFitnessEvaluation`](src/DynamicTopologyModel/DTMGeneticAlgorithm/DTMAlgorithm/Fitness/dtmfitnessEvaluation.h) and override `evaluateIndividual`. The base implementation throws `std::logic_error`. Population evaluation uses OpenMP, so a shared evaluator must support concurrent calls on distinct individuals. Evaluator exceptions are rethrown on the calling thread after the workers finish. The algorithm itself has no dependency on training data.
 
 ## Training data
 
-[`TrainingData`](src/TrainingData/trainingData.h) loads samples into `FastMatrix` objects and provides normalization, min–max scaling, and standardization. The dynamic fitness evaluator passes each input matrix's underlying vector to `DTModel::feedForward()`.
+[`TrainingData`](src/TrainingData/trainingData.h) loads samples into `FastMatrix` objects and provides normalization, min–max scaling, and standardization.
 
 The text format is:
 
